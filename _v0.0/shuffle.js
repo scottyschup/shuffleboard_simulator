@@ -1,10 +1,10 @@
 const canvas = document.getElementById("shuffleCanvas");
 const ctx = canvas.getContext("2d");
 
-const PX_PER_FT = 15;
+const PX_PER_FT = 15; // 15 => 780px court length
 const COURT_LENGTH = 52 * PX_PER_FT;
 const COURT_WIDTH = 6 * PX_PER_FT;
-const BISCUIT_RADIUS = 6;
+const BISCUIT_RADIUS = 0.5;
 const FRICTION = 0.99;
 
 canvas.width = COURT_WIDTH;
