@@ -65,7 +65,7 @@ function fire(retry = false) {
   if (retry && lastShot) { restoreShot(lastShot); paths = []; }
   if (P.remainingBiscuits(discs, color) === 0) { update(); return; }
   const before = snapshot(); history.push(before); lastShot = structuredClone(before);
-  for (const id of ['aimAccuracy', 'speedAccuracy']) $(id).value = accuracy(id).toFixed(2);
+  for (const id of ['aimAccuracy', 'speedAccuracy']) $(id).value = accuracy(id).toFixed(1);
   shotDisc = shot(true); discs.push(shotDisc); paths = discs.map((d, i) => paths[i]?.length ? paths[i] : [[d.x, d.y]]); running = true; time = 0; accumulator = 0; lastFrame = 0;
   $('result').textContent = shotDisc.aimSigma > 0 || accuracy('speedAccuracy') < 100 ? `Actual launch: ${shotDisc.launchSpeed.toFixed(2)} ft/s · ${shotDisc.launchAngle.toFixed(2)}°.` : 'Watch the line and the contact.'; update(); requestAnimationFrame(animate);
 }
