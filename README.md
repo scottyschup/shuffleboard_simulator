@@ -2,14 +2,11 @@
 
 Plain JavaScript, HTML and CSS. No package installation, framework, or build step.
 
-Open `dist/index.html` in a browser, or serve the `dist` directory with any static web server.
-An optional Google Fonts stylesheet has local system-font fallbacks.
-
 ## Use
 
 Choose a practice setup, click the scoring-end view to aim, adjust launch speed and court slickness, then shoot. Clicking a target sets both direction and launch speed for an unobstructed shot, using current slickness and drift. Other biscuits can change the destination on contact. Higher slickness reduces friction while keeping launch speed unchanged.
 
-There are clearing, St. Pete, Tampa, and kitchen setups. Clear court resets to an empty board. Optional uniform drift, path prediction, trails, color selection, starting-position adjustment, undo, and retry support practice. Each color has four biscuits, including its queued shooter and collected biscuits. Colors alternate after shots settle; Undo restores the previous shooter.
+There are clearing, St. Pete's, Tampa, and kitchen setups. Clear court resets to an empty board. Optional uniform drift, path prediction, trails, color selection, starting-position adjustment, undo, and retry support practice. Each color has four biscuits, including its queued shooter and collected biscuits. Colors alternate after shots settle; Undo restores the previous shooter.
 
 Space has no shooting shortcut, so typing in comments or editors cannot fire a shot. Arrow keys adjust aim by 0.05 degrees only while a court canvas has focus. Native sliders also support keyboard adjustment.
 
@@ -31,10 +28,10 @@ With Node.js installed, run `node tests/physics.cjs` to check analytic stopping 
 
 ## Files
 
-- `dist/index.html`: interface and source/model notes
-- `dist/style.css`: responsive styling
-- `dist/physics.js`: deterministic physics and scoring
-- `dist/app.js`: canvas views and interaction
+- `index.html`: interface and source/model notes
+- `style.css`: responsive styling
+- `physics.js`: deterministic physics and scoring
+- `app.js`: canvas views and interaction
 - `tests/physics.cjs`: numerical checks
 
 ## Arrangement and layout
@@ -83,4 +80,4 @@ Clear court is a bordered toolbar button beside Hide/Show controls. Their shared
 
 ## Starting defaults
 
-Both accuracy controls start at 95.00%, slickness at 50, drift at 0 (None), Full court selected on mobile, Head selected as the shooting end, and Yellow queued first. The inside starting-position limit follows the center separation triangle: at shooting depth y its right edge is x = 3.25 − y/6. Biscuit centers are offset from that diagonal by their radius plus half the painted line width and the same small clearance used at the outer border. Black uses the mirrored boundary. Both dragging and the position slider use these dynamic limits.
+Both accuracy controls start at 95.0%, slickness at 50, drift at 0 (None), Full court selected on mobile, Head selected as the shooting end, and Yellow queued first. The inside starting-position limit follows the center separation triangle: at shooting depth y its right edge is x = 3.25 − y/6. Biscuit centers are offset from that diagonal by their radius plus half the painted line width and the same small clearance used at the outer border. Black uses the mirrored boundary. Both dragging and the position slider use these dynamic limits.
