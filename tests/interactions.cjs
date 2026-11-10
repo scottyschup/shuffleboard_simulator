@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const elements=[],ids=new Map(),documentListeners={};
 function element(tag='div'){
- const el={tagName:tag.toUpperCase(),value:'',dataset:{},style:{},listeners:{},attributes:{},children:[],className:'',width:0,height:0,disabled:false,
+ const el={tagName:tag.toUpperCase(),value:'',dataset:{},style:{setProperty(k,v){this[k]=v;}},listeners:{},attributes:{},children:[],className:'',width:0,height:0,disabled:false,
   setAttribute(k,v){this.attributes[k]=String(v);},getAttribute(k){return this.attributes[k]??null;},
   addEventListener(k,fn){(this.listeners[k]??=[]).push(fn);},append(b){b.parentElement=this;this.children.push(b);},
   setPointerCapture(){},getBoundingClientRect(){return{left:0,top:0,width:this.id==='overview'?800:500,height:this.id==='overview'?150:600};},
@@ -82,3 +82,34 @@ run("running=false;setup('open');$('aimAccuracy').value='100.00';$('speedAccurac
 assert.ok(run("$('aimSpread').textContent").includes('50.0%'));assert.ok(run('shot(true).aimSigma')>0,'Hard shots vary even at 100% base aim accuracy');
 run("$('speed').value=8;update();");assert.equal(run('shot(true).launchAngle'),0,'100% base accuracy remains exact at or below 8 ft/s');
 console.log('PASS: displayed 18 ft/s miss calibration and slow-shot exactness.');
+
+// Each rendered view mirrors the same inventory, with one normal-size alley disc per available biscuit.
+run("running=false;setup('open')");
+function inventory(){for(const c of ['yellow','black']){
+ const expected=run(`P.remainingBiscuits(discs,'${c}',running?null:color)`);
+ for(const id of ['overview','target']){
+  const visible=elements.filter(e=>e.id.startsWith(id+'Supply'+c)&&!e.hidden);
+  assert.equal(visible.length,expected);
+  assert.equal(run(`discs.filter(d=>d.color==='${c}').length + (running?0:color==='${c}'&&P.remainingBiscuits(discs,color)>0?1:0)`) + expected,4);
+  for(const e of visible)assert.equal(parseFloat(e.style['--disc-size']),run(`2*P.R*viewMaps['${id}'].scale`));
+ }
+}}
+inventory();run("discs.push(createDisc(2,34,'black'));discs.push({...createDisc(-1,34,'yellow'),out:true});update()");inventory();
+run("switchShooter('black')");inventory();run("fire()");inventory();run("finish()");inventory();
+const finished=JSON.stringify(run('snapshot()'));run("$('undo').onclick()");inventory();
+assert.equal(ids.get('retry').disabled,false);run("$('retry').onclick()");inventory();
+assert.equal(JSON.stringify(run('snapshot()')),finished,'Redo restores the complete shot outcome and next shooter');
+console.log('PASS: individual normal-size supply biscuits, eight-biscuit inventory including queued/collected discs, and complete Undo/Redo restoration.');
+
+// A wide scoring canvas rotates the diagram; pointer conversion must follow it.
+ids.get('target').getBoundingClientRect=()=>({left:0,top:0,width:700,height:250});
+for(const end of ['head','foot']){
+ run(`running=false;selectShootingEnd('${end}');setup('open');draw()`);
+ assert.equal(run('viewMaps.target.vertical'),false);
+ send('target','pointerdown',event('target',4,34));
+ assert.ok(Math.abs(run('aimPoint.x')-4)<1e-8);assert.ok(Math.abs(run('aimPoint.y')-34)<1e-8);
+ const bank=ids.get('targetSupplyblack');send(bank.id,'pointerdown',event('target',-.65,25.7));
+ send(bank.id,'pointermove',event('target',2,35));send(bank.id,'pointerup',event('target',2,35));
+ assert.equal(run('discs.length'),1);assert.ok(Math.abs(run('discs[0].x')-2)<1e-8);assert.ok(Math.abs(run('discs[0].y')-35)<1e-8);
+}
+console.log('PASS: landscape scoring-view target placement and supply dragging at both shooting ends.');

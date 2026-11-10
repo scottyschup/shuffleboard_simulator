@@ -2,11 +2,14 @@
 
 Plain JavaScript, HTML and CSS. No package installation, framework, or build step.
 
+Open `dist/index.html` in a browser, or serve the `dist` directory with any static web server.
+An optional Google Fonts stylesheet has local system-font fallbacks.
+
 ## Use
 
 Choose a practice setup, click the scoring-end view to aim, adjust launch speed and court slickness, then shoot. Clicking a target sets both direction and launch speed for an unobstructed shot, using current slickness and drift. Other biscuits can change the destination on contact. Higher slickness reduces friction while keeping launch speed unchanged.
 
-There are clearing, St. Pete's, Tampa, and kitchen setups. Clear court resets to an empty board. Optional uniform drift, path prediction, trails, color selection, starting-position adjustment, undo, and retry support practice. Each color has four biscuits, including its queued shooter and collected biscuits. Colors alternate after shots settle; Undo restores the previous shooter.
+There are four setup buttons: yellow T, black T, yellow SP, and black SP (Tampa and St. Pete). Clear court resets to an empty board. Optional uniform drift, path prediction, trails, color selection, starting-position adjustment, undo, and redo support practice. Each color has four biscuits, including its queued shooter and collected biscuits. Colors alternate after shots settle; Undo restores the previous shooter.
 
 Space has no shooting shortcut, so typing in comments or editors cannot fire a shot. Arrow keys adjust aim by 0.05 degrees only while a court canvas has focus. Native sliders also support keyboard adjustment.
 
@@ -28,21 +31,21 @@ With Node.js installed, run `node tests/physics.cjs` to check analytic stopping 
 
 ## Files
 
-- `index.html`: interface and source/model notes
-- `style.css`: responsive styling
-- `physics.js`: deterministic physics and scoring
-- `app.js`: canvas views and interaction
+- `dist/index.html`: interface and source/model notes
+- `dist/style.css`: responsive styling
+- `dist/physics.js`: deterministic physics and scoring
+- `dist/app.js`: canvas views and interaction
 - `tests/physics.cjs`: numerical checks
 
 ## Arrangement and layout
 
-Drag a black or yellow supply biscuit from beside either court view near the dead line and drop it onto the court. A new supply biscuit replaces it. The supply grays out at four of that color, counting the queued shooter. Invalid or overlapping drops are cancelled. Drag a stationary biscuit to move it, including to a partially overhanging position. Overlapping placements are prevented. Undo restores arrangement changes as well as shots, including shooter color, target, and launch settings. Retry repeats the previous shot. Every displaced biscuit has a predicted path and endpoint.
+Drag a black or yellow supply biscuit from beside either court view near the dead line and drop it onto the court. Each available biscuit is shown individually at the same six-inch scale as court biscuits. A successful drop removes one biscuit from the alley; the queued shooter, live and collected biscuits, and remaining alley biscuits always total four of each color. Invalid or overlapping drops are cancelled. Drag a stationary biscuit to move it, including to a partially overhanging position. Overlapping placements are prevented. Undo restores arrangement changes as well as shots, including shooter color, target, and launch settings. Redo restores the undone arrangement or shot outcome. Every displaced biscuit has a predicted path and endpoint.
 
 Desktop shows both court views within the viewport. Below 1000px, toggle Scoring end / Full court, use the Setup / Shot / Court control tabs, and Hide controls to expand the court. Browser checks cover a 390 × 844 mobile viewport and 1000 × 650 compact desktop viewport.
 
 The scoring-end view includes the shufflegram and far dead line, using a single scale on both axes. Full-court orientation follows the available canvas shape. Geometry follows Eldridge, Shuffleboard Basics p.1, and Robertson, Making Your Hammer Count p.3: the 7 base is six feet wide, with kitchen sides inset above and flaring toward the baseline. Rendering and scoring share the same vertices.
 
-Launch speed has ±0.05 ft/s buttons. The starting-position slider keeps both colors clear of the painted outer shooting-area lines, including the diagonal sides. Four separate buttons create Yellow St. Pete, Yellow Tampa, Black St. Pete, and Black Tampa setups, mirroring the shooting side as appropriate. Aim supports ±20° to reach court targets from either starting area.
+Launch speed has ±0.05 ft/s buttons. Dragging the queued shooter keeps both colors clear of the painted outer shooting-area lines, including the diagonal sides. Four separate buttons create Yellow St. Pete, Yellow Tampa, Black St. Pete, and Black Tampa setups, mirroring the shooting side as appropriate. Aim supports ±20° to reach court targets from either starting area.
 
 Moving the starting-position slider preserves the selected target and recomputes angle and launch speed. Supply biscuits use pointer capture for mouse/touch dragging; existing court biscuits remain draggable.
 
@@ -70,7 +73,7 @@ Aim now uses additive zero-mean Gaussian angular error, independent of the nomin
 
 Above 8 ft/s an independent speed standard deviation is added: `sigmaSpeed = asin(0.5 / targetDistance) / 0.6744897501960817 × max(0, (actualSpeed − 8) / 10)`, with the angle converted to degrees. Total spread is `hypot(sigmaSkill, sigmaSpeed)`. At 18 ft/s and perfect base aim, the central 50% of angular outcomes make contact with a virtual six-inch target biscuit; the other 50% completely miss. Contact uses both biscuit radii, allowing a six-inch centerline clearance. Lower skill can miss more, and speeds above 18 ft/s increase the penalty further. 
 
-Calibration assumes exact speed, no drift, no intervening contacts, and a virtual biscuit centered on the nominal aim line at the selected range. With no target selected, the reference range is the receiving 8s. The live estimate is a contact miss rate, not a scoring probability. At nonzero drift or with other contacts, actual outcomes can differ. Speed variation is sampled before aim so the penalty follows actual launch speed. Starting position never varies. Predictions remain nominal; the result shows actual sampled launch values. Undo restores settings; Retry samples anew.
+Calibration assumes exact speed, no drift, no intervening contacts, and a virtual biscuit centered on the nominal aim line at the selected range. With no target selected, the reference range is the receiving 8s. The live estimate is a contact miss rate, not a scoring probability. At nonzero drift or with other contacts, actual outcomes can differ. Speed variation is sampled before aim so the penalty follows actual launch speed. Starting position never varies. Predictions remain nominal; the result shows actual sampled launch values. Undo restores settings; Redo restores the exact undone outcome.
 
 Research basis: Zhang, Daw & Maloney (2013), https://doi.org/10.1371/journal.pcbi.1003080 ; Zhang, Daw & Maloney (2015), https://doi.org/10.1038/nn.4055 ; Harris & Wolpert (1998), https://doi.org/10.1038/29528 . These support Gaussian motor-error modeling and a speed–accuracy trade-off. They do not validate this simulator's angular scale, 8/18 ft/s thresholds, or calibration.
 
@@ -80,4 +83,14 @@ Clear court is a bordered toolbar button beside Hide/Show controls. Their shared
 
 ## Starting defaults
 
-Both accuracy controls start at 95.0%, slickness at 50, drift at 0 (None), Full court selected on mobile, Head selected as the shooting end, and Yellow queued first. The inside starting-position limit follows the center separation triangle: at shooting depth y its right edge is x = 3.25 − y/6. Biscuit centers are offset from that diagonal by their radius plus half the painted line width and the same small clearance used at the outer border. Black uses the mirrored boundary. Both dragging and the position slider use these dynamic limits.
+Both accuracy controls start at 95.00%, slickness at 50, drift at 0 (None), Full court selected on mobile, Head selected as the shooting end, and Yellow queued first. The inside starting-position limit follows the center separation triangle: at shooting depth y its right edge is x = 3.25 − y/6. Biscuit centers are offset from that diagonal by their radius plus half the painted line width and the same small clearance used at the outer border. Black uses the mirrored boundary. Dragging uses these dynamic limits; starting position has no separate visible control.
+
+## Compact controls and landscape layout
+
+The Shot Lab header groups Yellow / Black, “shooting from”, and Head / Foot. Aim and speed accuracy inputs sit between their respective nudge buttons, with aligned Accuracy % labels. The starting position is controlled by dragging the queued shooter. Shot helper text and the aim-spread estimate are available through the information tooltip.
+
+Below 1000px, landscape places tabbed controls beside the court, with the score and stable-width Shoot disc / Undo / Redo actions below it. Hide controls expands the court. Portrait retains bottom controls. Scoring-end orientation follows available canvas dimensions, preserving the scale and coordinate mapping. Browser QA covered 844 × 390 and 667 × 375 landscape, 390 × 844 portrait, and desktop, with no body scrolling at the mobile sizes. The pointer regression fixture also checks both vertical and horizontal scoring-end mappings.
+
+## Asset versions
+
+After editing CSS or JavaScript, run `node scripts/prepare-assets.cjs` before packaging. It copies those assets to content-hashed filenames and updates the HTML references, so previously cached CSS cannot be combined with updated markup. Include `dist/assets/` in deployment and source downloads. The unversioned files remain the editable source.
