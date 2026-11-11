@@ -1,0 +1,28 @@
+.icon-button {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 21px;
+  height: 34px;
+  justify-content: center;
+  min-width: 30px;
+  padding: 4px;
+  width: 38px;
+}
+.icon-button img {
+  height: 23px;
+  object-fit: contain;
+  pointer-events: none;
+  width: 23px;
+}
+.icon-button span {
+  pointer-events: none;
+}
+.info-button {
+  background: none;
+  border: 0;
+  font-size: 20px;
+  min-height: 28px;
+  min-width: 28px;
+  padding: 0;
+}

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "none",
+    "noEmit": true,
+    "strict": false,
+    "target": "ES2022"
+  },
+  "include": ["scripts/**/*.js", "scripts/**/*.d.ts"]
+}

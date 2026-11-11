@@ -1,0 +1,194 @@
+.detail-column {
+  display: grid;
+  gap: 5px;
+  grid-template-rows: minmax(0, 1fr) clamp(220px, 30dvh, 270px);
+  min-height: 0;
+  min-width: 0;
+}
+.target-panel {
+  display: flex;
+  flex-direction: column;
+}
+.focus-actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 3px;
+}
+.target-panel .section-heading {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+#reset {
+  background: #f4d8d3;
+  border-color: #ae4a3c;
+}
+.overview {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+.overview h2 {
+  font-size: 9px;
+  padding: 3px 0;
+  text-align: center;
+}
+.overview-canvas,
+.target-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.shooting-panel {
+  display: flex;
+  flex-direction: column;
+}
+.shooting-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+canvas {
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  touch-action: none;
+  user-select: none;
+  width: 100%;
+}
+#target {
+  cursor: crosshair;
+}
+#overview {
+  cursor: grab;
+}
+#shooting {
+  cursor: grab;
+}
+#focusPosition {
+  accent-color: var(--green);
+  height: 20px;
+  margin: 4px 0;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+.supply-column {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  padding-top: 35px;
+}
+button.supply-biscuit {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  display: flex;
+  flex-shrink: 1;
+  height: 36px;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  touch-action: none;
+  width: 36px;
+}
+.supply-biscuit > span {
+  background: var(--gold);
+  border: 1px solid #9a7428;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 3px #ffffff20;
+  flex-shrink: 0;
+  height: var(--disc-size, 24px);
+  width: var(--disc-size, 24px);
+}
+.supply-biscuit.black > span {
+  background: #202e29;
+  border-color: #101c16;
+}
+.supply-biscuit:disabled {
+  opacity: 1;
+}
+.supply-biscuit.dragging > span {
+  opacity: 0.3;
+}
+.supply-biscuit[hidden] {
+  display: none;
+}
+@media (max-width: 599px) {
+  .detail-column {
+    gap: 3px;
+    grid-template-rows: minmax(0, 1fr) clamp(238px, 33dvh, 282px);
+  }
+  button.supply-biscuit {
+    height: 32px;
+    width: 100%;
+  }
+  .section-heading {
+    padding: 2px 4px;
+  }
+  .section-heading h2 {
+    font-size: 10px;
+  }
+  .focus-actions {
+    gap: 2px;
+  }
+  .focus-actions .icon-button {
+    height: 28px;
+    min-width: 24px;
+    padding: 2px;
+    width: 26px;
+  }
+  .supply-column {
+    gap: 1px;
+    padding-top: 32px;
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .detail-column {
+    gap: 4px;
+    grid-template-areas: 'shooting target';
+    grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .target-panel {
+    grid-area: target;
+  }
+  .shooting-panel {
+    grid-area: shooting;
+  }
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 32px 64px;
+  }
+  .shooting-panel .shooting-wrap {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 359px) and (orientation: portrait) {
+  .detail-column {
+    display: contents;
+  }
+  .workspace {
+    grid-template-rows: minmax(0, 1fr) 238px;
+  }
+  .target-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .supply-column {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .overview {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .shooting-panel {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+}

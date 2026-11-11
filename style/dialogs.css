@@ -1,0 +1,56 @@
+dialog {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink);
+  max-height: 85dvh;
+  max-width: 650px;
+  padding: 24px;
+  width: calc(100% - 24px);
+}
+
+dialog::backdrop {
+  background: #1e342db0;
+}
+
+dialog h2 {
+  font-size: 24px;
+}
+
+dialog h3 {
+  font-size: 15px;
+  margin: 20px 0 8px;
+}
+
+dialog p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+dialog li {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+dialog a {
+  color: var(--green);
+}
+
+.dialog-top {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-top button {
+  background: none;
+  border: 0;
+  font-size: 20px;
+}
+
+@media (max-width: 599px) {
+  #aboutBtn {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}

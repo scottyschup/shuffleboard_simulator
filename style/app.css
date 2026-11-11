@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+:root {
+  --gold: #edc559;
+  --green: #315e4b;
+  --ink: #243d37;
+  --line: #cbd4c7;
+  --muted: #52635b;
+  --paper: #f5f4ee;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  font:
+    13px 'DM Sans',
+    sans-serif;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
+}
+button,
+input {
+  font: inherit;
+  touch-action: manipulation;
+}
+button {
+  background: #fffefa;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+button:focus-visible,
+input:focus-visible,
+canvas:focus-visible,
+a:focus-visible {
+  outline: 3px solid #a56613;
+  outline-offset: 2px;
+}
+button:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+h2 {
+  font-size: 12px;
+  margin: 0;
+}
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 0;
+  padding: 6px;
+}
+.workspace {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) 38px clamp(144px, 9vw, 120px);
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+.panel {
+  background: #e4e9de;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.section-heading {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 3px 6px;
+}
+.sr-only {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+.black {
+  background: #202e29;
+  color: #fff;
+}
+.yellow {
+  background: var(--gold);
+  color: #172c24;
+}
+@media (max-width: 599px) {
+  .workspace {
+    gap: 3px;
+    grid-template-columns: minmax(0, 1fr) 20px 138px;
+  }
+  main {
+    gap: 3px;
+    padding: 3px;
+  }
+}

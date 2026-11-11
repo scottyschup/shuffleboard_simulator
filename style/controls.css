@@ -1,0 +1,199 @@
+.controls {
+  background: #f5f4eef0;
+  border: 1px solid #b4c2af;
+  border-radius: 6px;
+  bottom: 4px;
+  container-type: inline-size;
+  max-height: calc(100% - 8px);
+  overflow: auto;
+  padding: 5px;
+  position: absolute;
+  top: 4px;
+  touch-action: manipulation;
+  user-select: none;
+  width: 50%;
+}
+.control-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+  min-height: 0;
+}
+.controls .icon-button {
+  max-width: 38px;
+  min-width: 0;
+  width: 100%;
+}
+.controls .icon-button img {
+  max-width: 100%;
+}
+.adjustment {
+  align-items: center;
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+}
+.adjustment output {
+  color: var(--green);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  grid-column: 1/-1;
+  line-height: 1.1;
+}
+.court-controls {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  display: grid;
+  gap: 4px;
+  padding: 4px 2px;
+}
+.accuracy-control {
+  align-items: center;
+  display: grid;
+  gap: 3px;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+}
+.accuracy-value {
+  align-items: center;
+  display: flex;
+  font-size: 10px;
+  justify-content: center;
+  min-width: 0;
+}
+.accuracy-value input {
+  appearance: textfield;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  min-height: 30px;
+  min-width: 0;
+  padding: 2px;
+  text-align: center;
+  width: 100%;
+}
+.accuracy-value input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.settings-fields {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+.settings-fields input[type='range'] {
+  accent-color: var(--green);
+  margin: 0;
+  touch-action: none;
+  width: 100%;
+}
+.settings-fields input[type='number'] {
+  min-height: 36px;
+  width: 100%;
+}
+.check {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+.setup-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 20px;
+}
+.setup {
+  min-height: 48px;
+  padding: 10px;
+}
+.setup.active {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+@media (min-width: 700px) {
+  .control-groups {
+    gap: 4px;
+  }
+  .controls {
+    padding: 8px;
+  }
+}
+@media (max-width: 599px) {
+  .controls {
+    padding: 3px;
+  }
+  .control-groups {
+    gap: 2px;
+  }
+  .adjustment output {
+    font-size: 9px;
+  }
+  .accuracy-control {
+    grid-template-columns: 25px minmax(0, 1fr) 25px;
+  }
+  .controls .icon-button {
+    height: 30px;
+  }
+  .court-controls {
+    gap: 2px;
+    padding: 2px;
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .controls {
+    padding: 3px;
+  }
+  .control-groups {
+    gap: 1px;
+  }
+  .controls .icon-button {
+    height: 27px;
+  }
+}
+
+@container (min-width: 110px) {
+  .court-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 130px) {
+  .accuracy-control {
+    gap: 1px;
+    grid-template-columns: 22px minmax(0, 1fr) 22px;
+  }
+  .accuracy-value > span:last-child {
+    display: none;
+  }
+  .accuracy-value input {
+    font-size: 10px;
+    padding: 1px;
+  }
+  .adjustment {
+    gap: 1px;
+  }
+}
+
+@container (max-width: 90px) {
+  .accuracy-control {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .accuracy-value {
+    grid-column: 1/-1;
+    grid-row: 1;
+  }
+  .controls .accuracy-control .icon-button {
+    height: 24px;
+  }
+  .controls .adjustment .icon-button {
+    height: 25px;
+    padding: 2px;
+  }
+  .controls .adjustment .icon-button img {
+    height: 19px;
+    max-width: 100%;
+    width: 19px;
+  }
+}
