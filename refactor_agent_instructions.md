@@ -1,30 +1,47 @@
 # Shuffleboard Shot Lab refactor
 
-I want to make several improvements:
+I want to make several improvements. The overall goal is to maximize viewport utilization (i.e. minimize unused white space), make the interface as clear, simple, and intuitive as possible, and optimize for mobile use. 
 
-## Readability refactor
+I've broken the work into chunks:
 
-Rewrite the code to be more human readable. Follow standard JS best practices. Use comments only when the code is more complex or atypical, or changing it could introduce sneaky bugs. Split code into separate files when it makes sense to do so. Remove any dead code you find, especially unused CSS and HTML elements that CSS hides and never shows.
+## 1. Code Readability refactor
 
-## Minor improvements
+Rewrite the code to be more human readable. 
 
-* Change the drag-droppable biscuits in the alley (to the sides of the court) to individual biscuits. Between what's on the board, the dead biscuits that have gone off the board and are collected on the scoring end, the biscuit currently lined up for shooting, and the remaining biscuits to be shot (the ones in the alley); there should never be more than 4 of either color. So if there is one yellow on the board, one black off the board, and one yellow lined up to shoot, in the alley there should be 3 on the black side and 2 on the yellow side.
-* Add a biscuit lock to the scoring end view that makes the biscuits not draggable so when placing the intended target, it doesn't accidentally move or select a biscuit instead. Use lock/unlock icons for the toggle.
-* Dragging a biscuit and dropping it anywhere off the court puts it back to the side
+* Follow standard JS best practices. 
+* Use comments only when the code is more complex or atypical, or changing it could introduce sneaky bugs. 
+* Split code into separate files when it makes sense to do so. Keep all JS in a scripts dir, all CSS in a style dir and leave all icons in the icons dir. Don't use `dist` anymore. Add new dirs if it makes sense to.
+* Remove any dead code you find, especially unused CSS and HTML elements that CSS hides and never shows.
+* Keep lines less than 120 characters and follow what I call the rule of 3s. If there are three (or more) of something on the same line (e.g. an HTML tag with >=3 attributes, an object with >=3 properties, a function call with >=3 args, array with >=3 elements, etc.) split each attr/prop/element/etc onto their own lines. So,
 
-## Layout refactor
+  ```js
+    // ❌
+    example(arg1, arg2, arg3);
 
-See the attached screenshot of rough drawings. Ask if anything is unclear.
+    // ❌
+    example(
+      arg1, arg2, arg3,
+    );
 
-* get rid of all unnecessary element including the "Find your line..." bit, the header can stay but should be very short. Maximize the court space and minimize unused white space.
-* Collapse the "Collected" biscuits area to the depth of a biscuit and just line them up directly behind the kitchen, starting from the outer edge for each color. The goal here is viewport optimization
+    // ✅
+    example(
+      arg1,
+      arg2,
+      arg3,
+    );
+  ```
 
+## 2. Layout refactor
 
-### Control Panel
+See the attached screenshot of rough drawings. The following notes should clarify the sketches.
 
-Controls should all be buttons with icons for the button text. The icons are in the icons dir. Across the app, always give icons tooltip hover messages that have the few-word labels:
+### Shot and Control Panels
 
-General (persistent) controls (to be saved to localStorage)
+This will be a magnification of the shooting end of the court and will have a control panel roughly half the width of the court which will appear on top of the side that is not shooting.
+
+The control panel should all be buttons with icons for the button text. The icons are in the icons dir or will be standard emoji. Across the app, always give icons tooltip hover messages that have their English labels as indicated below:
+
+#### General (persistent) controls (to be saved to localStorage)
 
 Court speed: <img src="icons/042-slippery-floor.png" />
 
@@ -36,7 +53,7 @@ Court drift: <img src="icons/043-slippery-road.png" />
 * Drift left: <img src="icons/046-arrow-up-left.png" />
 * Drift right: <img src="icons/047-arrow-up-right.png" />
 
-Shooting
+#### Shooting
 
 Shot speed: <img src="icons/041-speedometer.png" />
 
@@ -48,11 +65,19 @@ Aim: <img src="icons/008-aim.png" />
 * Nudge left: <img src="icons/044-left-arrow.png" />
 * Nudge right: <img src="icons/045-right-arrow.png" />
 
-* Make Shot: <img src="icons/035-puck.png" />
+
+#### Action buttons
+
+* Shoot!: <img src="icons/035-puck.png" />
 * Clear board: <img src="icons/048-broom.png" />
 * Undo shot: <img src="icons/027-undo-circular-arrow.png" />
+* Redo shot: <img src="icons/028-redo.png" /> (or possibly refresh-page-option icon)
+* Place a block: 🙅
+* Place a pigeon: I will add an icon with pigeon in the name. Until I do use the 🦆 emoji as a placeholder.
 
-## Shot Outcome Prediction feature
+
+
+## 3. Shot Outcome Prediction feature
 
 * When accuracy is 100%, the shot will be the same every time, so just show the shot and it's outcomes.
 * When accuracy is < 100%, run the same shot 100 times (or 1000 if the added runtime is less than a second)
@@ -93,3 +118,13 @@ Aim: <img src="icons/008-aim.png" />
 * for visualization:
   * create a table showing the result of the shot in terms of score delta after the shot is complete and the percentage of shots that ended with that result.
   * create a heat map. An idea I had was to render all the results but make the opacity of each one very low so that the overlapping results will show as more opaque. If this doesn't seem like it would work or there's a better way, lmk.
+
+## 4. Other Minor improvements
+
+* There should never be more than 4 of either color biscuit at a time. E.g. if there is one yellow on the board, one black off the board, and one yellow lined up to shoot, in the alley there should be 3 on the black side and 2 on the yellow side. This is already how the app works, just want to make sure this requirement never gets lost.
+* Add a biscuit lock to the scoring end view that makes the biscuits not draggable so when placing the intended target, it doesn't accidentally move or select a biscuit instead. Use lock/unlock icons for the toggle.
+* Dragging a biscuit and dropping it anywhere **off the court** puts it back to the side
+* Change accuracy %s and their step values to one decimal place instead of 2
+* Undo should undo the last shot. Redo, should undo the last shot and immediately replay it, not undo the last undo.
+* The tooltips often won't go away on mobile. Make sure clicking anywhere outside the tooltip text closes them. Remove the info tootlip from the setup tab; only use tooltips when they convey necessary information, not just little blurbs or tips.
+* Make sure tooltips and modals are fully accessible following WCAG 2.1 AA standards.
