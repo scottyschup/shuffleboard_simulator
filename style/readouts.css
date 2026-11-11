@@ -1,0 +1,205 @@
+.readout {
+  align-items: stretch;
+  display: grid;
+  gap: 6px;
+  grid-row: 3;
+  grid-template-columns: max-content max-content minmax(0, 1fr);
+  min-width: 0;
+}
+
+.scoreboard {
+  min-width: 0;
+  padding: 5px 9px;
+}
+
+.scores {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  height: 100%;
+}
+
+.scores > div {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.scores span {
+  align-items: center;
+  display: flex;
+  font-size: 10px;
+  gap: 4px;
+}
+
+.scores strong {
+  font:
+    600 19px Manrope,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.shoot-area {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  align-items: stretch;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 92px 49px 49px;
+  user-select: none;
+}
+
+.shoot-area button {
+  font-size: 11px;
+  min-height: 34px;
+  padding: 6px 3px;
+  white-space: nowrap;
+}
+
+.shoot-area .primary {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+  font-weight: 700;
+}
+
+.shot-info {
+  align-items: center;
+  display: flex;
+  min-width: 0;
+  padding: 5px 8px;
+}
+
+.result {
+  color: var(--green);
+  font-size: 10px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 999px) {
+  .readout {
+    gap: 4px;
+    grid-row: 2;
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  .shoot-area {
+    grid-template-columns: minmax(78px, 1fr) minmax(43px, 0.5fr) minmax(43px, 0.5fr);
+  }
+
+  .shot-info {
+    background: transparent;
+    border: 0;
+    grid-column: 1/-1;
+    min-height: 24px;
+    padding: 2px 4px;
+  }
+
+  .result {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 599px) {
+  .scoreboard {
+    padding: 4px 6px;
+  }
+
+  .scores {
+    gap: 7px;
+  }
+
+  .scores span {
+    font-size: 9px;
+    gap: 3px;
+  }
+
+  .scores > div {
+    gap: 3px;
+  }
+
+  .scores strong {
+    font-size: 16px;
+  }
+
+  .scores .disc-dot {
+    height: 8px;
+    width: 8px;
+  }
+
+  .shoot-area button {
+    font-size: 10px;
+  }
+
+  .shoot-area {
+    gap: 3px;
+    grid-template-columns: minmax(71px, 1fr) 36px 36px;
+  }
+
+  .readout {
+    gap: 3px;
+  }
+}
+
+@media (max-width: 999px) and (orientation: landscape) {
+  .readout {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  .scores strong {
+    font-size: 16px;
+  }
+
+  .scores {
+    gap: 8px;
+  }
+
+  .scores > div {
+    gap: 4px;
+  }
+
+  .scores span {
+    font-size: 9px;
+  }
+
+  .scoreboard {
+    padding: 4px 6px;
+  }
+
+  .shoot-area {
+    grid-template-columns: minmax(70px, 1fr) 38px 38px;
+  }
+
+  .shoot-area button {
+    font-size: 10px;
+    min-height: 30px;
+  }
+
+  .shot-info {
+    min-height: 20px;
+  }
+}
+
+@media (max-width: 740px) and (orientation: landscape) {
+  .scores span {
+    font-size: 0;
+  }
+
+  .scores .disc-dot {
+    height: 10px;
+    width: 10px;
+  }
+
+  .scores strong {
+    font-size: 16px;
+  }
+
+  .shoot-area {
+    grid-template-columns: minmax(65px, 1fr) 34px 34px;
+  }
+}

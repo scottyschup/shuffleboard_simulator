@@ -1,14 +1,14 @@
 # Shuffleboard Shot Lab refactor
 
-I want to make several improvements. The overall goal is to maximize viewport utilization (i.e. minimize unused white space), make the interface as clear, simple, and intuitive as possible, and optimize for mobile use. 
+I want to make several improvements. The overall goal is to maximize viewport utilization (i.e. minimize unused white space), make the interface as clear, simple, and intuitive as possible, and optimize for mobile use.
 
 I've broken the work into chunks:
 
 ## 1. Code Readability refactor
 
-Rewrite the code to be more human readable. 
+Rewrite the code to be more human readable.
 
-* Follow standard JS best practices. 
+* Follow standard JS best practices.
 * Use comments only when the code is more complex or atypical, or changing it could introduce sneaky bugs. 
 * Split code into separate files when it makes sense to do so. Keep all JS in a scripts dir, all CSS in a style dir and leave all icons in the icons dir. Don't use `dist` anymore. Add new dirs if it makes sense to.
 * Remove any dead code you find, especially unused CSS and HTML elements that CSS hides and never shows.
@@ -128,3 +128,5 @@ Aim: <img src="icons/008-aim.png" />
 * Undo should undo the last shot. Redo, should undo the last shot and immediately replay it, not undo the last undo.
 * The tooltips often won't go away on mobile. Make sure clicking anywhere outside the tooltip text closes them. Remove the info tootlip from the setup tab; only use tooltips when they convey necessary information, not just little blurbs or tips.
 * Make sure tooltips and modals are fully accessible following WCAG 2.1 AA standards.
+
+(Steering added to this phase: "Also as part of this phase I want to split the CSS into separate files by page area. You can keep app.css and leave the global rules there. But then for each major section of the page, create a separate file for ease of organization.")

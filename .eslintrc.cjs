@@ -1,185 +1,176 @@
 module.exports = {
-  root: true,
   env: {
     browser: true,
     es2022: true,
     node: false,
   },
-  parserOptions:
+  extends: 'eslint:recommended',
+  globals: {
+    Physics: 'readonly',
+    accumulator: 'writable',
+    accuracy: 'writable',
+    aimAt: 'writable',
+    aimDistance: 'writable',
+    aimPoint: 'writable',
+    animate: 'writable',
+    applyCourtSettings: 'writable',
+    biscuitsLocked: 'writable',
+    button: 'writable',
+    canDrop: 'writable',
+    canvasSize: 'writable',
+    closeTooltips: 'writable',
+    color: 'writable',
+    courtDeceleration: 'writable',
+    courtPoint: 'writable',
+    courtSettings: 'writable',
+    createDisc: 'writable',
+    discs: 'writable',
+    dragControlSelector: 'writable',
+    dragging: 'writable',
+    draw: 'writable',
+    drift: 'writable',
+    element: 'writable',
+    endDrag: 'writable',
+    fastShotOptions: 'writable',
+    finish: 'writable',
+    fire: 'writable',
+    initializeTooltips: 'writable',
+    input: 'writable',
+    isSecondaryPointer: 'writable',
+    lastFrame: 'writable',
+    lastShot: 'writable',
+    lastShotUndone: 'writable',
+    launch: 'writable',
+    launchY: 'writable',
+    loadCourtSettings: 'writable',
+    mobileView: 'writable',
+    moveBiscuit: 'writable',
+    moving: 'writable',
+    nudge: 'writable',
+    nudgeSpeed: 'writable',
+    paths: 'writable',
+    physics: 'writable',
+    placeCourtActions: 'writable',
+    pointerDown: 'writable',
+    positionShooter: 'writable',
+    preview: 'writable',
+    queryElements: 'writable',
+    render: 'writable',
+    restoreShot: 'writable',
+    running: 'writable',
+    saveArrangement: 'writable',
+    saveCourtSettings: 'writable',
+    scores: 'writable',
+    selectShootingEnd: 'writable',
+    selectTab: 'writable',
+    selectView: 'writable',
+    setup: 'writable',
+    shootingEnd: 'writable',
+    shot: 'writable',
+    shotDisc: 'writable',
+    shotHistory: 'writable',
+    snapshot: 'writable',
+    switchShooter: 'writable',
+    tabButtons: 'writable',
+    time: 'writable',
+    update: 'writable',
+    value: 'writable',
+    viewMaps: 'writable',
+  },
+  overrides: [
     {
-      ecmaVersion: 2023,
-    },
-  extends:
-    'eslint:recommended',
-  globals:
-    {
-      Physics:
-        'readonly',
-      tabButtons:
-        'writable',
-      selectTab:
-        'writable',
-      selectView:
-        'writable',
-      nudge:
-        'writable',
-      nudgeSpeed:
-        'writable',
-      dragControlSelector:
-        'writable',
-      placeCourtActions:
-        'writable',
-      selectShootingEnd:
-        'writable',
-      positionShooter:
-        'writable',
-      switchShooter:
-        'writable',
-      isSecondaryPointer:
-        'writable',
-      pointerDown:
-        'writable',
-      moveBiscuit:
-        'writable',
-      endDrag:
-        'writable',
-      aimAt:
-        'writable',
-      setup:
-        'writable',
-      scores:
-        'writable',
-      fire: 'writable',
-      finish:
-        'writable',
-      animate:
-        'writable',
-      element:
-        'writable',
-      input:
-        'writable',
-      button:
-        'writable',
-      queryElements:
-        'writable',
-      physics:
-        'writable',
-      discs:
-        'writable',
-      color:
-        'writable',
-      running:
-        'writable',
-      shotHistory:
-        'writable',
-      redoHistory:
-        'writable',
-      lastShot:
-        'writable',
-      preview:
-        'writable',
-      aimPoint:
-        'writable',
-      dragging:
-        'writable',
-      mobileView:
-        'writable',
-      launchY:
-        'writable',
-      shootingEnd:
-        'writable',
-      paths:
-        'writable',
-      time: 'writable',
-      accumulator:
-        'writable',
-      lastFrame:
-        'writable',
-      shotDisc:
-        'writable',
-      viewMaps:
-        'writable',
-      value:
-        'writable',
-      courtDeceleration:
-        'writable',
-      drift:
-        'writable',
-      launch:
-        'writable',
-      moving:
-        'writable',
-      createDisc:
-        'writable',
-      accuracy:
-        'writable',
-      aimDistance:
-        'writable',
-      shot: 'writable',
-      descriptions:
-        'writable',
-      snapshot:
-        'writable',
-      restoreShot:
-        'writable',
-      saveArrangement:
-        'writable',
-      canDrop:
-        'writable',
-      update:
-        'writable',
-      canvasSize:
-        'writable',
-      render:
-        'writable',
-      draw: 'writable',
-      courtPoint:
-        'writable',
-    },
-  overrides:
-    [
-      {
-        files:
-          [
-            'scripts/physics.js',
-          ],
-        globals:
-          {
-            module:
-              'readonly',
-          },
+      files: ['scripts/physics.js'],
+      globals: {
+        module: 'readonly',
       },
+    },
+    {
+      env: {
+        node: true,
+      },
+      files: ['**/*.cjs'],
+    },
+  ],
+  parserOptions: {
+    ecmaVersion: 2023,
+  },
+  root: true,
+  rules: {
+    curly: ['error', 'all'],
+    'no-redeclare': [
+      'error',
       {
-        files:
-          [
-            '**/*.cjs',
-          ],
-        env: {
-          node: true,
-        },
+        builtinGlobals: false,
       },
     ],
-  rules:
-    {
-      'no-redeclare':
-        [
-          'error',
-          {
-            builtinGlobals: false,
-          },
+    'no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+      },
+    ],
+    'padding-line-between-statements': [
+      'error',
+      {
+        blankLine: 'always',
+        next: [
+          'function',
+          'class',
+          'return',
         ],
-      curly:
-        [
-          'error',
-          'all',
+        prev: '*',
+      },
+      {
+        blankLine: 'always',
+        next: '*',
+        prev: [
+          'function',
+          'class',
+          'if',
+          'for',
+          'while',
+          'switch',
+          'try',
+          'multiline-expression',
         ],
-      'no-unused-vars':
-        [
-          'error',
-          {
-            argsIgnorePattern:
-              '^_',
-          },
+      },
+      {
+        blankLine: 'always',
+        next: 'multiline-expression',
+        prev: '*',
+      },
+      {
+        blankLine: 'always',
+        next: '*',
+        prev: [
+          'const',
+          'let',
+          'var',
         ],
-    },
+      },
+      {
+        blankLine: 'any',
+        next: [
+          'const',
+          'let',
+          'var',
+        ],
+        prev: [
+          'const',
+          'let',
+          'var',
+        ],
+      },
+      {
+        blankLine: 'always',
+        next: '*',
+        prev: 'multiline-const',
+      },
+      {
+        blankLine: 'always',
+        next: 'multiline-const',
+        prev: '*',
+      },
+    ],
+  },
 };

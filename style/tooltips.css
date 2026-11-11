@@ -1,0 +1,64 @@
+.tooltip {
+  align-items: center;
+  display: inline-flex;
+  position: relative;
+}
+
+.info-button {
+  background: none;
+  border: 0;
+  color: var(--green);
+  font-size: 17px;
+  line-height: 22px;
+  padding: 0 3px;
+}
+
+.tooltip [role='tooltip'] {
+  background: #fffefa;
+  border: 1px solid #b7c4b0;
+  border-radius: 7px;
+  box-shadow: 0 3px 12px #243d3726;
+  color: var(--ink);
+  display: none;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 400;
+  max-width: calc(100vw - 30px);
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  user-select: text;
+  width: 230px;
+  z-index: 20;
+}
+
+.tooltip.open [role='tooltip']:not([hidden]) {
+  display: block;
+}
+
+.controls .tooltip [role='tooltip'] {
+  left: 0;
+  right: auto;
+}
+
+.controls .shot-heading .tooltip [role='tooltip'] {
+  left: auto;
+  right: 0;
+}
+
+#aimSpread {
+  display: block;
+  font-size: 10px;
+  margin-top: 6px;
+}
+
+@media (max-width: 599px) {
+  .tooltip [role='tooltip'] {
+    max-width: calc(100vw - 20px);
+  }
+}
+
+.tooltip [role='tooltip'][hidden] {
+  display: none;
+}

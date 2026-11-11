@@ -3,21 +3,45 @@
   <head>
     <meta charset="utf-8" />
     <meta
-      name="viewport"
       content="width=device-width,initial-scale=1"
+      name="viewport"
     />
     <meta
-      name="description"
       content="Practice court shuffleboard shots. Explore angles, collisions, drift, and adjustable court slickness."
+      name="description"
     />
     <title>Shuffleboard · Shot Lab</title>
     <link
-      rel="stylesheet"
       href="style/app.css"
+      rel="stylesheet"
     />
     <link
-      rel="icon"
+      href="style/header.css"
+      rel="stylesheet"
+    />
+    <link
+      href="style/controls.css"
+      rel="stylesheet"
+    />
+    <link
+      href="style/court.css"
+      rel="stylesheet"
+    />
+    <link
+      href="style/readouts.css"
+      rel="stylesheet"
+    />
+    <link
+      href="style/tooltips.css"
+      rel="stylesheet"
+    />
+    <link
+      href="style/dialogs.css"
+      rel="stylesheet"
+    />
+    <link
       href="favicon.ico"
+      rel="icon"
       type="image/png"
     />
   </head>
@@ -27,84 +51,86 @@
         class="brand"
         href="./"
         ><span
-          class="brand-mark"
           aria-hidden="true"
+          class="brand-mark"
           >◒</span
         >
         Shot Lab</a
       >
       <div class="shooting-picker">
         <div
+          aria-label="Shooter color"
           class="color-picker"
           role="group"
-          aria-label="Shooter color"
         >
           <button
-            id="yellow"
-            class="selected"
             aria-pressed="true"
+            class="selected"
+            id="yellow"
           >
             <i class="disc-dot yellow"></i> Yellow</button
           ><button
-            id="black"
             aria-pressed="false"
+            id="black"
           >
             <i class="disc-dot black"></i> Black
           </button>
         </div>
         <span class="shooting-from">shooting from</span>
         <div
+          aria-label="Shooting end"
           class="end-picker"
           role="group"
-          aria-label="Shooting end"
         >
           <button
-            id="headEnd"
             aria-pressed="true"
+            id="headEnd"
           >
             Head</button
           ><button
-            id="footEnd"
             aria-pressed="false"
+            id="footEnd"
           >
             Foot
           </button>
         </div>
       </div>
       <button
-        id="aboutBtn"
-        class="text-button"
         aria-label="How it works"
+        class="text-button"
+        id="aboutBtn"
       >
         <span class="about-text">How it works</span
         ><span
-          class="about-icon"
           aria-hidden="true"
+          class="about-icon"
           >ⓘ</span
         >
       </button>
     </header>
+
     <main>
       <div
         class="mobile-toolbar"
         id="courtToolbar"
       >
         <div
-          role="group"
           aria-label="Court view"
+          role="group"
         >
           <button
-            id="scoringView"
             aria-pressed="false"
+            id="scoringView"
           >
             Scoring end</button
           ><button
-            id="fullView"
             aria-pressed="true"
+            id="fullView"
           >
             Full court
           </button>
         </div>
+
         <div
           class="toolbar-actions"
           id="courtActions"
@@ -115,41 +141,43 @@
           >
             Clear court</button
           ><button
+            aria-controls="controlPanel"
+            aria-expanded="true"
             id="toggleControls"
             type="button"
-            aria-expanded="true"
-            aria-controls="controlPanel"
           >
             Hide controls
           </button>
         </div>
       </div>
+
       <div class="workspace">
         <aside
           class="controls panel"
           id="controlPanel"
         >
           <nav
-            class="control-tabs"
             aria-label="Control sections"
+            class="control-tabs"
           >
             <button
-              data-tab="0"
               aria-pressed="true"
+              data-tab="0"
             >
               Setup</button
             ><button
-              data-tab="1"
               aria-pressed="false"
+              data-tab="1"
             >
               Shot</button
             ><button
-              data-tab="2"
               aria-pressed="false"
+              data-tab="2"
             >
               Court
             </button>
           </nav>
+
           <section
             class="control-page active"
             id="controlPage0"
@@ -157,56 +185,44 @@
             <div class="section-heading">
               <h2>Choose a setup</h2>
             </div>
+
             <div
+              aria-label="Practice setup"
               class="setup-grid"
               role="group"
-              aria-label="Practice setup"
             >
               <button
+                aria-label="Yellow Tampa"
                 class="setup yellow"
                 data-setup="tampa-yellow"
-                aria-label="Yellow Tampa"
                 title="Yellow Tampa"
               >
                 T</button
               ><button
+                aria-label="Black Tampa"
                 class="setup black"
                 data-setup="tampa-black"
-                aria-label="Black Tampa"
                 title="Black Tampa"
               >
                 T</button
               ><button
+                aria-label="Yellow St. Pete"
                 class="setup yellow"
                 data-setup="stpete-yellow"
-                aria-label="Yellow St. Pete"
                 title="Yellow St. Pete"
               >
                 SP</button
               ><button
+                aria-label="Black St. Pete"
                 class="setup black"
                 data-setup="stpete-black"
-                aria-label="Black St. Pete"
                 title="Black St. Pete"
               >
                 SP
               </button>
             </div>
-            <div class="tooltip setup-help">
-              <button
-                type="button"
-                class="info-button"
-                aria-label="About this setup"
-                aria-expanded="false"
-              >
-                ⓘ</button
-              ><span
-                role="tooltip"
-                id="setupTip"
-                >An open board. Aim for an 8 and get a feel for your speed.</span
-              >
-            </div>
           </section>
+
           <section
             class="control-page"
             id="controlPage1"
@@ -215,21 +231,25 @@
               <h2>Shoot</h2>
               <div class="tooltip">
                 <button
-                  type="button"
-                  class="info-button"
-                  aria-label="Shot control help"
-                  aria-expanded="false"
                   aria-describedby="accuracyNote"
+                  aria-expanded="false"
+                  aria-label="Shot accuracy help"
+                  class="info-button"
+                  id="accuracyHelp"
+                  type="button"
                 >
-                  ⓘ</button
-                ><span
-                  role="tooltip"
+                  ⓘ
+                </button>
+                <span
+                  hidden
                   id="accuracyNote"
-                  >Tap the court to set a target and speed. Drag the shooter to change its starting
-                  position. Accuracy applies only when shooting; prediction uses exact settings. Aim
-                  uses bell-curve error, including at 0°. Above 8 ft/s, aim spread increases. Speed
-                  varies by ±(100 − accuracy)%. <output id="aimSpread"></output
-                ></span>
+                  role="tooltip"
+                >
+                  Accuracy controls both aim and speed. Aim uses bell-curve error, including at 0°.
+                  Speed varies by ±(100 − accuracy)%. Fast shot inaccuracy adds aim variation above
+                  its court threshold, even at 100% accuracy. Predicted paths use exact settings.
+                  <output id="aimSpread"></output>
+                </span>
               </div>
             </div>
             <input
@@ -241,141 +261,172 @@
               <label for="angle"
                 >Aim angle
                 <output
-                  id="angleVal"
                   for="angle"
-                ></output></label
-              ><input
+                  id="angleVal"
+                ></output
+              ></label>
+              <input
                 id="angle"
-                type="range"
-                min="-20"
                 max="20"
+                min="-20"
                 step=".01"
+                type="range"
                 value="-1.6"
               />
-              <div class="range-labels">
-                <span>← Left</span><label for="aimAccuracy">Accuracy %</label><span>Right →</span>
-              </div>
-              <div class="nudges">
+              <div class="nudges pair">
                 <button
-                  id="left"
                   aria-label="Aim left by 0.05 degrees"
+                  id="left"
                 >
-                  − 0.05°</button
-                ><input
-                  id="aimAccuracy"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value="95.00"
-                  inputmode="decimal"
-                  aria-describedby="accuracyNote"
-                /><button
-                  id="right"
+                  − 0.05°
+                </button>
+                <button
                   aria-label="Aim right by 0.05 degrees"
+                  id="right"
                 >
                   + 0.05°
                 </button>
               </div>
             </div>
+
             <div class="control">
               <label for="speed"
                 >Launch speed
                 <output
-                  id="speedVal"
                   for="speed"
-                ></output></label
-              ><input
+                  id="speedVal"
+                ></output
+              ></label>
+              <input
                 id="speed"
-                type="range"
-                min="1"
                 max="18"
+                min="1"
                 step=".01"
+                type="range"
                 value="6.62"
               />
-              <div class="range-labels">
-                <span>Gentle</span><label for="speedAccuracy">Accuracy %</label><span>Firm</span>
-              </div>
-              <div class="nudges">
+              <div class="nudges pair">
                 <button
-                  id="speedDown"
                   aria-label="Decrease launch speed by 0.05 feet per second"
+                  id="speedDown"
                 >
-                  − 0.05</button
-                ><input
-                  id="speedAccuracy"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value="95.00"
-                  inputmode="decimal"
-                  aria-describedby="accuracyNote"
-                /><button
-                  id="speedUp"
+                  − 0.05
+                </button>
+                <button
                   aria-label="Increase launch speed by 0.05 feet per second"
+                  id="speedUp"
                 >
                   + 0.05
                 </button>
               </div>
             </div>
+
+            <div class="control">
+              <label for="accuracy">Accuracy %</label>
+              <div class="nudges">
+                <button
+                  aria-label="Decrease accuracy by 0.1 percentage points"
+                  id="accuracyDown"
+                >
+                  −
+                </button>
+                <input
+                  aria-describedby="accuracyNote"
+                  id="accuracy"
+                  inputmode="decimal"
+                  max="100"
+                  min="0"
+                  step="0.1"
+                  type="number"
+                  value="95.0"
+                />
+                <button
+                  aria-label="Increase accuracy by 0.1 percentage points"
+                  id="accuracyUp"
+                >
+                  +
+                </button>
+              </div>
+            </div>
           </section>
+
           <section
             class="control-page"
             id="controlPage2"
           >
             <h2>Read the court</h2>
+            <label class="check"
+              ><input
+                checked
+                id="fastShotInaccuracy"
+                type="checkbox"
+              />Fast shot inaccuracy</label
+            >
+            <div class="control threshold-control">
+              <label for="fastShotThreshold">Threshold (ft/s)</label>
+              <input
+                id="fastShotThreshold"
+                inputmode="decimal"
+                min="0"
+                step="0.1"
+                type="number"
+                value="8.0"
+              />
+            </div>
+
             <div class="control">
               <label for="slick"
                 >Court slickness
                 <output
-                  id="slickVal"
                   for="slick"
+                  id="slickVal"
                 ></output></label
               ><input
                 id="slick"
-                type="range"
-                min="0"
                 max="100"
+                min="0"
                 step="1"
+                type="range"
                 value="50"
               />
               <div class="range-labels"><span>Slow / rough</span><span>Fast / slick</span></div>
             </div>
+
             <div class="control">
               <label for="drift"
                 >Sideways drift
                 <output
-                  id="driftVal"
                   for="drift"
+                  id="driftVal"
                 ></output></label
               ><input
                 id="drift"
-                type="range"
-                min="-100"
                 max="100"
+                min="-100"
                 step="1"
+                type="range"
                 value="0"
               />
               <div class="range-labels"><span>← Left</span><span>Right →</span></div>
             </div>
             <label class="check"
               ><input
+                checked
                 id="prediction"
                 type="checkbox"
-                checked
               />
               Show predicted paths</label
             ><label class="check"
               ><input
+                checked
                 id="trails"
                 type="checkbox"
-                checked
               />
               Keep shot trails</label
             >
           </section>
         </aside>
+
         <div class="court-column">
           <section class="panel overview">
             <div
@@ -385,36 +436,51 @@
               <h2>Full court</h2>
               <span class="meta">39 × 6 ft playing area · 6 in discs</span>
             </div>
+
             <div class="overview-canvas">
               <canvas
+                aria-label="Full court overview. Shots travel from left to right."
                 id="overview"
                 tabindex="0"
-                aria-label="Full court overview. Shots travel from left to right."
               ></canvas>
             </div>
+
             <div class="court-caption">
               <span>HEAD / SHOOTING END</span><span>FOOT / SCORING END →</span>
             </div>
           </section>
+
           <div class="detail-grid">
             <section class="panel target-panel">
               <div class="section-heading">
+                <button
+                  aria-label="Lock biscuits"
+                  aria-pressed="false"
+                  id="biscuitLock"
+                  title="Lock biscuits"
+                  type="button"
+                >
+                  🔓
+                </button>
                 <h2 id="scoringHeading">The scoring end · Foot</h2>
                 <span class="meta">Drag a side biscuit onto court · tap to aim</span>
               </div>
+
               <div class="target-wrap">
                 <canvas
+                  aria-label="Magnified scoring end. Tap to aim and set speed, or adjust the controls."
                   id="target"
                   tabindex="0"
-                  aria-label="Magnified scoring end. Tap to aim and set speed, or adjust the controls."
                 ></canvas>
               </div>
+
               <div class="legend">
                 <span><i class="legend-line"></i> Prediction</span
                 ><span><i class="legend-line actual"></i> Shot trail</span
                 ><span><i class="target-dot"></i> Aim point</span>
               </div>
             </section>
+
             <aside class="readout">
               <section class="panel scoreboard">
                 <div class="scores">
@@ -422,40 +488,43 @@
                     <span><i class="disc-dot yellow"></i> Yellow</span
                     ><strong id="yellowScore">0</strong>
                   </div>
+
                   <div>
                     <span><i class="disc-dot black"></i> Black</span
                     ><strong id="blackScore">0</strong>
                   </div>
                 </div>
               </section>
+
               <div
+                aria-label="Shot actions"
                 class="shoot-area"
                 role="group"
-                aria-label="Shot actions"
               >
                 <button
-                  id="shoot"
                   class="primary"
+                  id="shoot"
                 >
                   Shoot disc</button
                 ><button
-                  id="undo"
                   disabled
+                  id="undo"
                 >
                   Undo</button
                 ><button
-                  id="retry"
                   disabled
+                  id="retry"
                 >
-                  Redo
+                  Replay
                 </button>
               </div>
+
               <section class="panel shot-info">
                 <div
+                  aria-live="polite"
                   class="result"
                   id="result"
                   role="status"
-                  aria-live="polite"
                 >
                   Ready when you are.
                 </div>
@@ -465,24 +534,29 @@
         </div>
       </div>
     </main>
-    <dialog id="about">
+
+    <dialog
+      aria-labelledby="aboutHeading"
+      id="about"
+    >
       <div class="dialog-top">
         <p class="eyebrow">THE SHOT LAB</p>
         <button
-          id="closeDialog"
           aria-label="Close notes"
+          autofocus
+          id="closeDialog"
         >
           ✕
         </button>
       </div>
-      <h2>Practice with a purpose.</h2>
+      <h2 id="aboutHeading">Practice with a purpose.</h2>
       <p>
         The Head/Foot toggle selects which end you shoot from; Head is the default. The full court
         keeps Head and Foot in fixed positions. Switching ends keeps existing live biscuits in their
         physical positions, moves the collection area behind the receiving kitchen, and clears the
         old aim target. The scoring-end view follows the receiving end, with the black and yellow
         sides swapping when you change shooting ends. Choose a setup after switching to arrange it
-        at that end. Undo restores the previous shooting end.
+        at that end. Undo restores the last shot’s starting state, including its shooting end.
       </p>
       <p>
         Choose a setup, tap the scoring end to set direction and launch speed for a target, then
@@ -508,25 +582,26 @@
       </p>
       <h3>Starting defaults</h3>
       <p>
-        Aim and speed accuracy start at 95.00%, court slickness at 50, sideways drift at None, the
-        mobile court view at Full court, shooting from Head with yellow queued first.
+        Shared accuracy starts at 95.0%, court slickness at 50, sideways drift at None, the mobile
+        court view at Full court, shooting from Head with yellow queued first.
       </p>
       <h3>Shot accuracy</h3>
       <p>
-        Base aim accuracy and speed accuracy range from 0.00% to 100.00%. Aim has additive Gaussian
+        The shared aim and speed accuracy ranges from 0.0% to 100.0%. Aim has additive Gaussian
         (bell-curve) angular error: most shots are near the intended angle, with occasional larger
         errors. Its standard deviation is 6° × (1 − base accuracy / 100), independent of the chosen
         aim angle. Thus even a 0° aim varies below 100% accuracy. This skill scale is an
         illustrative simulator choice, not a measured player rating or hit percentage.
       </p>
       <p>
-        Shots above 8 ft/s add speed-related angular variance. At 18 ft/s, with 100% base aim
-        accuracy, exact speed, no drift, and an unobstructed path, half of the shots miss a virtual
-        six-inch target biscuit centered on the intended aim line at the selected range. A hit means
-        the moving biscuit makes contact, allowing its centerline to pass within six inches of the
-        target center. Lower base accuracy increases the miss rate. Above 18 ft/s the speed penalty
-        keeps increasing. With no selected target, the reference range is the receiving 8s. This
-        estimated miss rate is not a scoring probability.
+        With Fast shot inaccuracy enabled, shots above the configured threshold add angular
+        variance. The default threshold is 8 ft/s. At the default threshold, 18 ft/s with 100% base
+        aim accuracy, exact speed, no drift, and an unobstructed path, half of the shots miss a
+        virtual six-inch target biscuit centered on the intended aim line at the selected range. A
+        hit means the moving biscuit makes contact, allowing its centerline to pass within six
+        inches of the target center. Lower base accuracy increases the miss rate. Above 18 ft/s the
+        speed penalty keeps increasing. With no selected target, the reference range is the
+        receiving 8s. This estimated miss rate is not a scoring probability.
       </p>
       <p>
         Independent skill and speed variances are added. The speed component is zero through 8 ft/s,
@@ -538,26 +613,27 @@
       <p>
         Speed accuracy retains uniform percentage variation: 90% at 6 ft/s gives 5.4–6.6 ft/s.
         Starting position remains exact. Predictions use nominal settings; errors are sampled only
-        on Shoot. Undo restores settings; Redo restores the undone arrangement or shot outcome.
+        on Shoot. Undo restores the last shot’s starting state. Replay restores that state and
+        shoots with fresh accuracy errors.
       </p>
       <p>
         Research:
         <a
           href="https://www.nature.com/articles/nn.4055"
-          target="_blank"
           rel="noopener"
+          target="_blank"
           >Zhang, Daw &amp; Maloney (2015), motor-error distributions</a
         >;
         <a
           href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003080"
-          target="_blank"
           rel="noopener"
+          target="_blank"
           >Zhang et al. (2013), Gaussian motor uncertainty</a
         >;
         <a
           href="https://doi.org/10.1038/29528"
-          target="_blank"
           rel="noopener"
+          target="_blank"
           >Harris &amp; Wolpert (1998), signal-dependent noise and speed–accuracy trade-offs</a
         >.
       </p>
@@ -588,8 +664,8 @@
         The
         <a
           href="https://clearwatershuffleboard.com/learn/library/"
-          target="_blank"
           rel="noopener"
+          target="_blank"
           >Clearwater Shuffleboard Club reference library</a
         >
         supplies the practice concepts. These notes are original summaries; the books are not
@@ -626,11 +702,13 @@
         imperfect OCR; this app is a simplified teaching model.
       </p>
     </dialog>
+
     <script src="scripts/physics.js"></script>
     <script src="scripts/state.js"></script>
     <script src="scripts/simulation.js"></script>
     <script src="scripts/view.js"></script>
     <script src="scripts/interactions.js"></script>
+    <script src="scripts/tooltips.js"></script>
     <script src="scripts/app.js"></script>
   </body>
 </html>

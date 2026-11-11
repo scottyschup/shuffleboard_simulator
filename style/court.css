@@ -1,0 +1,293 @@
+canvas:focus-visible {
+  outline: 2px solid #b47723;
+  outline-offset: 2px;
+}
+
+.court-column {
+  display: grid;
+  gap: 6px;
+  grid-template-rows: minmax(95px, 0.3fr) minmax(0, 1fr) auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  grid-row: 1;
+  min-height: 0;
+  min-width: 0;
+  padding: 7px;
+}
+
+.target-panel {
+  display: flex;
+  flex-direction: column;
+  grid-row: 2;
+  min-height: 0;
+  min-width: 0;
+  padding: 7px;
+}
+
+.detail-grid {
+  display: contents;
+}
+
+.overview-canvas {
+  background: #edf0e7;
+  border-radius: 5px;
+  flex: 1;
+  margin-top: 5px;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.target-wrap {
+  background: #edf0e7;
+  border-radius: 5px;
+  flex: 1;
+  margin-top: 5px;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.overview-canvas #overview {
+  cursor: crosshair;
+  display: block;
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  touch-action: none;
+  width: 100%;
+}
+
+#target {
+  cursor: crosshair;
+  display: block;
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  touch-action: none;
+  width: 100%;
+}
+
+.court-caption {
+  color: var(--muted);
+  display: flex;
+  font-size: 7px;
+  gap: 8px;
+  justify-content: space-between;
+  line-height: 13px;
+}
+
+.legend {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 8px;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.legend > span {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+.legend-line {
+  border-top: 2px dashed #8d9866;
+  width: 15px;
+}
+
+.legend-line.actual {
+  border-top-style: solid;
+  border-color: #d3a83b;
+}
+
+.target-dot {
+  border-radius: 50%;
+  border: 1px solid #758a46;
+  height: 8px;
+  width: 8px;
+}
+
+button.biscuit-supply {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: grab;
+  height: var(--hit-size);
+  padding: 0;
+  position: absolute;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  width: var(--hit-size);
+  z-index: 2;
+}
+
+.biscuit-supply > span {
+  background: #edc559;
+  border-radius: 50%;
+  border: 1px solid #ba9437;
+  box-shadow: 0 1px 2px #16332755;
+  display: block;
+  height: var(--disc-size);
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--disc-size);
+}
+
+.biscuit-supply > span:after {
+  border: 1px solid #f8df8d;
+  border-radius: 50%;
+  content: '';
+  inset: 17%;
+  position: absolute;
+}
+
+.biscuit-supply.black > span {
+  background: #202e29;
+  border-color: #111f19;
+}
+
+.biscuit-supply.black > span:after {
+  border-color: #53665a;
+}
+
+.biscuit-supply.dragging > span {
+  opacity: 0.25;
+}
+
+.biscuit-supply[hidden] {
+  display: none;
+}
+
+canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media (min-width: 1000px) {
+  .overview .meta {
+    margin-left: auto;
+  }
+
+  .court-column {
+    grid-template-rows: clamp(120px, calc((100vw - 280px) / 5.2 + 65px), 32vh) minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 999px) {
+  .court-column {
+    flex: 1;
+    grid-template-rows: minmax(0, 1fr) auto;
+    order: 0;
+    width: 100%;
+  }
+
+  .overview {
+    display: none;
+  }
+
+  .target-panel {
+    grid-row: 1;
+  }
+
+  .target-panel .section-heading {
+    display: none;
+  }
+
+  .target-wrap {
+    margin: 0;
+  }
+
+  .full-view .overview {
+    display: flex;
+    grid-row: 1;
+  }
+
+  .full-view .target-panel {
+    display: none;
+  }
+
+  .court-caption {
+    font-size: 7px;
+  }
+
+  .overview .meta {
+    font-size: 8px;
+  }
+
+  .overview h2 {
+    font-size: 10px;
+  }
+
+  .target-panel .section-heading:has(#biscuitLock) {
+    display: flex;
+  }
+
+  .target-panel .section-heading .meta {
+    display: none;
+  }
+}
+
+@media (max-width: 599px) {
+  .overview {
+    padding: 4px;
+  }
+
+  .target-panel {
+    padding: 4px;
+  }
+
+  .legend {
+    font-size: 7px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 999px) and (orientation: landscape) {
+  .court-column {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .legend {
+    display: none;
+  }
+
+  .court-caption {
+    line-height: 11px;
+  }
+
+  .overview .section-heading {
+    display: none;
+  }
+
+  .overview-canvas {
+    margin-top: 0;
+  }
+
+  .target-panel {
+    padding: 4px;
+  }
+
+  .overview {
+    padding: 4px;
+  }
+}
+
+#biscuitLock {
+  min-height: 32px;
+  min-width: 32px;
+}

@@ -1,16 +1,17 @@
 {
-  "name": "shuffleboard-shot-lab",
-  "private": true,
-  "version": "1.0.0",
-  "scripts": {
-    "test": "node tests/physics.cjs && node tests/aim-accuracy.cjs && node tests/interactions.cjs",
-    "lint": "eslint scripts tests --ext .js,.cjs",
-    "typecheck": "tsc -p jsconfig.json",
-    "format": "node scripts/format.cjs"
-  },
   "devDependencies": {
     "eslint": "8.56.0",
     "prettier": "3.6.2",
     "typescript": "5.3.3"
-  }
+  },
+  "name": "shuffleboard-shot-lab",
+  "private": true,
+  "scripts": {
+    "format": "node scripts/format.cjs",
+    "lint": "eslint scripts tests --ext .js,.cjs",
+    "run": "python2 -m SimpleHTTPServer",
+    "test": "node tests/physics.cjs && node tests/aim-accuracy.cjs && node tests/interactions.cjs && node tests/formatting.cjs",
+    "typecheck": "tsc -p jsconfig.json"
+  },
+  "version": "1.0.0"
 }
