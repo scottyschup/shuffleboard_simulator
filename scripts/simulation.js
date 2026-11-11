@@ -120,6 +120,7 @@ function finish() {
 }
 
 function fire(retry = false) {
+  pendingSupplyColor = null;
   if (running || dragging) {
     return;
   }
@@ -184,6 +185,7 @@ function scores() {
 }
 
 function setup(name) {
+  pendingSupplyColor = null;
   const [kind, guardColor = 'yellow'] = name.split('-');
 
   if (running) {

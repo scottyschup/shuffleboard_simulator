@@ -52,25 +52,14 @@ function courtPoint(event, id) {
   const xx = event.clientX - b.left,
     yy = event.clientY - b.top;
 
-  const p = {
-    x: v.vertical ? (xx - v.x0) / v.scale : (yy - v.y0) / v.scale,
-    y: v.vertical ? v.yMax - (yy - v.y0) / v.scale : (xx - v.x0) / v.scale,
-  };
-
-  if (v.mirrorX) {
-    p.x = 6 - p.x;
-  }
-
-  if (v.reverse) {
-    p.y = 39 - p.y;
-  }
-
-  return p;
+  return v.unmap(xx, yy);
 }
 
 function draw() {
   render('overview', false);
   render('target', true);
+  render('shooting', true);
+  updateSupply();
 }
 
 function render(id, zoom) {
@@ -84,15 +73,22 @@ function render(id, zoom) {
     return;
   }
 
-  const transverse = 8,
-    padding = 16;
+  const transverse = zoom ? 6.4 : 7;
+  const padding = 12;
+  const isShooting = id === 'shooting';
+  const mirrorX = zoom && shootingEnd === 'foot';
+  const reverse = !zoom && shootingEnd === 'foot';
+  const rotation = id === 'target' ? ((h >= w ? 0 : 1) + focusRotation) % 4 : 0;
+  const vertical = rotation % 2 === 0;
+  const yMin = isShooting ? -0.35 : zoom ? focusStart : -2.25;
 
-  const mirrorX = zoom && shootingEnd === 'foot',
-    reverse = !zoom && shootingEnd === 'foot',
-    vertical = zoom ? h > w / 1.4 : h > w,
-    yMin = zoom ? 24.75 : reverse ? -2.25 : -0.5,
-    yMax = reverse ? 39.5 : 41.25,
-    length = yMax - yMin;
+  const yMax = isShooting
+    ? Math.max(1.9, (h - 12) / ((w - 12) / transverse) - 0.35)
+    : zoom
+      ? focusStart + focusLength
+      : 41.25;
+
+  const length = yMax - yMin;
 
   // One scale for both axes preserves court and biscuit proportions.
   const scale = Math.max(
@@ -102,8 +98,17 @@ function render(id, zoom) {
       : Math.min((w - 16) / length, (h - padding) / transverse),
   );
 
-  const x0 = vertical ? (w - 6 * scale) / 2 : (w - length * scale) / 2 - yMin * scale;
-  const y0 = vertical ? (h - length * scale) / 2 : (h - 6 * scale) / 2;
+  const centerY = (yMin + yMax) / 2;
+
+  // Quarter-turn axes keep drawing and pointer conversion exact inverses.
+  const axes = [
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+    [0, -1],
+  ];
+
+  const [axisX, axisY] = axes[rotation];
 
   const map = (x, y) => {
     if (mirrorX) {
@@ -114,77 +119,31 @@ function render(id, zoom) {
       y = 39 - y;
     }
 
-    return vertical ? [x0 + x * scale, y0 + (yMax - y) * scale] : [x0 + y * scale, y0 + x * scale];
+    const across = (x - 3) * scale;
+    const along = (centerY - y) * scale;
+
+    return [w / 2 + axisX * across - axisY * along, h / 2 + axisY * across + axisX * along];
+  };
+
+  const unmap = (xx, yy) => {
+    const across = (xx - w / 2) / scale;
+    const along = (yy - h / 2) / scale;
+    const x = 3 + axisX * across + axisY * along;
+    const y = centerY + axisY * across - axisX * along;
+
+    return {
+      x: mirrorX ? 6 - x : x,
+      y: reverse ? 39 - y : y,
+    };
   };
 
   viewMaps[id] = {
     map,
-    mirrorX,
-    reverse,
+    rotation,
     scale,
+    unmap,
     vertical,
-    x0,
-    y0,
-    yMax,
   };
-
-  for (const c of ['black', 'yellow']) {
-    const left = physics.remainingBiscuits(
-      discs,
-      c,
-      running ? null : color,
-    );
-
-    for (let slot = 0; slot < 4; slot++) {
-      const b = button(id + 'Supply' + c + (slot || '')),
-        q = map(
-          c === 'black' ? -0.65 : 6.65,
-          25.7 + slot * Math.min(3.7, Math.max(0.7, 26 / scale)),
-        );
-
-      b.hidden = slot >= left;
-      b.disabled = running || slot >= left || (id === 'target' && biscuitsLocked);
-      b.style.left = q[0] + 'px';
-      b.style.top = q[1] + 'px';
-      b.style.setProperty('--disc-size', 2 * physics.R * scale + 'px');
-      b.style.setProperty('--hit-size', Math.max(24, 2 * physics.R * scale) + 'px');
-
-      b.setAttribute(
-        'aria-label',
-        `${c === 'black' ? 'Black' : 'Yellow'} remaining biscuit ${slot + 1} of ${left}. Drag onto court.`,
-      );
-
-      b.title = 'Drag a ' + c + ' biscuit onto the court';
-    }
-  }
-
-  if (id === 'overview') {
-    const from = shootingEnd === 'head' ? 'Head' : 'Foot',
-      to = shootingEnd === 'head' ? 'Foot' : 'Head';
-
-    element(id).setAttribute(
-      'aria-label',
-      'Full court overview. Shooting from ' +
-        `${from}` +
-        ' toward ' +
-        `${to}` +
-        '. Drag the queued biscuit at the shooting end; click the opposite' +
-        ' starting side to switch color.',
-    );
-
-    const captions = queryElements('.court-caption span');
-
-    captions[0].textContent = vertical
-      ? `HEAD ↓ / FOOT ↑ · SHOOT FROM ${from.toUpperCase()}`
-      : `HEAD / ${shootingEnd === 'head' ? 'SHOOTING' : 'SCORING'} END`;
-
-    captions[1].textContent = vertical
-      ? 'Tap to aim · drag biscuits'
-      : 'FOOT / ' +
-        `${shootingEnd === 'foot' ? 'SHOOTING' : 'SCORING'}` +
-        ' END ' +
-        `${shootingEnd === 'head' ? '→' : '←'}`;
-  }
 
   const line = (
     points,
@@ -246,17 +205,17 @@ function render(id, zoom) {
   // A full-width slab and muted apron: no walls or table-shuffleboard cushions.
   rect(
     -0.16,
-    zoom ? 24.75 : 0,
+    0,
     6.32,
-    zoom ? 14.25 : 39,
+    39,
     '#c7cebd',
   );
 
   rect(
     0,
-    zoom ? 24.75 : 0,
+    0,
     6,
-    zoom ? 14.25 : 39,
+    39,
     '#476d56',
   );
 
@@ -284,7 +243,7 @@ function render(id, zoom) {
     '#395a48',
   );
 
-  if (!zoom) {
+  {
     rect(
       0,
       0,
@@ -293,11 +252,10 @@ function render(id, zoom) {
       '#395a48',
     );
   }
-
   ctx.save();
 
-  const tl = map(-0.5, 41.25),
-    br = map(6.5, zoom ? 24.75 : -0.5);
+  const tl = map(-0.5, yMax),
+    br = map(6.5, yMin);
 
   ctx.beginPath();
 
@@ -393,9 +351,7 @@ function render(id, zoom) {
   }
 
   triangle();
-  if (!zoom) {
-    triangle(true);
-  }
+  triangle(true);
 
   line(
     [
@@ -542,7 +498,7 @@ function render(id, zoom) {
     }
   }
 
-  if (!running && !zoom) {
+  if (!running) {
     const l = launch(),
       q = map(l.x, l.y);
 
@@ -590,6 +546,40 @@ function render(id, zoom) {
   }
 
   ctx.restore();
+  if (!zoom) {
+    const top = map(0, focusStart);
+    const bottom = map(6, focusStart + focusLength);
+
+    ctx.fillStyle = '#ffffff20';
+    ctx.strokeStyle = '#f8f7d8';
+    ctx.lineWidth = 2;
+
+    ctx.fillRect(
+      Math.min(top[0], bottom[0]),
+      Math.min(top[1], bottom[1]),
+      Math.abs(bottom[0] - top[0]),
+      Math.abs(bottom[1] - top[1]),
+    );
+
+    ctx.strokeRect(
+      Math.min(top[0], bottom[0]),
+      Math.min(top[1], bottom[1]),
+      Math.abs(bottom[0] - top[0]),
+      Math.abs(bottom[1] - top[1]),
+    );
+  }
+
+  if (isShooting) {
+    const shooter = map(launch().x, launch().y);
+    const courtLeft = Math.min(map(0, 0)[0], map(6, 0)[0]);
+    const halfCourtWidth = 3 * scale;
+
+    element('controlPanel').style.width = halfCourtWidth + 'px';
+
+    element('controlPanel').style.left =
+      (shooter[0] > w / 2 ? courtLeft : courtLeft + halfCourtWidth) + 'px';
+  }
+
   if (dragging?.kind === 'supply' && dragging.id === id && dragging.point) {
     const p = dragging.point,
       q = map(p.x, p.y);
@@ -654,19 +644,23 @@ function update() {
   }
 
   element('scoringHeading').textContent =
-    shootingEnd === 'head' ? 'The scoring end · Foot' : 'The scoring end · Head';
+    'Focus view · ' + (shootingEnd === 'head' ? 'toward Foot' : 'toward Head');
 
   element('target').setAttribute(
     'aria-label',
-    `${shootingEnd === 'head' ? 'Foot' : 'Head'}` +
-      ' scoring end. Click to set aim and launch speed, or drag biscuits' +
-      '.',
+    'Magnified court, feet ' +
+      focusStart.toFixed(1) +
+      ' to ' +
+      (focusStart + focusLength).toFixed(1) +
+      '. Tap to aim or drag unlocked biscuits.',
   );
 
   element('undo').disabled = running || !!dragging || !shotHistory.length;
   element('retry').disabled = running || !!dragging || !lastShot;
   element('fastShotThreshold').disabled = running || !element('fastShotInaccuracy').checked;
   element('biscuitLock').disabled = running || !!dragging;
+  element('reset').disabled = running || !!dragging;
+  element('rotateFocus').disabled = !!dragging;
   element('biscuitLock').setAttribute('aria-pressed', String(biscuitsLocked));
 
   element('biscuitLock').setAttribute(
@@ -679,18 +673,30 @@ function update() {
   const canShoot = physics.remainingBiscuits(discs, color) > 0;
 
   element('shoot').disabled = running || !canShoot;
-  element('shoot').textContent = 'Shoot disc';
 
   element('shoot').title = canShoot
     ? 'Shoot the queued biscuit'
     : 'All four ' + color + ' biscuits are used';
 
   queryElements(
-    '.controls select,.controls input,.controls .setup,.color-picker ' +
-      'button,#left,#right,#speedDown,#speedUp,#reset,#accuracyDown,#accuracyUp',
+    '#controlPanel button, #controlPanel input, #settingsDialog input, .shot-actions button',
   ).forEach((el) => {
-    /** @type {HTMLButtonElement} */ (el).disabled = running;
+    /** @type {HTMLButtonElement} */ (el).disabled = running || !!dragging;
   });
+
+  element('shoot').disabled = running || !!dragging || !canShoot;
+  element('undo').disabled = running || !!dragging || !shotHistory.length;
+  element('retry').disabled = running || !!dragging || !lastShot;
+  element('predictOutcomes').disabled = true;
+
+  element('placePigeon').disabled =
+    running ||
+    !!dragging ||
+    physics.remainingBiscuits(
+      discs,
+      color,
+      color,
+    ) === 0;
 
   element('fastShotThreshold').disabled = running || !element('fastShotInaccuracy').checked;
   if (!running && canShoot) {

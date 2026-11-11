@@ -36,6 +36,8 @@
 - Consolidate repeated CSS selectors within the same media-query scope. For intentional overrides,
   use meaningful state/context selectors with appropriate specificity rather than duplicate rules,
   source-order patches, or `!important`.
+- Use native HTML `title` tooltips and accessible names for icon buttons. Do not add tooltip bubbles
+  that appear on clicks or focus.
 - Run `npm run format`; it maintains ordering, spacing, and the rule of threes. Keep its behavior aligned
   with these conventions when extending the project.
 
@@ -43,6 +45,8 @@
 
 - Always use the [terminal-workaround skill](agent/skills/terminal-workaround/SKILL.md) for terminal commands.
 - Use `tmp/` for captured command output and scratch files; do not add those files to source control.
+- Keep browser verification in the background. Do not refocus the user's Chrome browser; use a hidden
+  browser session for UI checks.
 - Follow [verify-changes](agent/skills/verify-changes/SKILL.md) for the repeated verification workflow.
 - Run linting and type checking locally before presenting code as ready. Resolve failures rather than
   suggesting code that fails these checks. If a fix is unclear after investigation, ask for help.

@@ -16,6 +16,9 @@
   drift,
   element,
   fastShotOptions,
+  focusLength,
+  focusRotation,
+  focusStart,
   input,
   lastFrame,
   lastShot,
@@ -23,9 +26,9 @@
   launch,
   launchY,
   loadCourtSettings,
-  mobileView,
   moving,
   paths,
+  pendingSupplyColor,
   physics,
   preview,
   queryElements,
@@ -210,7 +213,6 @@ let discs = [],
 let biscuitsLocked = false;
 let lastShotUndone = false;
 let dragging = null,
-  mobileView = 'full',
   launchY = 1.18,
   shootingEnd = 'head';
 let paths = [],
@@ -296,3 +298,7 @@ const shot = (randomize = false) => {
 };
 
 const value = (id) => Number(input(id).value);
+let focusStart = 24.75;
+let focusRotation = 0;
+const focusLength = 16.5;
+let pendingSupplyColor = null;

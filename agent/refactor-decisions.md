@@ -6,7 +6,8 @@ Read the main [refactor instructions](refactor_agent_instructions.md) alongside 
 
 Implement one section at a time in order **1 → 4 → 2 → 3**, with a review checkpoint between sections.
 Section 1 is implemented. Section 4 includes the behavior fixes, CSS split, and subsequent style/process
-requests. Section 2 (layout) and section 3 (outcome prediction) remain to be implemented.
+requests. Section 2 (layout) is implemented and awaiting review. Section 3 (outcome prediction) remains
+to be implemented.
 
 ## Layout clarifications
 
@@ -14,16 +15,22 @@ requests. Section 2 (layout) and section 3 (outcome prediction) remain to be imp
   shooting-end/control panel. The control panel overlays the non-shooting side of the shooting end.
 - Header controls retain Yellow/Black, the label “shooting from”, and 👤/🦶 for Head/Foot. The selected
   control is outlined. 🧹 clears the board. The question-mark button opens “Practice with a Purpose”.
-- A sliding focus window defaults to the full court width. Assess pinch zoom within it on mobile and
-  corner resizing on desktop; implement the simple full-width version if zoom adds excessive complexity.
+- A sliding focus window spans the full court width. The initial layout uses the simpler full-width
+  version; pinch zoom and desktop corner resizing are deferred.
 - Only magnified views move biscuits. The full-court view moves the focus window.
-- Supply forms one alternating column between the views, starting with the current shooter's color.
+- Rotate turns only the focus view 90° clockwise on each click, including its pointer mapping.
+  Lock, Rotate, and the sole red Clear button form a group above that view.
+- In mobile landscape, shooting is on the left and focus is in the middle. Preserve the user's compact
+  portrait grid: `minmax(0, 1fr) 20px 138px`, with a 3px gap below 600px.
+  Below 360px in portrait, the shooting panel spans the bottom row so its controls remain readable.
+- Use native HTML `title` tooltips for icons. Clicks and focus must not open custom tooltip bubbles.
+- Supply forms one alternating column between the views, excluding the queued shooter.
   With Yellow shooting on an empty board, seven supply biscuits start with Black. Only the top supply
   biscuit is draggable. A successful placement switches the shooter and shifts the remaining supply up.
 - The second drawing (`IMG_0732.jpg`) specifies control groups for shot speed, aim, court speed, drift,
   shared accuracy, and shot actions. Accuracy +/- buttons step by 0.1 percentage points.
-- Action buttons are clear, place block (modal with existing Yellow/Black Tampa/St. Pete setups), Undo,
-  Replay, and future prediction. The clear button is red. Omit the forgotten sixth/chart button.
+- Shot action order is Block, Pigeon, Undo, Shoot, Replay, and future Prediction. Block opens a modal
+  with the existing Yellow/Black Tampa/St. Pete setups. Clear moved to the focus actions. Omit the chart button.
 - A pigeon is a biscuit of the current color placed randomly just in front of the 7/kitchen line,
   entirely inside either 7, clear of scoring borders and other biscuits, within the four-per-color limit.
   Use 🦆 until a pigeon icon is available. The primary instructions list the other chosen icons.
@@ -43,8 +50,8 @@ requests. Section 2 (layout) and section 3 (outcome prediction) remain to be imp
 
 ## Verification context
 
-Existing tests cover physics, accuracy distribution, pointer handling, inventory, and section 4 behavior.
+Existing tests cover physics, accuracy distribution, pointer handling, inventory, shared accuracy,
+modal focus return, supply placement, focus-only overview movement, and all four focus rotations.
 The app was available in Chrome at `http://localhost:8000/` during this session; inspect the current
-environment before assuming that server or address is still active. Browser verification covered the
-tooltip's outside-click dismissal, lock state, and notes dialog/Escape/focus return. Full mobile and
-assistive-technology conformance has not been established.
+environment before assuming that server or address is still active. Keep all browser checks in a hidden
+session; the user does not want Chrome refocused. Full assistive-technology conformance has not been established.

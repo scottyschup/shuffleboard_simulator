@@ -1,10 +1,12 @@
 /* exported
   endDrag,
+  isOffCourt,
   isSecondaryPointer,
   moveBiscuit,
   pointerDown,
   positionShooter,
   selectShootingEnd,
+  setFocus,
   switchShooter
 */
 'use strict';
@@ -26,6 +28,18 @@ function endDrag(
   const drag = dragging;
 
   dragging = null;
+  if (drag.kind === 'focus') {
+    if (cancel) {
+      setFocus(drag.beforeFocus);
+    } else {
+      setFocus(courtPoint(e, id).y - drag.dy);
+    }
+
+    draw();
+
+    return;
+  }
+
   if (drag.kind === 'shooter' && cancel) {
     restoreShot(drag.before);
   }
@@ -53,33 +67,6 @@ function endDrag(
     }
   }
 
-  if (drag.kind === 'supply') {
-    drag.button.classList.remove('dragging');
-    const p = courtPoint(e, id);
-
-    if (
-      !cancel &&
-      canDrop(p) &&
-      physics.remainingBiscuits(
-        discs,
-        drag.color,
-        color,
-      ) > 0
-    ) {
-      saveArrangement();
-
-      discs.push(
-        createDisc(
-          p.x,
-          p.y,
-          drag.color,
-        ),
-      );
-
-      element('result').textContent = 'Biscuit placed. Drag to rearrange.';
-    }
-  }
-
   update();
 }
 
@@ -97,6 +84,12 @@ function moveBiscuit(e, id) {
   }
 
   const p = courtPoint(e, id);
+
+  if (dragging.kind === 'focus') {
+    setFocus(p.y - dragging.dy);
+
+    return;
+  }
 
   if (dragging.kind === 'shooter') {
     positionShooter(p.x + dragging.dx, p.y + dragging.dy);
@@ -127,7 +120,7 @@ function moveBiscuit(e, id) {
 }
 
 function pointerDown(e, id) {
-  if (isSecondaryPointer(e) || running || dragging) {
+  if (isSecondaryPointer(e) || dragging) {
     return;
   }
 
@@ -138,7 +131,44 @@ function pointerDown(e, id) {
     return;
   }
 
-  if (id === 'overview' && p.x >= 0 && p.x <= 6 && p.y >= 0 && p.y <= 1.5) {
+  if (id === 'overview') {
+    const inside = p.y >= focusStart && p.y <= focusStart + focusLength;
+
+    dragging = {
+      beforeFocus: focusStart,
+      dy: inside ? p.y - focusStart : focusLength / 2,
+      id,
+      kind: 'focus',
+      pointerId: e.pointerId,
+    };
+
+    setFocus(p.y - dragging.dy);
+    element(id).setPointerCapture(e.pointerId);
+
+    return;
+  }
+
+  if (running) {
+    return;
+  }
+
+  if (pendingSupplyColor) {
+    placeSupply(
+      pendingSupplyColor,
+      p,
+      id,
+    );
+
+    return;
+  }
+
+  if (
+    (id === 'shooting' || (id === 'target' && !biscuitsLocked)) &&
+    p.x >= 0 &&
+    p.x <= 6 &&
+    p.y >= 0 &&
+    p.y <= 1.5
+  ) {
     const side = p.x < 3 ? 'black' : 'yellow';
 
     if (side !== color) {
@@ -148,16 +178,16 @@ function pointerDown(e, id) {
       return;
     }
 
-    const l = launch();
+    const start = launch();
 
     if (
       physics.remainingBiscuits(discs, color) > 0 &&
-      Math.hypot(l.x - p.x, l.y - p.y) <= Math.max(physics.R, 14 / viewMaps[id].scale)
+      Math.hypot(start.x - p.x, start.y - p.y) <= Math.max(physics.R, 16 / viewMaps[id].scale)
     ) {
       dragging = {
         before: snapshot(),
-        dx: l.x - p.x,
-        dy: l.y - p.y,
+        dx: start.x - p.x,
+        dy: start.y - p.y,
         id,
         kind: 'shooter',
         pointerId: e.pointerId,
@@ -261,6 +291,18 @@ function selectShootingEnd(next) {
   update();
 }
 
+function setFocus(start) {
+  focusStart = Math.max(-0.5, Math.min(41.25 - focusLength, start));
+  element('focusPosition').value = String(focusStart);
+
+  element('focusPosition').setAttribute(
+    'aria-valuetext',
+    'Court feet ' + focusStart.toFixed(1) + ' to ' + (focusStart + focusLength).toFixed(1),
+  );
+
+  draw();
+}
+
 function switchShooter(next) {
   if (running) {
     return;
@@ -278,71 +320,18 @@ function switchShooter(next) {
   update();
 }
 
-element('headEnd').onclick = () => selectShootingEnd('head');
-element('footEnd').onclick = () => selectShootingEnd('foot');
-for (const id of ['overview', 'target']) {
+for (const id of [
+  'overview',
+  'shooting',
+  'target',
+]) {
   const canvas = element(id);
-
-  for (const c of ['black', 'yellow']) {
-    for (let slot = 0; slot < 4; slot++) {
-      const b = document.createElement('button');
-
-      b.id = id + 'Supply' + c + (slot || '');
-      b.className = 'biscuit-supply ' + c;
-      b.dataset.color = c;
-      b.type = 'button';
-      b.innerHTML = '<span aria-hidden="true"></span>';
-      canvas.parentElement.append(b);
-
-      b.addEventListener('pointerdown', (e) => {
-        if (
-          isSecondaryPointer(e) ||
-          running ||
-          (id === 'target' && biscuitsLocked) ||
-          dragging ||
-          physics.remainingBiscuits(
-            discs,
-            c,
-            color,
-          ) === 0
-        ) {
-          return;
-        }
-
-        e.preventDefault();
-
-        dragging = {
-          button: b,
-          color: c,
-          id,
-          kind: 'supply',
-          point: null,
-          pointerId: e.pointerId,
-        };
-
-        b.classList.add('dragging');
-        b.setPointerCapture(e.pointerId);
-      });
-
-      b.addEventListener('pointermove', (e) => moveBiscuit(e, id));
-      b.addEventListener('pointerup', (e) => endDrag(e, id));
-      for (const ev of ['pointercancel', 'lostpointercapture']) {
-        b.addEventListener(ev, (e) =>
-          endDrag(
-            e,
-            id,
-            true,
-          ),
-        );
-      }
-    }
-  }
 
   canvas.addEventListener('pointerdown', (e) => pointerDown(e, id));
   canvas.addEventListener('pointermove', (e) => moveBiscuit(e, id));
   canvas.addEventListener('pointerup', (e) => endDrag(e, id));
-  for (const ev of ['pointercancel', 'lostpointercapture']) {
-    canvas.addEventListener(ev, (e) =>
+  for (const event of ['pointercancel', 'lostpointercapture']) {
+    canvas.addEventListener(event, (e) =>
       endDrag(
         e,
         id,

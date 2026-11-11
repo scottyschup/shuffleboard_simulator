@@ -11,13 +11,22 @@ Target selection sets both direction and launch speed for an unobstructed shot u
 speed and drift. Collisions may change the outcome. Drag the queued shooter to adjust its starting point.
 
 Each color has four biscuits total across the court, dead-biscuit collection area, queued shooter, and
-supply. The supplies in the two views represent the same inventory. Biscuits knocked off court or short
+supply. One alternating supply column shows the remaining shot order; only its top biscuit is available.
+Drag it into a magnified view, or select it and tap to place. A valid placement advances the shooter.
+Biscuits knocked off court or short
 of the far dead line are collected behind the receiving kitchen and still count as used. Manually
 dragging a biscuit off court returns it to supply. A drop is off court when its center is outside the
 39 × 6 ft playing area. Overlapping placements are canceled. Canceling a drag restores its starting state.
 
 The lock button in the scoring view prevents biscuit dragging there so a tap can place a target on an
-existing biscuit. Unlock to rearrange biscuits. Other views retain their existing interactions.
+existing biscuit. Unlock to rearrange biscuits. The full-court overview only moves the focus window.
+
+The shooting-end view keeps the queued biscuit visible and overlays its opposite half with controls.
+Use the central speed, aim, court-speed, and drift icons to open their exact settings. Block opens the
+four practice setups. Pigeon places the current color randomly inside a 7 beside the kitchen line.
+Lock, clockwise quarter-turn rotation, and Clear sit together above the focus view. Rotation changes
+only that view; aiming and biscuit dragging use its rotated coordinates. The action row is Block,
+Pigeon, Undo, Shoot, Replay, and the future prediction placeholder.
 
 Undo restores the starting state of the last shot, including biscuits, shooter, aim, accuracy, and court
 settings. Arrangement edits do not add Undo entries. Replay restores that starting state and immediately
@@ -59,12 +68,17 @@ effects are not modeled. This is an illustrative teaching model, not calibrated 
 
 Head/Foot switching keeps existing biscuits at their physical court positions. The receiving view mirrors
 as needed; full-court color sides remain fixed. Both vertical and horizontal mappings use the same scale
-on both axes. Mobile retains the existing view toggle and Setup/Shot/Court tabs pending the layout phase.
+on both axes. Focus, shooting end, supply, and overview remain visible together on mobile and desktop.
+The focus window spans the full court width; additional pinch/corner zoom is deferred.
+In mobile landscape, shooting appears on the left and focus in the middle. Compact portrait layouts
+reserve 20px for supply and 138px for the overview, with a 3px gap between areas.
+Below 360px in portrait, the shooting panel spans the bottom row to keep its controls readable.
 
 ## Accessibility
 
-Shot help opens on focus, hover, or tapping the help button. Escape or a click outside dismisses it,
-including when the trigger retains focus on mobile. Tooltip text remains hoverable and selectable.
+Icon labels use native HTML hover tooltips through `title`, with accessible names through ARIA.
+Clicking or focusing an icon does not open an application tooltip. Accuracy inputs retain an
+accessible description, and the help icon has a native title explaining accuracy and preview paths.
 The notes dialog has a programmatic heading, native modal focus handling, an autofocus close button,
 Escape dismissal, and focus return to its trigger. Browser and assistive-technology verification remains
 necessary before claiming complete WCAG conformance.
@@ -92,8 +106,8 @@ JavaScript and CSS load directly. Refresh with the browser cache disabled if old
 - `scripts/simulation.js`: setups, totals, shot execution, and animation.
 - `scripts/view.js`: readouts, canvas rendering, and court/screen coordinate conversion.
 - `scripts/interactions.js`: shooting-end selection and pointer handling.
-- `scripts/tooltips.js`: tooltip visibility, hover/focus behavior, and dismissal.
-- `scripts/app.js`: control events, responsive selection, and startup.
+- `scripts/app.js`: control events, dialogs, pigeon placement, and startup.
+- `scripts/supply.js`: alternating supply inventory, drag placement, and select-then-tap placement.
 - `scripts/elements.d.ts`: DOM element types for JavaScript checking.
 
 Classic browser scripts share a scope and load in the order listed in `index.html`, supporting direct
@@ -102,12 +116,12 @@ disk opening and letting tests exercise the same handlers.
 ### Stylesheets
 
 - `style/app.css`: fonts, global tokens, resets, common elements, and workspace layout.
-- `style/header.css`: branding, shooter selection, and view/toolbars.
+- `style/header.css`: branding, shooter selection, and persistent header actions.
 - `style/controls.css`: setup, shot, and court controls.
 - `style/court.css`: court views, captions, legends, supply biscuits, and lock control.
 - `style/readouts.css`: scores, shot actions, and result text.
-- `style/tooltips.css`: help triggers and tooltip presentation.
-- `style/dialogs.css`: modal notes and backdrop.
+- `style/tooltips.css`: icon buttons and the accuracy-help trigger.
+- `style/dialogs.css`: modal notes, settings, practice setups, and backdrops.
 
 Each area owns its responsive rules. Consolidate each selector within a media-query scope.
 Use explicit state or context selectors for intentional overrides rather than duplicate rules

@@ -1,27 +1,50 @@
 /* exported
-  dragControlSelector,
+  bindDialog,
   nudge,
+  nudgeAccuracy,
+  nudgeCourt,
   nudgeSpeed,
-  placeCourtActions,
-  selectTab,
-  selectView,
-  tabButtons
+  openDialog,
+  placePigeon
 */
 'use strict';
-const tabButtons = [...queryElements('[data-tab]')];
+const dialogReturnFocus = new Map();
 
-function nudge(n) {
-  if (running) {
+function bindDialog(id, trigger) {
+  const dialog = /** @type {HTMLDialogElement} */ (element(id));
+
+  dialog.addEventListener('close', () => (dialogReturnFocus.get(id) || trigger).focus());
+
+  dialog.addEventListener('click', (event) => {
+    if (event.target !== dialog) {
+      return;
+    }
+
+    const rect = dialog.getBoundingClientRect();
+
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    ) {
+      dialog.close();
+    }
+  });
+}
+
+function nudge(amount) {
+  if (running || dragging) {
     return;
   }
 
-  element('angle').value = Math.min(20, Math.max(-20, value('angle') + n)).toFixed(2);
+  element('angle').value = Math.max(-20, Math.min(20, value('angle') + amount)).toFixed(2);
   aimPoint = null;
   update();
 }
 
 function nudgeAccuracy(amount) {
-  if (running) {
+  if (running || dragging) {
     return;
   }
 
@@ -29,119 +52,131 @@ function nudgeAccuracy(amount) {
   update();
 }
 
-function nudgeSpeed(n) {
-  if (running) {
-    return;
-  }
-
-  element('speed').value = Math.min(18, Math.max(1, value('speed') + n)).toFixed(2);
-  update();
-}
-
-function placeCourtActions() {
-  const destination =
-    window.innerWidth < 1000 ? element('courtToolbar') : element('overviewHeading');
-
-  if (element('courtActions').parentElement !== destination) {
-    destination.append(element('courtActions'));
-  }
-}
-
-function selectTab(n) {
-  tabButtons.forEach((b, i) => {
-    b.setAttribute('aria-pressed', String(i === n));
-    element('controlPage' + i).classList.toggle('active', i === n);
-  });
-}
-
-function selectView(full) {
-  mobileView = full ? 'full' : 'scoring';
-  document.body.classList.toggle('full-view', full);
-  element('fullView').setAttribute('aria-pressed', String(full));
-  element('scoringView').setAttribute('aria-pressed', String(!full));
-  draw();
-}
-
-tabButtons.forEach((b, i) => (b.onclick = () => selectTab(i)));
-
-element('toggleControls').onclick = () => {
-  const hidden = document.body.classList.toggle('controls-hidden');
-
-  element('toggleControls').setAttribute('aria-expanded', String(!hidden));
-  element('toggleControls').textContent = hidden ? 'Show controls' : 'Hide controls';
-  draw();
-};
-
-element('fullView').onclick = () => selectView(true);
-element('scoringView').onclick = () => selectView(false);
-for (const id of [
-  'position',
-  'angle',
-  'speed',
-  'slick',
-  'drift',
-]) {
-  element(id).addEventListener('input', () => {
-    if (id === 'position' && aimPoint) {
-      aimAt(
-        aimPoint.x,
-        aimPoint.y,
-        true,
-      );
-    } else if (id === 'angle') {
-      aimPoint = null;
-    }
-
-    update();
-  });
-}
-
-element('accuracy').addEventListener('change', () => {
-  element('accuracy').value = accuracy().toFixed(1);
-  update();
-});
-
-element('accuracyDown').onclick = () => nudgeAccuracy(-0.1);
-element('accuracyUp').onclick = () => nudgeAccuracy(0.1);
-for (const id of [
-  'slick',
-  'drift',
-  'fastShotInaccuracy',
-  'fastShotThreshold',
-]) {
-  element(id).addEventListener('change', () => {
-    element('fastShotThreshold').value = fastShotOptions().threshold.toFixed(1);
-    saveCourtSettings();
-    update();
-  });
-}
-
-element('biscuitLock').onclick = () => {
+function nudgeCourt(id, amount) {
   if (running || dragging) {
     return;
   }
 
-  biscuitsLocked = !biscuitsLocked;
+  const minimum = id === 'slick' ? 0 : -100;
+
+  input(id).value = String(Math.max(minimum, Math.min(100, value(id) + amount)));
+  saveCourtSettings();
+  if (aimPoint) {
+    aimAt(
+      aimPoint.x,
+      aimPoint.y,
+      true,
+    );
+  }
+
   update();
-};
-
-for (const id of ['prediction', 'trails']) {
-  element(id).addEventListener('change', draw);
 }
 
-for (const c of ['yellow', 'black']) {
-  element(c).onclick = () => switchShooter(c);
-}
-
-element('shoot').onclick = () => fire();
-
-element('retry').onclick = () => {
-  if (running || dragging || !lastShot) {
+function nudgeSpeed(amount) {
+  if (running || dragging) {
     return;
   }
 
-  fire(true);
+  element('speed').value = Math.max(1, Math.min(18, value('speed') + amount)).toFixed(2);
+  update();
+}
+
+function openDialog(id, focusId = null) {
+  if (dragging) {
+    return;
+  }
+
+  dialogReturnFocus.set(id, document.activeElement);
+  /** @type {HTMLDialogElement} */ (element(id)).showModal();
+  if (focusId) {
+    element(focusId).focus();
+  }
+}
+
+function placePigeon() {
+  if (
+    running ||
+    dragging ||
+    physics.remainingBiscuits(
+      discs,
+      color,
+      color,
+    ) === 0
+  ) {
+    return;
+  }
+
+  const y = 37.5 - physics.R - physics.LINE / 2 - 0.02;
+  const slots = [];
+
+  for (let x = physics.R; x <= 6 - physics.R; x += 0.02) {
+    const point = { x, y };
+
+    if (physics.score({ ...point, out: false }) === 7 && canDrop(point)) {
+      slots.push(point);
+    }
+  }
+
+  if (!slots.length) {
+    element('result').textContent = 'No clear space for a pigeon along the 7 line.';
+
+    return;
+  }
+
+  const point = slots[Math.floor(Math.random() * slots.length)];
+
+  saveArrangement();
+  discs.push(createDisc(point.x, point.y));
+  element('result').textContent = color + ' pigeon placed in the 7.';
+  update();
+}
+
+element('aboutBtn').onclick = () => openDialog('about');
+element('accuracyDown').onclick = () => nudgeAccuracy(-0.1);
+element('accuracyUp').onclick = () => nudgeAccuracy(0.1);
+
+element('biscuitLock').onclick = () => {
+  if (!running && !dragging) {
+    biscuitsLocked = !biscuitsLocked;
+    update();
+  }
 };
+
+element('black').onclick = () => switchShooter('black');
+element('closeDialog').onclick = () => element('about').close();
+element('driftLeft').onclick = () => nudgeCourt('drift', -1);
+element('driftRight').onclick = () => nudgeCourt('drift', 1);
+element('footEnd').onclick = () => selectShootingEnd('foot');
+element('headEnd').onclick = () => selectShootingEnd('head');
+element('left').onclick = () => nudge(-0.05);
+element('placeBlock').onclick = () => openDialog('setupDialog');
+element('placePigeon').onclick = placePigeon;
+
+element('reset').onclick = () => {
+  pendingSupplyColor = null;
+  setup('open');
+};
+
+element('retry').onclick = () => {
+  if (!running && !dragging && lastShot) {
+    fire(true);
+  }
+};
+
+element('right').onclick = () => nudge(0.05);
+
+element('rotateFocus').onclick = () => {
+  if (!dragging) {
+    focusRotation = (focusRotation + 1) % 4;
+    draw();
+  }
+};
+
+element('shoot').onclick = () => fire();
+element('slickDown').onclick = () => nudgeCourt('slick', -1);
+element('slickUp').onclick = () => nudgeCourt('slick', 1);
+element('speedDown').onclick = () => nudgeSpeed(-0.05);
+element('speedUp').onclick = () => nudgeSpeed(0.05);
 
 element('undo').onclick = () => {
   if (running || dragging || !shotHistory.length) {
@@ -155,73 +190,127 @@ element('undo').onclick = () => {
   update();
 };
 
-element('reset').onclick = () => setup('open');
-queryElements('[data-setup]').forEach((b) => (b.onclick = () => setup(b.dataset.setup)));
-element('left').onclick = () => nudge(-0.05);
-element('right').onclick = () => nudge(0.05);
-element('speedDown').onclick = () => nudgeSpeed(-0.05);
-element('speedUp').onclick = () => nudgeSpeed(0.05);
-initializeTooltips();
+element('yellow').onclick = () => switchShooter('yellow');
+element('focusPosition').addEventListener('input', () => setFocus(value('focusPosition')));
 
-const dragControlSelector =
-  'canvas,.biscuit-supply,.controls input[type=range],.controls ' +
-  'button,.shooting-picker button,.shoot-area button,.mobile-toolbar ' +
-  'button,.toolbar-actions button';
+element('accuracy').addEventListener('change', () => {
+  element('accuracy').value = accuracy().toFixed(1);
+  update();
+});
 
-for (const event of ['contextmenu', 'dragstart']) {
-  document.addEventListener(event, (e) => {
-    if (/** @type {Element} */ (e.target).closest?.(dragControlSelector)) {
-      e.preventDefault();
+for (const id of [
+  'angle',
+  'drift',
+  'position',
+  'slick',
+  'speed',
+]) {
+  element(id).addEventListener('input', () => {
+    if (id === 'angle') {
+      aimPoint = null;
+    } else if (aimPoint && id !== 'speed') {
+      aimAt(
+        aimPoint.x,
+        aimPoint.y,
+        true,
+      );
     }
+
+    if (id === 'drift' || id === 'slick') {
+      saveCourtSettings();
+    }
+
+    update();
   });
 }
 
-document.addEventListener('keydown', (e) => {
+for (const id of ['fastShotInaccuracy', 'fastShotThreshold']) {
+  element(id).addEventListener('change', () => {
+    element('fastShotThreshold').value = fastShotOptions().threshold.toFixed(1);
+    saveCourtSettings();
+    update();
+  });
+}
+
+for (const id of ['prediction', 'trails']) {
+  element(id).addEventListener('change', draw);
+}
+
+queryElements('[data-setup]').forEach((trigger) => {
+  trigger.onclick = () => {
+    pendingSupplyColor = null;
+    setup(trigger.dataset.setup);
+    element('setupDialog').close();
+    setFocus(24.75);
+  };
+});
+
+queryElements('[data-settings]').forEach((trigger) => {
+  trigger.onclick = () => openDialog('settingsDialog', trigger.dataset.settings);
+});
+
+queryElements('[data-close]').forEach((trigger) => {
+  trigger.onclick = () => /** @type {HTMLDialogElement} */ (element(trigger.dataset.close)).close();
+});
+
+bindDialog('about', element('aboutBtn'));
+bindDialog('settingsDialog', element('speedSettings'));
+bindDialog('setupDialog', element('placeBlock'));
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    pendingSupplyColor = null;
+
+    return;
+  }
+
+  const id = /** @type {HTMLElement} */ (event.target).id;
+
   if (
-    e.defaultPrevented ||
-    e.isComposing ||
-    e.ctrlKey ||
-    e.metaKey ||
-    e.altKey ||
-    element('about').open ||
-    !['overview', 'target'].includes(/** @type {Element} */ (e.target).id)
+    event.defaultPrevented ||
+    event.isComposing ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey
   ) {
     return;
   }
 
-  if (e.code === 'ArrowLeft') {
-    e.preventDefault();
-    nudge(-0.05);
-  }
+  if (id === 'overview') {
+    const direction = shootingEnd === 'head' ? 1 : -1;
 
-  if (e.code === 'ArrowRight') {
-    e.preventDefault();
-    nudge(0.05);
-  }
-});
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      setFocus(focusStart + (event.key === 'ArrowUp' ? 0.5 : -0.5) * direction);
+    }
+  } else if (id === 'target' || id === 'shooting') {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      nudge(-0.05);
+    }
 
-element('aboutBtn').onclick = () => {
-  closeTooltips();
-  element('about').showModal();
-};
-
-element('closeDialog').onclick = () => element('about').close();
-
-element('about').addEventListener('click', (e) => {
-  if (e.target === element('about')) {
-    const r = element('about').getBoundingClientRect();
-
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) {
-      element('about').close();
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      nudge(0.05);
     }
   }
 });
 
-element('about').addEventListener('close', () => element('aboutBtn').focus());
-placeCourtActions();
-window.addEventListener('resize', placeCourtActions);
-new ResizeObserver(draw).observe(element('overview'));
-new ResizeObserver(draw).observe(element('target'));
+for (const name of ['contextmenu', 'dragstart']) {
+  document.addEventListener(name, (event) => {
+    if (/** @type {Element} */ (event.target).closest?.('canvas, button, input[type="range"]')) {
+      event.preventDefault();
+    }
+  });
+}
+
+initializeSupply();
+loadCourtSettings();
 setup('open');
-selectView(true);
-selectTab(1);
+for (const id of [
+  'overview',
+  'shooting',
+  'target',
+]) {
+  new ResizeObserver(draw).observe(element(id));
+}

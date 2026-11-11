@@ -1,25 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-
 :root {
   --gold: #edc559;
   --green: #315e4b;
   --ink: #243d37;
-  --line: #dce2d7;
-  --muted: #6c7972;
+  --line: #cbd4c7;
+  --muted: #52635b;
   --paper: #f5f4ee;
 }
-
 * {
   box-sizing: border-box;
 }
-
-html {
-  height: 100%;
-  height: 100dvh;
-}
-
 body {
   background: var(--paper);
   color: var(--ink);
@@ -28,193 +19,94 @@ body {
   font:
     13px 'DM Sans',
     sans-serif;
-  height: 100%;
   height: 100dvh;
   margin: 0;
   overflow: hidden;
 }
-
+button,
+input {
+  font: inherit;
+  touch-action: manipulation;
+}
 button {
   background: #fffefa;
   border: 1px solid var(--line);
   border-radius: 6px;
   color: inherit;
   cursor: pointer;
-  font: inherit;
-  padding: 6px 9px;
-  touch-action: manipulation;
 }
-
-input {
-  font: inherit;
-  touch-action: manipulation;
-}
-
-a {
-  touch-action: manipulation;
-}
-
 button:disabled {
   cursor: default;
-  opacity: 0.4;
+  opacity: 0.45;
 }
-
-button:focus-visible {
-  outline: 2px solid #b47723;
-  outline-offset: 2px;
-}
-
+button:focus-visible,
+input:focus-visible,
+canvas:focus-visible,
 a:focus-visible {
-  outline: 2px solid #b47723;
+  outline: 3px solid #a56613;
   outline-offset: 2px;
 }
-
-input:focus-visible {
-  outline: 2px solid #b47723;
-  outline-offset: 2px;
-}
-
 button:hover:not(:disabled) {
   filter: brightness(0.94);
 }
-
-.disc-dot {
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-  height: 10px;
-  width: 10px;
-}
-
-.yellow {
-  background: var(--gold);
-  border-color: #ba9437;
-}
-
-.black {
-  background: #202e29;
-  border-color: #18231f;
-}
-
-main {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-  padding: 8px;
-  width: 100%;
-}
-
-.workspace {
-  display: grid;
-  flex: 1;
-  gap: 8px;
-  grid-template-columns: 240px minmax(0, 1fr);
-  min-height: 0;
-}
-
-.panel {
-  background: #fffefa;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-}
-
 h2 {
   font-size: 12px;
   margin: 0;
 }
-
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 0;
+  padding: 6px;
+}
+.workspace {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) 38px clamp(144px, 9vw, 120px);
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+.panel {
+  background: #e4e9de;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
 .section-heading {
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: 8px;
   justify-content: space-between;
+  padding: 3px 6px;
 }
-
-.meta {
-  color: var(--muted);
-  font-size: 9px;
+.sr-only {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
-
-output {
-  color: var(--green);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
+.black {
+  background: #202e29;
+  color: #fff;
 }
-
-input[type='range'] {
-  accent-color: var(--green);
-  display: block;
-  height: 4px;
-  margin: 13px 0 10px;
-  touch-action: none;
-  width: 100%;
+.yellow {
+  background: var(--gold);
+  color: #172c24;
 }
-
-.hint {
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.4;
-  margin: 6px 0 0;
-}
-
-.eyebrow {
-  color: var(--muted);
-  font-size: 9px;
-  letter-spacing: 1px;
-}
-
-@media (min-width: 1000px) {
-  #courtToolbar > div[aria-label='Court view'] {
-    display: none;
-  }
-}
-
-@media (max-width: 999px) {
-  .workspace {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .shot-heading {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: -33px;
-    transform: translateX(0);
-  }
-}
-
 @media (max-width: 599px) {
+  .workspace {
+    gap: 3px;
+    grid-template-columns: minmax(0, 1fr) 20px 138px;
+  }
   main {
-    gap: 4px;
-    padding: 5px;
-  }
-
-  .workspace {
-    gap: 4px;
-  }
-}
-
-@media (max-width: 999px) and (orientation: landscape) {
-  main {
-    gap: 4px;
-    padding: 4px 6px;
-  }
-
-  .workspace {
-    display: grid;
-    gap: 6px;
-    grid-template-columns: minmax(0, 1fr) 250px;
-  }
-}
-
-@media (max-width: 740px) and (orientation: landscape) {
-  .workspace {
-    grid-template-columns: minmax(0, 1fr) 218px;
+    gap: 3px;
+    padding: 3px;
   }
 }

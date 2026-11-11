@@ -65,7 +65,6 @@ Aim: <img src="icons/008-aim.png" />
 * Nudge left: <img src="icons/044-left-arrow.png" />
 * Nudge right: <img src="icons/045-right-arrow.png" />
 
-
 #### Action buttons
 
 * Shoot!: <img src="icons/035-puck.png" />
@@ -74,8 +73,6 @@ Aim: <img src="icons/008-aim.png" />
 * Redo shot: <img src="icons/028-redo.png" /> (or possibly refresh-page-option icon)
 * Place a block: 🙅
 * Place a pigeon: I will add an icon with pigeon in the name. Until I do use the 🦆 emoji as a placeholder.
-
-
 
 ## 3. Shot Outcome Prediction feature
 
@@ -130,3 +127,9 @@ Aim: <img src="icons/008-aim.png" />
 * Make sure tooltips and modals are fully accessible following WCAG 2.1 AA standards.
 
 (Steering added to this phase: "Also as part of this phase I want to split the CSS into separate files by page area. You can keep app.css and leave the global rules there. But then for each major section of the page, create a separate file for ease of organization.")
+
+## Post-MVP
+
+* Collapsible full scoreboard
+* Next frame button for when all the biscuits are used; switches ends and starting color when needed
+* full game flow
