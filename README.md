@@ -1,8 +1,8 @@
 # Shuffleboard Shot Lab
 
-Plain JavaScript, HTML and CSS. No package installation, framework, or build step.
+Plain JavaScript, HTML and CSS. No framework, runtime packages, or build step. Development checks use npm.
 
-Open `dist/index.html` in a browser, or serve the `dist` directory with any static web server.
+Open `index.html` in a browser, or serve the repository root with any static web server.
 An optional Google Fonts stylesheet has local system-font fallbacks.
 
 ## Use
@@ -31,10 +31,10 @@ With Node.js installed, run `node tests/physics.cjs` to check analytic stopping 
 
 ## Files
 
-- `dist/index.html`: interface and source/model notes
-- `dist/style.css`: responsive styling
-- `dist/physics.js`: deterministic physics and scoring
-- `dist/app.js`: canvas views and interaction
+- `index.html`: interface and source/model notes
+- `style/app.css`: responsive styling
+- `scripts/physics.js`: deterministic physics and scoring
+- `scripts/app.js`: canvas views and interaction
 - `tests/physics.cjs`: numerical checks
 
 ## Arrangement and layout
@@ -91,6 +91,31 @@ The Shot Lab header groups Yellow / Black, “shooting from”, and Head / Foot.
 
 Below 1000px, landscape places tabbed controls beside the court, with the score and stable-width Shoot disc / Undo / Redo actions below it. Hide controls expands the court. Portrait retains bottom controls. Scoring-end orientation follows available canvas dimensions, preserving the scale and coordinate mapping. Browser QA covered 844 × 390 and 667 × 375 landscape, 390 × 844 portrait, and desktop, with no body scrolling at the mobile sizes. The pointer regression fixture also checks both vertical and horizontal scoring-end mappings.
 
-## Asset versions
+## Development
 
-After editing CSS or JavaScript, run `node scripts/prepare-assets.cjs` before packaging. It copies those assets to content-hashed filenames and updates the HTML references, so previously cached CSS cannot be combined with updated markup. Include `dist/assets/` in deployment and source downloads. The unversioned files remain the editable source.
+Use Node.js 22 or later. Run `npm ci` once to install the pinned development tools.
+
+- `npm test`: physics, accuracy distributions, and interaction regression checks.
+- `npm run lint`: ESLint checks for browser code and Node scripts/tests.
+- `npm run typecheck`: TypeScript checks the JavaScript and DOM element types, without emitting files.
+- `npm run format`: formats HTML, CSS, JavaScript, and configuration, including the rule of threes.
+
+Serve the repository root. JavaScript and CSS are loaded directly; there is no generated asset directory.
+During development, reload the browser with its cache disabled if it retains older assets.
+
+### Source organization
+
+- `scripts/physics.js`: dependency-free physics, scoring geometry, and accuracy sampling; also usable from Node.
+- `scripts/state.js`: shared state, typed DOM lookup helpers, shot construction, and snapshots.
+- `scripts/simulation.js`: practice setups, scoring totals, shot execution, and animation timing.
+- `scripts/view.js`: control readouts, canvas rendering, and court/screen coordinate conversion.
+- `scripts/interactions.js`: shooting-end selection and pointer/drag handling.
+- `scripts/app.js`: control events, responsive view selection, and startup.
+- `scripts/elements.d.ts`: DOM element types for JavaScript checking.
+- `style/app.css`: responsive styling.
+
+Browser scripts share a scope and load in the order listed in `index.html`. Keeping classic scripts permits
+opening the app directly from disk and lets the interaction tests exercise the same handlers.
+
+The readability refactor preserves the current shot, accuracy, and Undo/Redo behavior. Behavioral changes,
+the new layout, and outcome prediction belong to the following implementation sections.
