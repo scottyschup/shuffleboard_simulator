@@ -6,8 +6,7 @@ Read the main [refactor instructions](refactor_agent_instructions.md) alongside 
 
 Implement one section at a time in order **1 → 4 → 2 → 3**, with a review checkpoint between sections.
 Section 1 is implemented. Section 4 includes the behavior fixes, CSS split, and subsequent style/process
-requests. Section 2 (layout) is implemented and awaiting review. Section 3 (outcome prediction) remains
-to be implemented.
+requests. Section 2 (layout) was accepted by the user. Section 3 (outcome prediction) is implemented for review.
 
 ## Layout clarifications
 
@@ -55,3 +54,47 @@ modal focus return, supply placement, focus-only overview movement, and all four
 The app was available in Chrome at `http://localhost:8000/` during this session; inspect the current
 environment before assuming that server or address is still active. Keep all browser checks in a hidden
 session; the user does not want Chrome refocused. Full assistive-technology conformance has not been established.
+
+## Outcome prediction decisions
+
+- The user approved starting section 3 on the `prediction-generator` branch after accepting layout.
+- Default score table: final Yellow and Black board scores, including prior biscuits. The alternate
+  view shows each player’s score change separately. No Trials column. A selected row filters the map.
+- Compute intention with perfect accuracy and no fast-shot handicap. Pin and outline that score pair
+  first, including at zero sampled likelihood; keep other rows in descending likelihood order.
+- Show before and after scoreboards around the court; after follows the selected outcome or most likely
+  outcome. Allow accuracy edits in the dialog followed by explicit regeneration.
+- Connect biscuit starts to stopping/departure positions with translucent straight displacement lines.
+- Show every biscuit, with individual, per-color, and all-biscuit visibility toggles. Visibility changes
+  affect the heat map only; score distributions always describe the full run.
+- Regeneration is explicit. Changing the board or shot/court inputs invalidates active results.
+- Save up to 20 named runs to localStorage. Keep full trial records below 500 KiB; use compact summaries
+  above that threshold or when needed to fit the available quota. Preserve existing saves on failure.
+- Suggested names compare nominal start/end states, recognizing combinations such as replacing and
+  kitchening an opponent through a friendly biscuit. Include current color and shot number; keep names editable.
+- Saving expands the library, scrolls to the new entry, and focuses/selects its name.
+  Load restores the starting board, settings, and retained results; users can then shoot or regenerate.
+  Saved shots also support rename and delete.
+
+## Prediction review refinements
+
+- Accuracy is an in-place draft: retain the displayed run, mark Regenerate with a light orange outline,
+  and show “Results and accuracy are out of sync. Click to regenerate.” Commit only on Regenerate.
+- Delivery animation plays every sampled shot on one shared clock, using the original launches and
+  batched motion preparation. Do not store frames or silently rerandomize saved runs.
+- Negative scoreboard totals use red text. Outline the shooting player’s table header in their color.
+- Use a nearly full-screen prediction dialog and a larger court. Keep table text at 16px with reduced
+  cell padding; move explanatory score prose into native title/accessible-description tooltips.
+
+## Drawer and multi-outcome review
+
+- Saved shots opens in a bottom drawer above predictions, including immediately after Save. Keep native
+  Escape/focus behavior and preserve the underlying prediction scroll position.
+- The title/header is outside the prediction scroll area, flush to the top on mobile. Keep absolute
+  accessible descriptions contained within the scrolling body to prevent outer-dialog auto-scroll.
+- Animation always preserves the selected court view, including view changes during playback.
+- Move map summaries and collection notes into native title/accessible-description tooltips.
+- View controls are multi-select checkboxes. Checked rows combine their trials; with none checked show
+  all trials. The lower scoreboard uses the most likely checked outcome, or overall outcome if none.
+- Delta colors are relative to the shooter: own gains/opponent losses green, own losses/opponent gains
+  red. Display zero score cells as — in both table modes.

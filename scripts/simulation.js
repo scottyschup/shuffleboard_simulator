@@ -182,6 +182,8 @@ function scores() {
 
   element('yellowScore').textContent = String(yellow);
   element('blackScore').textContent = String(black);
+  element('yellowScore').classList.toggle('negative-score', yellow < 0);
+  element('blackScore').classList.toggle('negative-score', black < 0);
 }
 
 function setup(name) {

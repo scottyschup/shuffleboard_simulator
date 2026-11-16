@@ -304,6 +304,7 @@ for (const name of ['contextmenu', 'dragstart']) {
   });
 }
 
+initializePredictions();
 initializeSupply();
 loadCourtSettings();
 setup('open');

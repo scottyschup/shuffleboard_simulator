@@ -48,7 +48,7 @@
   min-height: 0;
   position: relative;
 }
-canvas {
+.workspace canvas {
   display: block;
   height: 100%;
   left: 0;

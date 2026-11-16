@@ -1,0 +1,427 @@
+dialog#predictionDialog {
+  font-size: 15px;
+  height: calc(100dvh - 12px);
+  max-height: calc(100dvh - 12px);
+  max-width: none;
+  overflow: clip;
+  padding: 0;
+  width: calc(100% - 12px);
+}
+
+.prediction-actions,
+.prediction-biscuits {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.prediction-actions button,
+.prediction-toolbar button {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.prediction-toolbar {
+  align-items: end;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto 90px minmax(0, 1fr) auto;
+  margin: 8px 0;
+}
+
+.prediction-toolbar button,
+.prediction-toolbar input {
+  height: 36px;
+}
+
+.prediction-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prediction-accuracy {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.prediction-toolbar input,
+.saved-prediction input {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  min-width: 0;
+  padding: 8px;
+  width: 100%;
+}
+
+.prediction-name {
+  grid-column: 3;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.prediction-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
+}
+
+.prediction-map {
+  margin: 0;
+  min-width: 0;
+}
+
+#predictionCourt {
+  aspect-ratio: 16.5 / 7;
+  border-radius: 6px;
+  display: block;
+  height: auto;
+  margin-top: 4px;
+  max-height: max(180px, calc(100dvh - 320px));
+  min-height: 110px;
+  width: 100%;
+}
+
+.prediction-biscuits {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin: 12px 0;
+  padding: 8px;
+}
+
+.prediction-toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  min-height: 32px;
+}
+
+.prediction-toggle input {
+  accent-color: var(--green);
+  height: 18px;
+  width: 18px;
+}
+
+.prediction-table-wrap {
+  overflow-x: auto;
+}
+
+.prediction-table {
+  border-collapse: collapse;
+  font-size: 16px;
+  width: 100%;
+}
+
+.prediction-table th,
+.prediction-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 3px 4px;
+  text-align: right;
+}
+
+.prediction-table button[aria-pressed='true'] {
+  background: var(--green);
+  color: white;
+}
+
+#savedPredictionList {
+  align-content: start;
+  display: grid;
+  flex: 1;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+}
+
+.saved-prediction {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  font-size: 15px;
+  gap: 8px;
+  padding: 10px;
+}
+
+.prediction-intended {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+.prediction-scoreboard {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 4px 0;
+}
+
+.prediction-scoreboard strong {
+  flex: 1 1 100%;
+  font-size: 14px;
+}
+
+.prediction-scoreboard span {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 6px 8px;
+}
+
+.prediction-yellow {
+  background: var(--gold);
+  color: #202e29;
+}
+
+.prediction-black {
+  background: #202e29;
+  color: white;
+}
+
+#predictionCourt[data-view='full'] {
+  aspect-ratio: 43.5 / 7;
+  min-height: 60px;
+}
+
+.prediction-regenerate {
+  display: contents;
+}
+#regeneratePrediction {
+  grid-column: 1;
+  grid-row: 1;
+}
+#savePrediction {
+  grid-column: 4;
+  grid-row: 1;
+}
+#regeneratePrediction.prediction-out-of-sync {
+  outline: 2px solid #efb16a;
+  outline-offset: 2px;
+}
+#predictionSyncMessage {
+  color: #805021;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+}
+#predictionDialog .dialog-top {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+  padding: 8px 12px;
+}
+.prediction-animation-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.prediction-animation-controls button {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+#predictionAnimationStatus {
+  flex-basis: 100%;
+  font-size: 11px;
+}
+.prediction-table th[data-shooter='yellow'] {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+.prediction-table th[data-shooter='black'] {
+  outline: 2px solid #202e29;
+  outline-offset: -2px;
+}
+.prediction-black .negative-score {
+  color: #ffb4ab;
+}
+
+@media (max-width: 700px) and (orientation: portrait) {
+  #predictionCourt[data-view='receiving'] {
+    height: min(50dvh, 540px);
+  }
+
+  .prediction-toolbar {
+    grid-template-columns: auto minmax(80px, 1fr) auto;
+  }
+  .prediction-name {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  #savePrediction {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  #predictionSyncMessage {
+    grid-row: 3;
+  }
+
+  .prediction-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prediction-body {
+    padding: 8px;
+  }
+}
+
+#predictionShowAll {
+  font-size: 15px;
+  min-height: 28px;
+  padding: 2px 6px;
+}
+.prediction-table caption {
+  font-size: 16px;
+  padding: 4px 0;
+  text-align: left;
+}
+.prediction-distribution select {
+  font: inherit;
+  max-width: 100%;
+}
+#predictionScoreHelp {
+  font-size: 18px;
+  vertical-align: middle;
+}
+#predictionShowAll {
+  display: block;
+  margin: 5px 0;
+}
+#predictionMapSummary,
+#predictionCollected,
+#predictionStatus {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.prediction-scoreboard b {
+  font-size: 18px;
+}
+
+#predictionDialog input,
+#predictionDialog select {
+  font-size: 16px;
+}
+
+#predictionStatus {
+  margin: 6px 0;
+}
+#predictionAnimationStatus:empty,
+#predictionAnimationTime:empty {
+  display: none;
+}
+
+dialog#predictionDialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.prediction-body {
+  /* Keep absolute accessible descriptions inside this scrolling area. */
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 12px;
+}
+.prediction-header-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+#openSavedPredictions {
+  border: 1px solid var(--line);
+  font-size: 15px;
+  min-height: 32px;
+  padding: 3px 6px;
+}
+.prediction-outcome-choice {
+  align-items: center;
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 4px;
+  min-height: 28px;
+  min-width: 28px;
+}
+.prediction-outcome-choice input {
+  accent-color: var(--green);
+  height: 18px;
+  margin: 0;
+  width: 18px;
+}
+.prediction-outcome-choice span {
+  font-size: 12px;
+}
+.score-benefit {
+  color: #17633d;
+}
+.score-cost {
+  color: #9c1c14;
+}
+#predictionCourtHelp {
+  font-size: 18px;
+  vertical-align: middle;
+}
+dialog#savedPredictions {
+  border-radius: 14px 14px 6px 6px;
+  bottom: 6px;
+  font-size: 15px;
+  height: min(65dvh, 560px);
+  left: 6px;
+  margin: 0;
+  max-height: calc(100dvh - 12px);
+  max-width: none;
+  overflow: hidden;
+  padding: 0;
+  position: fixed;
+  right: 6px;
+  top: auto;
+  width: calc(100% - 12px);
+}
+dialog#savedPredictions[open] {
+  animation: saved-drawer-open 180ms ease-out;
+  display: flex;
+  flex-direction: column;
+}
+#savedPredictions::backdrop {
+  background: #162b2555;
+}
+.saved-drawer-header {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+.saved-drawer-header h2 {
+  font-size: 18px;
+}
+.saved-drawer-header button {
+  font-size: 20px;
+  min-height: 36px;
+  min-width: 36px;
+}
+#savedPredictions input {
+  font-size: 16px;
+}
+@keyframes saved-drawer-open {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog#savedPredictions[open] {
+    animation: none;
+  }
+}

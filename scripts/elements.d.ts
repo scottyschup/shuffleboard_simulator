@@ -12,6 +12,7 @@ interface LabElements {
   aimSpread: HTMLOutputElement;
   angle: HTMLInputElement;
   angleVal: HTMLOutputElement;
+  animatePrediction: HTMLButtonElement;
   biscuitLock: HTMLButtonElement;
   black: HTMLButtonElement;
   blackScore: HTMLElement;
@@ -34,11 +35,17 @@ interface LabElements {
   position: HTMLInputElement;
   predictOutcomes: HTMLButtonElement;
   prediction: HTMLInputElement;
+  predictionAccuracy: HTMLInputElement;
+  predictionCourt: HTMLCanvasElement;
+  predictionDialog: HTMLDialogElement;
+  regeneratePrediction: HTMLButtonElement;
   reset: HTMLButtonElement;
   result: HTMLElement;
   retry: HTMLButtonElement;
   right: HTMLButtonElement;
   rotateFocus: HTMLButtonElement;
+  savePrediction: HTMLButtonElement;
+  savedPredictions: HTMLDialogElement;
   scoringHeading: HTMLElement;
   settingsDialog: HTMLDialogElement;
   settingsHeading: HTMLElement;
@@ -65,3 +72,44 @@ interface LabElements {
   yellowScore: HTMLElement;
 }
 declare var Physics: typeof import('./physics');
+declare var PredictionModel: typeof import('./prediction-model');
+declare var PredictionStorage: typeof import('./prediction-storage');
+interface PredictionOutcome {
+  ends?: number[][];
+  launch: number[];
+  positions: number[][];
+  score: number[];
+}
+interface PredictionRecord {
+  beforeScore: number[];
+  bins?: {
+    end?: number[];
+    biscuit: number;
+    count: number;
+    key: string;
+    position: number[];
+  }[];
+  biscuits: {
+    color: string;
+    id?: string;
+    label: string;
+    out: boolean;
+    shooter: boolean;
+    x: number;
+    y: number;
+  }[];
+  coordinateSystem: string;
+  count: number;
+  createdAt: string;
+  elapsedMs: number;
+  intended?: PredictionOutcome;
+  outcomes?: PredictionOutcome[];
+  state: ReturnType<typeof snapshot>;
+  storage?: string;
+  summary?: {
+    count: number;
+    score: number[];
+  }[];
+  version: number;
+}
+declare var PredictionReplay: typeof import('./prediction-replay');

@@ -40,6 +40,10 @@
       rel="stylesheet"
     />
     <link
+      href="style/prediction.css"
+      rel="stylesheet"
+    />
+    <link
       href="favicon.ico"
       rel="icon"
       type="image/png"
@@ -105,6 +109,15 @@
       </div>
 
       <div class="header-actions">
+        <button
+          aria-label="Saved shots"
+          class="icon-button"
+          id="savedShots"
+          title="Saved shots"
+          type="button"
+        >
+          📁
+        </button>
         <button
           aria-haspopup="dialog"
           aria-label="Practice with a Purpose"
@@ -463,11 +476,10 @@
                 />
               </button>
               <button
-                aria-label="Shot outcome prediction — coming next"
+                aria-label="Predict shot outcomes"
                 class="icon-button"
-                disabled
                 id="predictOutcomes"
-                title="Shot outcome prediction — coming next"
+                title="Predict shot outcomes"
                 type="button"
               >
                 <span aria-hidden="true">🔮</span>
@@ -633,9 +645,9 @@
       </p>
       <p>
         Speed accuracy retains uniform percentage variation: 90% at 6 ft/s gives 5.4–6.6 ft/s.
-        Starting position remains exact. Predictions use nominal settings; errors are sampled only
-        on Shoot. Undo restores the last shot’s starting state. Replay restores that state and
-        shoots with fresh accuracy errors.
+        Starting position remains exact. Path previews use nominal settings. Outcome predictions
+        sample the same errors as Shoot. Undo restores the last shot’s starting state. Replay
+        restores that state and shoots with fresh accuracy errors.
       </p>
       <p>
         Research:
@@ -676,9 +688,9 @@
         far kitchen and still count as used. Short biscuits are also collected when the shot
         settles. Collected biscuits score zero and do not collide with live biscuits; they can be
         dragged back onto the court. No cushion rebounds, spin, local surface irregularities, or cue
-        delivery are modeled. Undo restores the previous arrangement and settings; Redo restores the
-        undone outcome. The queued color switches after a shot settles; Undo restores the previous
-        shooter and settings.
+        delivery are modeled. Undo restores the previous arrangement and settings; Replay restores
+        the starting board and shoots with fresh errors. The queued color switches after a shot
+        settles; Undo restores the previous shooter and settings.
       </p>
       <h3>Reading behind the setups</h3>
       <p>
@@ -862,12 +874,246 @@
       </div>
     </dialog>
 
+    <dialog
+      aria-labelledby="predictionHeading"
+      id="predictionDialog"
+    >
+      <div class="dialog-top">
+        <h2 id="predictionHeading">Shot outcomes</h2>
+        <div class="prediction-header-actions">
+          <button
+            aria-controls="savedPredictions"
+            aria-haspopup="dialog"
+            id="openSavedPredictions"
+            type="button"
+          >
+            Saved shots
+          </button>
+          <button
+            aria-label="Close predictions"
+            autofocus
+            data-close="predictionDialog"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="prediction-body"
+        id="predictionBody"
+      >
+        <p
+          aria-live="polite"
+          id="predictionStatus"
+          role="status"
+        >
+          Generate outcomes for the queued shot, or load a saved shot.
+        </p>
+        <div class="prediction-toolbar">
+          <div class="prediction-regenerate">
+            <button
+              aria-describedby="predictionSyncMessage"
+              id="regeneratePrediction"
+              type="button"
+            >
+              Regenerate
+            </button>
+            <p
+              hidden
+              id="predictionSyncMessage"
+              role="status"
+            >
+              Results and accuracy are out of sync. Click to regenerate.
+            </p>
+          </div>
+          <label class="prediction-accuracy"
+            >Accuracy %
+            <input
+              id="predictionAccuracy"
+              inputmode="decimal"
+              max="100"
+              min="0"
+              step="0.1"
+              type="number"
+              value="95.0"
+            />
+          </label>
+          <label class="prediction-name"
+            >Shot name
+            <input
+              id="predictionName"
+              maxlength="120"
+              placeholder="Suggested from the intended shot"
+              type="text"
+            />
+          </label>
+          <button
+            disabled
+            id="savePrediction"
+            type="button"
+          >
+            Save shot
+          </button>
+        </div>
+
+        <div
+          hidden
+          id="predictionResults"
+        >
+          <div class="prediction-layout">
+            <figure class="prediction-map">
+              <label for="predictionCourtView">Court view</label>
+              <select id="predictionCourtView">
+                <option value="receiving">Receiving end</option>
+                <option value="full">Full court</option>
+              </select>
+              <button
+                aria-describedby="predictionMapSummary predictionCollected"
+                aria-label="About prediction visualization"
+                class="info-button"
+                id="predictionCourtHelp"
+                title="Predicted biscuit positions and collection rates"
+                type="button"
+              >
+                ⓘ
+              </button>
+              <div
+                aria-label="Board score before shot"
+                class="prediction-scoreboard"
+                role="group"
+              >
+                <strong>Before</strong>
+                <span class="prediction-yellow">Yellow <b id="predictionBeforeYellow">0</b></span>
+                <span class="prediction-black">Black <b id="predictionBeforeBlack">0</b></span>
+              </div>
+
+              <div class="prediction-animation-controls">
+                <button
+                  aria-pressed="false"
+                  id="animatePrediction"
+                  type="button"
+                >
+                  Animate all shots
+                </button>
+                <output
+                  aria-live="off"
+                  id="predictionAnimationTime"
+                ></output>
+                <span
+                  id="predictionAnimationStatus"
+                  role="status"
+                ></span>
+              </div>
+              <canvas
+                aria-describedby="predictionMapSummary predictionCollected"
+                aria-label="Predicted final biscuit positions"
+                id="predictionCourt"
+                role="img"
+              ></canvas>
+              <div
+                aria-label="Board score after shot"
+                class="prediction-scoreboard"
+                role="group"
+              >
+                <strong id="predictionAfterLabel">After · most likely</strong>
+                <span class="prediction-yellow">Yellow <b id="predictionAfterYellow">0</b></span>
+                <span class="prediction-black">Black <b id="predictionAfterBlack">0</b></span>
+              </div>
+
+              <figcaption
+                class="sr-only"
+                id="predictionMapSummary"
+              ></figcaption>
+              <p
+                class="sr-only"
+                id="predictionCollected"
+              ></p>
+            </figure>
+            <section
+              aria-label="Prediction score distribution"
+              class="prediction-distribution"
+            >
+              <label for="predictionScoreMode">Score table</label>
+              <select id="predictionScoreMode">
+                <option value="final">Final board scores</option>
+                <option value="delta">Score changes per player</option>
+              </select>
+              <button
+                aria-describedby="predictionBaseline"
+                aria-label="About prediction scores"
+                class="info-button"
+                id="predictionScoreHelp"
+                title="Final board scores include prior biscuits. Intended shows the perfect shot. Remaining rows are sorted by likelihood."
+                type="button"
+              >
+                ⓘ
+              </button>
+              <span
+                class="sr-only"
+                id="predictionBaseline"
+              ></span>
+              <button
+                id="predictionShowAll"
+                type="button"
+              >
+                Show all outcomes
+              </button>
+              <div class="prediction-table-wrap">
+                <table class="prediction-table">
+                  <caption id="predictionTableCaption">
+                    Predicted final board scores
+                  </caption>
+                  <thead id="predictionTableHead"></thead>
+                  <tbody id="predictionTableBody"></tbody>
+                </table>
+              </div>
+              <fieldset
+                aria-label="Visible biscuits"
+                class="prediction-biscuits"
+                id="predictionBiscuits"
+              ></fieldset>
+            </section>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog
+      aria-labelledby="savedPredictionCount"
+      id="savedPredictions"
+    >
+      <div class="saved-drawer-header">
+        <h2
+          id="savedPredictionCount"
+          tabindex="-1"
+        >
+          Saved shots (0/20)
+        </h2>
+        <button
+          aria-label="Close saved shots"
+          autofocus
+          data-close="savedPredictions"
+          type="button"
+        >
+          ✕
+        </button>
+      </div>
+      <ul id="savedPredictionList"></ul>
+    </dialog>
+
     <script src="scripts/physics.js"></script>
+    <script src="scripts/prediction-model.js"></script>
+    <script src="scripts/prediction-storage.js"></script>
+    <script src="scripts/prediction-replay.js"></script>
     <script src="scripts/state.js"></script>
     <script src="scripts/simulation.js"></script>
     <script src="scripts/view.js"></script>
     <script src="scripts/interactions.js"></script>
     <script src="scripts/supply.js"></script>
+    <script src="scripts/prediction-animation.js"></script>
+    <script src="scripts/prediction-ui.js"></script>
     <script src="scripts/app.js"></script>
   </body>
 </html>

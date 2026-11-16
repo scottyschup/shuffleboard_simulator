@@ -62,7 +62,13 @@ function draw() {
   updateSupply();
 }
 
-function render(id, zoom) {
+function render(
+  id,
+  zoom,
+  predictionRecord = null,
+) {
+  const renderEnd = predictionRecord ? predictionRecord.state.shootingEnd : shootingEnd;
+
   const {
     ctx,
     w,
@@ -76,16 +82,26 @@ function render(id, zoom) {
   const transverse = zoom ? 6.4 : 7;
   const padding = 12;
   const isShooting = id === 'shooting';
-  const mirrorX = zoom && shootingEnd === 'foot';
-  const reverse = !zoom && shootingEnd === 'foot';
-  const rotation = id === 'target' ? ((h >= w ? 0 : 1) + focusRotation) % 4 : 0;
+  const mirrorX = zoom && renderEnd === 'foot';
+  const reverse = !zoom && renderEnd === 'foot';
+
+  const rotation = predictionRecord
+    ? h >= w
+      ? 0
+      : 1
+    : id === 'target'
+      ? ((h >= w ? 0 : 1) + focusRotation) % 4
+      : 0;
+
   const vertical = rotation % 2 === 0;
-  const yMin = isShooting ? -0.35 : zoom ? focusStart : -2.25;
+  const yMin = isShooting ? -0.35 : zoom ? (predictionRecord ? 24.75 : focusStart) : -2.25;
 
   const yMax = isShooting
     ? Math.max(1.9, (h - 12) / ((w - 12) / transverse) - 0.35)
     : zoom
-      ? focusStart + focusLength
+      ? predictionRecord
+        ? 41.25
+        : focusStart + focusLength
       : 41.25;
 
   const length = yMax - yMin;
@@ -383,7 +399,7 @@ function render(id, zoom) {
     );
   }
 
-  if (element('trails').checked) {
+  if (!predictionRecord && element('trails').checked) {
     paths.forEach((path, i) => {
       if (path.length > 1) {
         line(
@@ -395,7 +411,7 @@ function render(id, zoom) {
     });
   }
 
-  if (!running) {
+  if (!predictionRecord && !running) {
     const l = launch(),
       r = (value('angle') * Math.PI) / 180;
 
@@ -448,7 +464,7 @@ function render(id, zoom) {
     }
   }
 
-  for (const d of discs) {
+  for (const d of predictionRecord ? [] : discs) {
     if (d.out && !d.parked) {
       continue;
     }
@@ -498,7 +514,7 @@ function render(id, zoom) {
     }
   }
 
-  if (!running) {
+  if (!predictionRecord && !running) {
     const l = launch(),
       q = map(l.x, l.y);
 
@@ -524,7 +540,7 @@ function render(id, zoom) {
     ctx.stroke();
   }
 
-  if (!running && aimPoint) {
+  if (!predictionRecord && !running && aimPoint) {
     const q = map(aimPoint.x, aimPoint.y);
 
     ctx.strokeStyle = '#eef5ba';
@@ -546,7 +562,7 @@ function render(id, zoom) {
   }
 
   ctx.restore();
-  if (!zoom) {
+  if (!predictionRecord && !zoom) {
     const top = map(0, focusStart);
     const bottom = map(6, focusStart + focusLength);
 
@@ -687,7 +703,7 @@ function update() {
   element('shoot').disabled = running || !!dragging || !canShoot;
   element('undo').disabled = running || !!dragging || !shotHistory.length;
   element('retry').disabled = running || !!dragging || !lastShot;
-  element('predictOutcomes').disabled = true;
+  syncPrediction();
 
   element('placePigeon').disabled =
     running ||

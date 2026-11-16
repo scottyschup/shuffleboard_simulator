@@ -7,6 +7,10 @@ module.exports = {
   extends: 'eslint:recommended',
   globals: {
     Physics: 'readonly',
+    PredictionAnimation: 'readonly',
+    PredictionModel: 'readonly',
+    PredictionReplay: 'readonly',
+    PredictionStorage: 'readonly',
     accumulator: 'writable',
     accuracy: 'writable',
     aimAt: 'writable',
@@ -27,6 +31,7 @@ module.exports = {
     discs: 'writable',
     dragging: 'writable',
     draw: 'writable',
+    drawPrediction: 'readonly',
     drift: 'writable',
     element: 'writable',
     endDrag: 'writable',
@@ -37,6 +42,7 @@ module.exports = {
     focusLength: 'writable',
     focusRotation: 'writable',
     focusStart: 'writable',
+    initializePredictions: 'readonly',
     initializeSupply: 'writable',
     input: 'writable',
     isOffCourt: 'writable',
@@ -81,6 +87,7 @@ module.exports = {
     supplyOrder: 'writable',
     suppressSupplyClick: 'writable',
     switchShooter: 'writable',
+    syncPrediction: 'readonly',
     time: 'writable',
     update: 'writable',
     updateSupply: 'writable',
@@ -89,9 +96,15 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['scripts/physics.js'],
+      files: [
+        'scripts/physics.js',
+        'scripts/prediction-model.js',
+        'scripts/prediction-storage.js',
+        'scripts/prediction-replay.js',
+      ],
       globals: {
         module: 'readonly',
+        require: 'readonly',
       },
     },
     {

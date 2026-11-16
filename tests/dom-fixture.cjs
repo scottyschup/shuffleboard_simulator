@@ -109,6 +109,16 @@ function createFixture() {
       listeners: {},
       open: false,
       parentElement: null,
+      replaceChildren(...children) {
+        this.children = [];
+        this.append(...children);
+      },
+      scrollIntoView() {
+        this.scrolledIntoView = true;
+      },
+      select() {
+        this.selected = true;
+      },
       setAttribute(key, item) {
         this.attributes[key] = String(item);
       },
@@ -335,15 +345,21 @@ function createFixture() {
   const context = vm.createContext({
     Math,
     Physics: require('../scripts/physics.js'),
+    PredictionModel: require('../scripts/prediction-model.js'),
+    PredictionStorage: require('../scripts/prediction-storage.js'),
+    PredictionReplay: require('../scripts/prediction-replay.js'),
     ResizeObserver: class {
       observe() {}
     },
+    TextEncoder,
     document,
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, item) => storage.set(key, item),
     },
+    performance,
     requestAnimationFrame() {},
+    setTimeout,
     structuredClone,
     window: { devicePixelRatio: 1, innerWidth: 1000 },
   });
@@ -354,6 +370,8 @@ function createFixture() {
     'view',
     'interactions',
     'supply',
+    'prediction-animation',
+    'prediction-ui',
     'app',
   ]) {
     vm.runInContext(
