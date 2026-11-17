@@ -28,7 +28,12 @@ async function main() {
   assert.equal(storage.limit, 25);
   assert.equal(storage.importRecords(imported, json).imported, 25);
   assert.equal(storage.importRecords(imported, json).skipped, 25);
-  assert.deepEqual(storage.read(imported), library);
+
+  assert.deepEqual(
+    storage.read(imported).map(({ savedAt: _savedAt, ...entry }) => entry),
+    library,
+  );
+
   const before = imported.getItem('shotLab.predictions.v1');
 
   assert.throws(
@@ -216,9 +221,20 @@ async function main() {
 
   f.click('savePrediction');
   assert.equal(f.ids.get('savedPredictionCount').textContent, 'Saved shots (1/25)');
+
+  assert.equal(f.run('savedPredictionSort'), 'desc');
+
+  f.click('sortSavedPredictions');
+  assert.equal(f.run('savedPredictionSort'), 'asc');
   let row = f.ids.get('savedPredictionList').children[0],
     name = row.children[0].children[0],
     pencil = row.children[0].children[1];
+
+  const savedBody = row.children[1];
+
+  assert.ok(savedBody.classList.contains('saved-prediction-body'));
+  assert.ok(savedBody.children[1].classList.contains('saved-prediction-preview'));
+  assert.equal(savedBody.children[1].tagName, 'CANVAS');
 
   assert.equal(
     name.readOnly,
@@ -226,7 +242,7 @@ async function main() {
     'New saves remain immediately editable',
   );
 
-  assert.match(row.children[1].textContent, /KB JSON/);
+  assert.match(savedBody.children[0].children[0].textContent, /KB JSON/);
   assert.equal(pencil.textContent, '✏️');
   name.value = 'My shot';
 
@@ -249,8 +265,8 @@ async function main() {
   );
 
   assert.equal(name.value, 'My shot');
-  assert.equal(row.children[2].children[0].getAttribute('aria-label'), 'Load shot');
-  assert.ok(row.children[2].children[2].classList.contains('saved-prediction-delete'));
+  assert.equal(savedBody.children[0].children[1].children[0].getAttribute('aria-label'), 'Load shot');
+  assert.ok(savedBody.children[0].children[1].children[2].classList.contains('saved-prediction-delete'));
   f.click('exportPredictions');
   const exported = JSON.parse(await f.document.lastDownload.blob.text());
 
@@ -493,18 +509,49 @@ function verifyAccuracyAndLayers(data) {
   const saved = f.run("localStorage.getItem('shotLab.accuracy')");
 
   assert.equal(JSON.parse(saved).value, 83.7);
+
+  const matching = createFixture({
+    storage: {
+      'shotLab.accuracy': JSON.stringify({ value: 95, version: 1 }),
+    },
+  });
+
+  assert.equal(matching.ids.get('accuracyRestoreDialog').open, false);
+
+  assert.equal(
+    matching.run("localStorage.getItem('shotLab.accuracy')"),
+    null,
+  );
+
   const restored = createFixture({ storage: { 'shotLab.accuracy': saved } });
 
   assert.equal(restored.ids.get('accuracyRestoreDialog').open, true);
-  assert.equal(restored.ids.get('accuracyRestoreValue').textContent, '83.7%');
+
+  assert.equal(
+    restored.ids.get('restoreSavedAccuracy').textContent,
+    'Restore prior accuracy of 83.7%',
+  );
+
+  assert.equal(
+    restored.ids.get('useDefaultAccuracy').textContent,
+    'Use default accuracy of 95.0%',
+  );
+
   restored.click('restoreSavedAccuracy');
   assert.equal(restored.run('accuracy()'), 83.7);
+
   assert.equal(restored.ids.get('accuracyRestoreDialog').open, false);
   const declined = createFixture({ storage: { 'shotLab.accuracy': saved } });
   const defaultAccuracy = declined.run('accuracy()');
 
   declined.click('useDefaultAccuracy');
   assert.equal(declined.run('accuracy()'), defaultAccuracy);
+
+  assert.equal(
+    declined.run("localStorage.getItem('shotLab.accuracy')"),
+    null,
+  );
+
   assert.equal(declined.ids.get('accuracyRestoreDialog').open, false);
   const dismissed = createFixture({ storage: { 'shotLab.accuracy': saved } });
 

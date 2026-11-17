@@ -389,6 +389,7 @@ function createFixture(options = {}) {
     document,
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
+      removeItem: (key) => storage.delete(key),
       setItem: (key, item) => storage.set(key, item),
     },
     performance,

@@ -144,8 +144,34 @@ dialog#predictionDialog {
   border-radius: 6px;
   display: grid;
   font-size: 15px;
-  gap: 8px;
+  gap: 4px 8px;
   padding: 10px;
+}
+.saved-prediction-name {
+  width: 100%;
+}
+.saved-prediction-body {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: minmax(0, 1fr) 168px;
+  min-height: 76px;
+}
+.saved-prediction-left {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.saved-prediction-preview {
+  align-self: center;
+  grid-column: 2;
+  height: 76px;
+  justify-self: end;
+  pointer-events: none;
+  width: 168px;
+}
+.saved-prediction .prediction-actions {
+  padding-right: 176px;
 }
 
 .prediction-intended {
@@ -486,6 +512,13 @@ dialog#savedPredictions[open] {
   }
 }
 @media (max-width: 700px) {
+  .saved-prediction-body {
+    grid-template-columns: minmax(0, 1fr) 120px;
+  }
+  .saved-prediction-preview {
+    height: 54px;
+    width: 120px;
+  }
   .prediction-selected-label {
     clip-path: inset(50%);
     height: 1px;
@@ -605,6 +638,12 @@ dialog#savedPredictions[open] {
 #savedPredictionStatus:empty {
   display: none;
 }
+.saved-drawer-header .prediction-actions button {
+  font-size: 12px;
+  height: 28px;
+  min-height: 28px;
+  padding: 4px 7px;
+}
 #savedPredictionSize {
   font-size: 14px;
 }
@@ -614,6 +653,7 @@ dialog#savedPredictions[open] {
   display: grid;
   gap: 4px;
   grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
 }
 .saved-prediction-name input {
   height: 36px;

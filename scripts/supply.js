@@ -14,8 +14,7 @@ let suppressSupplyClick = false;
 function armSupply(nextColor) {
   pendingSupplyColor = nextColor;
 
-  element('result').textContent =
-    'Tap a magnified court to place the ' + nextColor + ' biscuit. Escape cancels.';
+  element('result').textContent = 'Tap a magnified court to place the ' + nextColor + ' biscuit. Escape cancels.';
 }
 
 function findDropView(event) {
@@ -92,8 +91,7 @@ function initializeSupply() {
 
       const id = findDropView(event);
 
-      dragging.moved ||=
-        Math.hypot(event.clientX - dragging.startX, event.clientY - dragging.startY) > 4;
+      dragging.moved ||= Math.hypot(event.clientX - dragging.startX, event.clientY - dragging.startY) > 4;
 
       dragging.id = id || 'target';
       dragging.point = id ? courtPoint(event, id) : null;
@@ -115,26 +113,14 @@ function initializeSupply() {
         const point = courtPoint(event, id);
 
         if (isOffCourt(point)) {
-          placeSupply(
-            drag.color,
-            { x: 3, y: 39 + 1.5 * physics.R },
-            'collection',
-          );
+          placeSupply(drag.color, { x: 3, y: 39 + 1.5 * physics.R }, 'collection');
         } else {
-          placeSupply(
-            drag.color,
-            point,
-            id,
-          );
+          placeSupply(drag.color, point, id);
         }
       } else if (!cancel && !drag.moved) {
         armSupply(drag.color);
       } else if (!cancel && !isQueueDrop(event)) {
-        placeSupply(
-          drag.color,
-          { x: 3, y: 39 + 1.5 * physics.R },
-          'collection',
-        );
+        placeSupply(drag.color, { x: 3, y: 39 + 1.5 * physics.R }, 'collection');
       }
 
       suppressSupplyClick = true;
@@ -148,29 +134,17 @@ function initializeSupply() {
   }
 }
 
-function placeSupply(
-  biscuitColor,
-  point,
-  id,
-) {
+function placeSupply(biscuitColor, point, id) {
   if (
     running ||
     (id === 'target' && biscuitsLocked) ||
     !canDrop(point) ||
-    physics.remainingBiscuits(
-      discs,
-      biscuitColor,
-      color,
-    ) === 0
+    physics.remainingBiscuits(discs, biscuitColor, color) === 0
   ) {
     return false;
   }
 
-  const own = physics.remainingBiscuits(
-    discs,
-    color,
-    color,
-  );
+  const own = physics.remainingBiscuits(discs, color, color);
 
   const otherColor = color === 'yellow' ? 'black' : 'yellow';
   const other = physics.remainingBiscuits(discs, otherColor);
@@ -179,13 +153,7 @@ function placeSupply(
 
   saveArrangement();
 
-  discs.push(
-    createDisc(
-      point.x,
-      point.y,
-      biscuitColor,
-    ),
-  );
+  discs.push(createDisc(point.x, point.y, biscuitColor));
 
   if (isCollectionPoint(point)) {
     Object.assign(discs[discs.length - 1], { out: true, parked: true });
@@ -200,16 +168,8 @@ function placeSupply(
 
 function supplyOrder() {
   const remaining = {
-    black: physics.remainingBiscuits(
-      discs,
-      'black',
-      running ? null : color,
-    ),
-    yellow: physics.remainingBiscuits(
-      discs,
-      'yellow',
-      running ? null : color,
-    ),
+    black: physics.remainingBiscuits(discs, 'black', running ? null : color),
+    yellow: physics.remainingBiscuits(discs, 'yellow', running ? null : color),
   };
 
   let next =
@@ -243,8 +203,7 @@ function updateSupply() {
     supply.disabled = running || (!!dragging && dragging.button !== supply);
     supply.dataset.color = order[index] || '';
 
-    supply.className =
-      'supply-biscuit ' + (order[index] || '') + (dragging?.button === supply ? ' dragging' : '');
+    supply.className = 'supply-biscuit ' + (order[index] || '') + (dragging?.button === supply ? ' dragging' : '');
 
     supply.style.setProperty('--disc-size', 2 * physics.R * (viewMaps.target?.scale || 40) + 'px');
 

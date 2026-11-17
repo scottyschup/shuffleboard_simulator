@@ -42,7 +42,20 @@ function initializeAccuracyRestore() {
 
   const initial = accuracy();
 
-  element('accuracyRestoreValue').textContent = saved.toFixed(1) + '%';
+  if (saved === initial) {
+    try {
+      localStorage.removeItem('shotLab.accuracy');
+    } catch {
+      /* The simulator also works when browser storage is unavailable. */
+    }
+
+    return;
+  }
+
+  element('restoreSavedAccuracy').textContent = `Restore prior accuracy of ${saved.toFixed(1)}%`;
+
+  element('useDefaultAccuracy').textContent = `Use default accuracy of ${initial.toFixed(1)}%`;
+
   bindDialog('accuracyRestoreDialog', element('accuracy'));
 
   const choose = (value) => {
@@ -52,7 +65,17 @@ function initializeAccuracyRestore() {
   };
 
   element('restoreSavedAccuracy').onclick = () => choose(saved);
-  element('useDefaultAccuracy').onclick = () => choose(initial);
+
+  element('useDefaultAccuracy').onclick = () => {
+    try {
+      localStorage.removeItem('shotLab.accuracy');
+    } catch {
+      /* The simulator also works when browser storage is unavailable. */
+    }
+
+    choose(initial);
+  };
+
   openDialog('accuracyRestoreDialog', 'restoreSavedAccuracy');
 }
 
@@ -86,11 +109,7 @@ function nudgeCourt(id, amount) {
   input(id).value = String(Math.max(minimum, Math.min(100, value(id) + amount)));
   saveCourtSettings();
   if (aimPoint) {
-    aimAt(
-      aimPoint.x,
-      aimPoint.y,
-      true,
-    );
+    aimAt(aimPoint.x, aimPoint.y, true);
   }
 
   update();
@@ -118,15 +137,7 @@ function openDialog(id, focusId = null) {
 }
 
 function placePigeon(pigeonColor = color) {
-  if (
-    running ||
-    dragging ||
-    physics.remainingBiscuits(
-      discs,
-      pigeonColor,
-      color,
-    ) === 0
-  ) {
+  if (running || dragging || physics.remainingBiscuits(discs, pigeonColor, color) === 0) {
     return;
   }
 
@@ -151,13 +162,7 @@ function placePigeon(pigeonColor = color) {
 
   saveArrangement();
 
-  discs.push(
-    createDisc(
-      point.x,
-      point.y,
-      pigeonColor,
-    ),
-  );
+  discs.push(createDisc(point.x, point.y, pigeonColor));
 
   element('result').textContent = pigeonColor + ' pigeon placed in the 7.';
   update();
@@ -238,22 +243,12 @@ element('accuracy').addEventListener('change', () => {
   update();
 });
 
-for (const id of [
-  'angle',
-  'drift',
-  'position',
-  'slick',
-  'speed',
-]) {
+for (const id of ['angle', 'drift', 'position', 'slick', 'speed']) {
   element(id).addEventListener('input', () => {
     if (id === 'angle') {
       aimPoint = null;
     } else if (aimPoint && id !== 'speed') {
-      aimAt(
-        aimPoint.x,
-        aimPoint.y,
-        true,
-      );
+      aimAt(aimPoint.x, aimPoint.y, true);
     }
 
     if (id === 'drift' || id === 'slick') {
@@ -301,13 +296,7 @@ document.addEventListener('keydown', (event) => {
 
   const id = /** @type {HTMLElement} */ (event.target).id;
 
-  if (
-    event.defaultPrevented ||
-    event.isComposing ||
-    event.altKey ||
-    event.ctrlKey ||
-    event.metaKey
-  ) {
+  if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
     return;
   }
 
@@ -344,10 +333,6 @@ initializeSupply();
 loadCourtSettings();
 setup('open');
 initializeAccuracyRestore();
-for (const id of [
-  'overview',
-  'shooting',
-  'target',
-]) {
+for (const id of ['overview', 'shooting', 'target']) {
   new ResizeObserver(draw).observe(element(id));
 }

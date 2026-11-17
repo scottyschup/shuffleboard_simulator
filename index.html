@@ -1263,8 +1263,7 @@
         </h2>
         <output
           id="savedPredictionSize"
-          title="Serialized JSON size; browser storage accounting can differ"
-        ></output>
+                ></output>
         <div class="prediction-actions">
           <button
             id="exportPredictions"
@@ -1275,7 +1274,12 @@
             id="importPredictions"
             type="button"
           >
-            Import
+            Import</button
+          ><button
+            id="sortSavedPredictions"
+            type="button"
+          >
+            Sort ↓
           </button>
         </div>
         <button
@@ -1301,23 +1305,18 @@
     </dialog>
 
     <dialog
-      aria-labelledby="accuracyRestoreHeading"
+      aria-label="Restore accuracy"
       id="accuracyRestoreDialog"
     >
-      <h2 id="accuracyRestoreHeading">Restore accuracy?</h2>
-      <p>Use your saved accuracy of <strong id="accuracyRestoreValue"></strong>?</p>
-      <div class="prediction-actions">
+      <div class="accuracy-restore-actions">
         <button
           id="restoreSavedAccuracy"
           type="button"
-        >
-          Restore</button
+        ></button
         ><button
           id="useDefaultAccuracy"
           type="button"
-        >
-          Use default
-        </button>
+        ></button>
       </div>
     </dialog>
 

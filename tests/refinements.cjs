@@ -61,6 +61,7 @@ function state(overrides = {}) {
     angle: 0,
     color: 'yellow',
     court: {
+      deceleration: physics.deceleration(50),
       drift: 0,
       enabled: false,
       slick: 50,
@@ -328,6 +329,7 @@ for (const end of ['head', 'foot']) {
     model.prepare(
       state({
         court: {
+          deceleration: physics.deceleration(50),
           drift: 80,
           enabled: false,
           slick: 50,

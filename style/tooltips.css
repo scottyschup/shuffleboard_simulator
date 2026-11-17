@@ -9,6 +9,26 @@
   padding: 4px;
   width: 38px;
 }
+.click-tooltip {
+  position: relative;
+}
+.click-tooltip[data-tooltip-open='true']::after {
+  background: #202e29;
+  border: 1px solid #55a080;
+  border-radius: 6px;
+  bottom: calc(100% + 6px);
+  color: #e5efd9;
+  content: attr(data-tooltip);
+  font-size: 12px;
+  left: 50%;
+  line-height: 1.35;
+  max-width: 240px;
+  padding: 6px 8px;
+  position: absolute;
+  transform: translateX(-50%);
+  width: max-content;
+  z-index: 100;
+}
 .icon-button img {
   height: 23px;
   object-fit: contain;

@@ -8,18 +8,12 @@
 
   const deceleration = (slick) => 2.1 + 3.3 * (1 - slick / 100);
 
-  function aimStats(
-    accuracy,
-    speed,
-    distance = 32,
-    options = { enabled: true, threshold: 8 },
-  ) {
+  function aimStats(accuracy, speed, distance = 32, options = { enabled: true, threshold: 8 }) {
     const skillSigmaDeg = MAX_SKILL_SIGMA_DEG * (1 - Math.max(0, Math.min(100, accuracy)) / 100);
 
     // Contact between two 6-inch biscuits: centerline may pass within 6 inches
     // of the virtual target center. The angle threshold follows ray geometry.
-    const targetHalfAngleDeg =
-      (Math.asin(Math.min(1, (2 * R) / Math.max(2 * R, distance))) * 180) / Math.PI;
+    const targetHalfAngleDeg = (Math.asin(Math.min(1, (2 * R) / Math.max(2 * R, distance))) * 180) / Math.PI;
 
     const speedSigmaDeg = options.enabled
       ? (targetHalfAngleDeg / NORMAL_CENTRAL_50) * Math.max(0, (speed - options.threshold) / 10)
@@ -37,16 +31,10 @@
     };
   }
 
-  function applyAccuracy(
-    setting,
-    accuracy,
-    random = Math.random,
-  ) {
+  function applyAccuracy(setting, accuracy, random = Math.random) {
     const error = 1 - Math.max(0, Math.min(100, accuracy)) / 100;
 
-    return error === 0 || setting === 0
-      ? setting
-      : setting + Math.abs(setting) * error * (2 * random() - 1);
+    return error === 0 || setting === 0 ? setting : setting + Math.abs(setting) * error * (2 * random() - 1);
   }
 
   // Out biscuits remain used for this frame; collection never restores capacity.
@@ -95,15 +83,8 @@
     return true;
   }
 
-  function remainingBiscuits(
-    discs,
-    color,
-    queuedColor = null,
-  ) {
-    return Math.max(
-      0,
-      4 - discs.filter((d) => d.color === color).length - (queuedColor === color ? 1 : 0),
-    );
+  function remainingBiscuits(discs, color, queuedColor = null) {
+    return Math.max(0, 4 - discs.filter((d) => d.color === color).length - (queuedColor === color ? 1 : 0));
   }
 
   // Changing shooting ends reverses length; the physical color sides stay fixed.
@@ -119,12 +100,7 @@
     random = Math.random,
     options = { enabled: true, threshold: 8 },
   ) {
-    const { sigmaDeg } = aimStats(
-      accuracy,
-      speed,
-      distance,
-      options,
-    );
+    const { sigmaDeg } = aimStats(accuracy, speed, distance, options);
 
     if (sigmaDeg === 0) {
       return angle;
@@ -152,23 +128,14 @@
     return 0;
   }
 
-  function simulate(
-    discs,
-    a,
-    drift = 0,
-  ) {
+  function simulate(discs, a, drift = 0) {
     const ds = structuredClone(discs),
       paths = ds.map((d) => [[d.x, d.y]]);
 
     let time = 0;
 
     for (let i = 0; i < 240 * 100; i++) {
-      step(
-        ds,
-        DT,
-        a,
-        drift,
-      );
+      step(ds, DT, a, drift);
 
       time += DT;
       if (i % 12 === 0) {
@@ -193,12 +160,7 @@
     };
   }
 
-  function slide(
-    d,
-    dt,
-    a,
-    drift = 0,
-  ) {
+  function slide(d, dt, a, drift = 0) {
     const v = Math.hypot(d.vx, d.vy);
 
     if (v > 0.00001) {
@@ -218,11 +180,7 @@
   }
 
   // Starting center stays clear of both sloped kitchen borders, including paint.
-  function startingPoint(
-    color,
-    position,
-    requestedY = 1.18,
-  ) {
+  function startingPoint(color, position, requestedY = 1.18) {
     const clearance = R + LINE / 2 + 0.01,
       y = Math.max(clearance, Math.min(1.5 - clearance, requestedY));
 
@@ -236,21 +194,9 @@
     };
   }
 
-  function startingPosition(
-    color,
-    x,
-    y,
-  ) {
-    const inside = startingPoint(
-        color,
-        0,
-        y,
-      ),
-      outside = startingPoint(
-        color,
-        100,
-        y,
-      );
+  function startingPosition(color, x, y) {
+    const inside = startingPoint(color, 0, y),
+      outside = startingPoint(color, 100, y);
 
     return {
       position: Math.max(0, Math.min(100, ((x - inside.x) / (outside.x - inside.x)) * 100)),
@@ -258,24 +204,13 @@
     };
   }
 
-  function step(
-    discs,
-    dt,
-    a,
-    drift = 0,
-    onContact = null,
-  ) {
+  function step(discs, dt, a, drift = 0, onContact = null) {
     for (const d of discs) {
       if (d.out) {
         continue;
       }
 
-      slide(
-        d,
-        dt,
-        a,
-        drift,
-      );
+      slide(d, dt, a, drift);
 
       if (d.x + R < 0 || d.x - R > 6 || d.y - R > 39 || d.y + R < 0) {
         d.out = true;
@@ -327,12 +262,7 @@
 
   // Aim for an unobstructed stopping point under the current friction and drift.
   // Contact with other biscuits can change the resulting position.
-  function targetShot(
-    start,
-    target,
-    a,
-    drift = 0,
-  ) {
+  function targetShot(start, target, a, drift = 0) {
     const dx = target.x - start.x,
       dy = target.y - start.y,
       distance = Math.hypot(dx, dy);
@@ -351,12 +281,7 @@
         };
 
         for (let i = 0; i < 240 * 100 && (d.vx || d.vy); i++) {
-          slide(
-            d,
-            DT,
-            a,
-            drift,
-          );
+          slide(d, DT, a, drift);
         }
 
         return d;
@@ -457,12 +382,7 @@
   // at the 7 line and flaring outward toward the baseline. Rendering uses these
   // same scoring vertices so a visual fix cannot silently change only one model.
   const diagramLines = [
-    [
-      zones[3].p[3],
-      zones[0].p[0],
-      zones[4].p[2],
-      zones[3].p[3],
-    ],
+    [zones[3].p[3], zones[0].p[0], zones[4].p[2], zones[3].p[3]],
     [zones[0].p[2], zones[0].p[1]],
     [zones[3].p[0], zones[4].p[1]],
     [

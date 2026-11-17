@@ -22,7 +22,7 @@
 
 ## Code style
 
-Use ~/code/.agents/skills/code-like-shannon/SKILL.md when writing code.
+Use ~/.agents/skills/code-like-shannon/SKILL.md when writing code.
 
 ## Work and verification
 

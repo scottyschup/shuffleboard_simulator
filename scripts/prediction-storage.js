@@ -1,8 +1,7 @@
 (function (root) {
   'use strict';
 
-  const model =
-    typeof module === 'undefined' ? root.PredictionModel : require('./prediction-model.js');
+  const model = typeof module === 'undefined' ? root.PredictionModel : require('./prediction-model.js');
 
   const key = 'shotLab.predictions.v1';
   const fullLimit = 500 * 1024;
@@ -13,11 +12,7 @@
   }
 
   function exportRecords(records) {
-    if (
-      !Array.isArray(records) ||
-      records.length > maxRecords ||
-      records.some((entry) => !validImportEntry(entry))
-    ) {
+    if (!Array.isArray(records) || records.length > maxRecords || records.some((entry) => !validImportEntry(entry))) {
       throw new Error('These saved records cannot be exported because their data is invalid.');
     }
 
@@ -57,26 +52,19 @@
       incoming.length > maxRecords ||
       incoming.some((entry) => !validImportEntry(entry))
     ) {
-      throw new Error(
-        'This file contains invalid or unsupported shot records. No saved shots were changed.',
-      );
+      throw new Error('This file contains invalid or unsupported shot records. No saved shots were changed.');
     }
 
     const current = read(storage);
     const merged = current.slice();
 
-    const fingerprints = new Set(
-      current.map((entry) => entry.name + '\u0000' + JSON.stringify(entry.record)),
-    );
+    const fingerprints = new Set(current.map((entry) => entry.name + '\u0000' + JSON.stringify(entry.record)));
 
     let imported = 0,
       skipped = 0;
 
     for (const entry of incoming) {
-      const record =
-        bytes(entry.record) < fullLimit
-          ? structuredClone(entry.record)
-          : model.summarize(entry.record);
+      const record = bytes(entry.record) < fullLimit ? structuredClone(entry.record) : model.summarize(entry.record);
 
       const name = entry.name.trim().slice(0, 120) || model.suggestedName(record);
       const fingerprint = name + '\u0000' + JSON.stringify(record);
@@ -99,6 +87,7 @@
         id,
         name,
         record,
+        savedAt: Number.isFinite(Date.parse(entry.savedAt)) ? entry.savedAt : new Date().toISOString(),
       });
 
       imported++;
@@ -141,6 +130,7 @@
           !entry ||
           typeof entry.id !== 'string' ||
           typeof entry.name !== 'string' ||
+          (entry.savedAt !== undefined && !Number.isFinite(Date.parse(entry.savedAt))) ||
           !validRecord(entry.record),
       )
     ) {
@@ -154,11 +144,7 @@
     storage.setItem(key, JSON.stringify(read(storage).filter((entry) => entry.id !== id)));
   }
 
-  function rename(
-    storage,
-    id,
-    name,
-  ) {
+  function rename(storage, id, name) {
     const records = read(storage);
     const entry = records.find((item) => item.id === id);
 
@@ -170,11 +156,25 @@
     storage.setItem(key, JSON.stringify(records));
   }
 
-  function save(
-    storage,
-    record,
-    name,
-  ) {
+  function replace(storage, id, record, name) {
+    const records = read(storage);
+    const entry = records.find((item) => item.id === id);
+
+    if (!entry) {
+      throw new Error('This saved shot no longer exists.');
+    }
+
+    const saved = bytes(record) < fullLimit ? structuredClone(record) : model.summarize(record);
+
+    entry.name = name.trim().slice(0, 120) || model.suggestedName(record);
+    entry.record = saved;
+    entry.savedAt = new Date().toISOString();
+    write(storage, records);
+
+    return { ...entry, bytes: bytes(saved) };
+  }
+
+  function save(storage, record, name) {
     const records = read(storage);
 
     if (records.length >= maxRecords) {
@@ -187,6 +187,7 @@
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       name: name.trim().slice(0, 120) || model.suggestedName(record),
       record: saved,
+      savedAt: new Date().toISOString(),
     };
 
     const stored = write(storage, [...records, entry]);
@@ -213,12 +214,9 @@
       !state.paths.every(
         (path) =>
           Array.isArray(path) &&
-          path.every(
-            (point) => Array.isArray(point) && point.length === 2 && point.every(Number.isFinite),
-          ),
+          path.every((point) => Array.isArray(point) && point.length === 2 && point.every(Number.isFinite)),
       ) ||
-      ((record.bins !== undefined || record.summary !== undefined) &&
-        record.storage !== 'summary') ||
+      ((record.bins !== undefined || record.summary !== undefined) && record.storage !== 'summary') ||
       (record.outcomes !== undefined && !Array.isArray(record.outcomes)) ||
       state.discs.some((disc) => typeof disc.out !== 'boolean') ||
       record.biscuits.some(
@@ -239,15 +237,10 @@
           outcome.ends.length === record.biscuits.length &&
           outcome.ends.every(
             (point) =>
-              Array.isArray(point) &&
-              point.length === 3 &&
-              point.every(Number.isFinite) &&
-              [0, 1].includes(point[2]),
+              Array.isArray(point) && point.length === 3 && point.every(Number.isFinite) && [0, 1].includes(point[2]),
           ))) &&
       (!outcome.launch ||
-        (Array.isArray(outcome.launch) &&
-          outcome.launch.length === 2 &&
-          outcome.launch.every(Number.isFinite)));
+        (Array.isArray(outcome.launch) && outcome.launch.length === 2 && outcome.launch.every(Number.isFinite)));
 
     if (
       (record.intended && !validOutcome(record.intended)) ||
@@ -259,15 +252,12 @@
     if (
       record.bins &&
       (record.bins.some(
-        (bin) =>
-          typeof bin.key !== 'string' ||
-          !record.summary.some((group) => group.score.join(',') === bin.key),
+        (bin) => typeof bin.key !== 'string' || !record.summary.some((group) => group.score.join(',') === bin.key),
       ) ||
         record.biscuits.some(
           (_, index) =>
-            record.bins
-              .filter((bin) => bin.biscuit === index)
-              .reduce((sum, bin) => sum + bin.count, 0) !== record.count,
+            record.bins.filter((bin) => bin.biscuit === index).reduce((sum, bin) => sum + bin.count, 0) !==
+            record.count,
         ))
     ) {
       return false;
@@ -313,21 +303,10 @@
       Math.abs(state.court.drift) > 100 ||
       state.court.threshold < 0 ||
       (state.court.deceleration !== undefined &&
-        (!finite(state.court.deceleration) ||
-          state.court.deceleration <= 0 ||
-          state.court.deceleration > 20)) ||
+        (!finite(state.court.deceleration) || state.court.deceleration <= 0 || state.court.deceleration > 20)) ||
       typeof state.court.enabled !== 'boolean' ||
       (state.aimPoint && ![state.aimPoint.x, state.aimPoint.y].every(finite)) ||
-      state.discs.some(
-        (disc) =>
-          !color(disc.color) ||
-          ![
-            disc.x,
-            disc.y,
-            disc.vx,
-            disc.vy,
-          ].every(finite),
-      ) ||
+      state.discs.some((disc) => !color(disc.color) || ![disc.x, disc.y, disc.vx, disc.vy].every(finite)) ||
       ['yellow', 'black'].some(
         (c) => state.discs.filter((disc) => disc.color === c).length > (c === state.color ? 3 : 4),
       )
@@ -336,14 +315,11 @@
     }
 
     const path = (p) =>
-      Array.isArray(p) &&
-      p.every((point) => Array.isArray(point) && point.length === 3 && point.every(finite));
+      Array.isArray(p) && p.every((point) => Array.isArray(point) && point.length === 3 && point.every(finite));
 
-    const paths = (p) =>
-      p === undefined || (Array.isArray(p) && p.length === record.biscuits.length && p.every(path));
+    const paths = (p) => p === undefined || (Array.isArray(p) && p.length === record.biscuits.length && p.every(path));
 
-    const position = (p) =>
-      Array.isArray(p) && p.length === 3 && p.every(finite) && [0, 1].includes(p[2]);
+    const position = (p) => Array.isArray(p) && p.length === 3 && p.every(finite) && [0, 1].includes(p[2]);
 
     const score = (s) => Array.isArray(s) && s.length === 2 && s.every(finite);
 
@@ -376,20 +352,16 @@
                 Number.isInteger(group.count) &&
                 group.count > 0,
             ) &&
-            record.selectionGroups.reduce((sum, group) => sum + group.count, 0) ===
-              record.count)) &&
+            record.selectionGroups.reduce((sum, group) => sum + group.count, 0) === record.count)) &&
         Array.isArray(record.summary) &&
         Array.isArray(record.bins) &&
-        record.summary.every(
-          (row) => score(row.score) && Number.isInteger(row.count) && row.count > 0,
-        ) &&
+        record.summary.every((row) => score(row.score) && Number.isInteger(row.count) && row.count > 0) &&
         record.summary.reduce((total, row) => total + row.count, 0) === record.count &&
         record.bins.every(
           (bin) =>
             position(bin.position) &&
             (bin.path === undefined || bin.path === null || path(bin.path)) &&
-            (!record.selectionGroups ||
-              record.selectionGroups.some((group) => group.key === bin.selectionKey)) &&
+            (!record.selectionGroups || record.selectionGroups.some((group) => group.key === bin.selectionKey)) &&
             Number.isInteger(bin.biscuit) &&
             bin.biscuit >= 0 &&
             bin.biscuit < record.biscuits.length &&
@@ -443,6 +415,7 @@
     read,
     remove,
     rename,
+    replace,
     save,
     validRecord,
   };

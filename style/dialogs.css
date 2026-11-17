@@ -36,6 +36,18 @@ dialog a {
   color: var(--green);
 }
 
+.accuracy-restore-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.accuracy-restore-actions button {
+  flex: 1 1 230px;
+  min-height: 44px;
+  padding: 8px 12px;
+  white-space: normal;
+}
+
 .dialog-top {
   align-items: center;
   display: flex;

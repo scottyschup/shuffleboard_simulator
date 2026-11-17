@@ -242,6 +242,7 @@ async function main() {
   );
 
   assert.equal(saved.name, model.suggestedName(record));
+  assert.equal(Number.isFinite(Date.parse(saved.savedAt)), true);
   assert.equal(saved.record.storage, undefined);
   assert.deepEqual(persistence.read(store)[0].record, record);
 
@@ -344,6 +345,7 @@ async function main() {
     angle: -1.5536051196061467,
     color: 'black',
     court: {
+      deceleration: physics.deceleration(50),
       drift: 0,
       enabled: true,
       slick: 50,
@@ -423,6 +425,55 @@ async function main() {
   const legacy = model.prepare(combinationState);
 
   delete legacy.intended;
+
+  const legacyState = makeState({
+    court: {
+      drift: 0,
+      enabled: true,
+      slick: 50,
+      threshold: 8,
+    },
+  });
+
+  const legacyRecord = model.prepare(legacyState);
+
+  assert.ok(
+    Math.abs(
+      legacyRecord.state.speed
+      - 7 * Math.sqrt(physics.deceleration(50) / (0.12 + 1.35 * 0.5)),
+    ) < 1e-10,
+    'Legacy saved-shot speed is converted to the refactored court system',
+  );
+
+  assert.equal(
+    legacyRecord.state.court.deceleration,
+    physics.deceleration(50),
+  );
+
+  const exportedLegacyState = makeState({
+    court: {
+      drift: -2,
+      enabled: true,
+      slick: 50,
+      threshold: 8,
+    },
+    speed: 7.68,
+  });
+
+  const normalizedExport = model.normalizeState(exportedLegacyState);
+
+  assert.ok(
+    Math.abs(
+      normalizedExport.speed
+      - 7.68 * Math.sqrt(physics.deceleration(50) / (0.12 + 1.35 * 0.5)),
+    ) < 1e-10,
+    'Exported legacy saved-shot speed is normalized before regeneration',
+  );
+
+  assert.equal(
+    normalizedExport.court.deceleration,
+    physics.deceleration(50),
+  );
 
   assert.deepEqual(
     model.intended(legacy).score,
@@ -515,8 +566,8 @@ async function main() {
     { key: 'Enter' },
   );
 
-  savedRow.children[2].children[0].onclick();
-  assert.equal(ids.get('predictionName').value, 'Renamed test shot');
+  savedRow.children[1].children[0].children[1].children[0].onclick();
+  assert.equal(ids.get('predictionName').value, 'Renamed test shot [100.0%]');
 
   assert.equal(
     ids.get('savedPredictions').open,
@@ -624,7 +675,7 @@ async function main() {
   assert.match(ids.get('predictionAfterLabel').textContent, /most likely selected/);
   selectOutcome(1, false);
   assert.equal(ids.get('predictionAfterYellow').textContent, '7');
-  assert.ok(ids.get('predictionCourt').title.includes('Collected'));
+  assert.ok(ids.get('predictionCourt').dataset.tooltip.includes('Collected'));
   assert.ok(ids.get('predictionMapSummary').classList.contains('sr-only'));
   click('predictionDeltaScore');
   rows = ids.get('predictionTableBody').children;
@@ -815,6 +866,7 @@ function makeState(overrides = {}) {
     angle: 0,
     color: 'yellow',
     court: {
+      deceleration: physics.deceleration(50),
       drift: 0,
       enabled: true,
       slick: 50,

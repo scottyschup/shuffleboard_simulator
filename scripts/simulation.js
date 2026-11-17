@@ -9,11 +9,7 @@
 */
 'use strict';
 
-function aimAt(
-  x,
-  y,
-  setSpeed = false,
-) {
+function aimAt(x, y, setSpeed = false) {
   const l = launch(),
     solution = setSpeed
       ? physics.targetShot(
@@ -52,12 +48,7 @@ function animate(stamp) {
   accumulator += Math.min((stamp - lastFrame) / 1000, 0.05);
   lastFrame = stamp;
   while (accumulator >= physics.DT) {
-    physics.step(
-      discs,
-      physics.DT,
-      courtDeceleration(),
-      drift(),
-    );
+    physics.step(discs, physics.DT, courtDeceleration(), drift());
 
     accumulator -= physics.DT;
     time += physics.DT;
@@ -110,11 +101,7 @@ function finish() {
 
   color = color === 'yellow' ? 'black' : 'yellow';
   if (aimPoint) {
-    aimAt(
-      aimPoint.x,
-      aimPoint.y,
-      true,
-    );
+    aimAt(aimPoint.x, aimPoint.y, true);
   }
 
   update();
@@ -175,40 +162,25 @@ function placeBlock(name) {
     return false;
   }
 
-  const x =
-    kind === 'tampa' ? (blockColor === 'black' ? 2.6 : 3.4) : blockColor === 'black' ? 4.5 : 1.5;
+  const x = kind === 'tampa' ? (blockColor === 'black' ? 2.6 : 3.4) : blockColor === 'black' ? 4.5 : 1.5;
 
   const point = { x, y: 28.5 };
 
-  if (
-    !physics.remainingBiscuits(
-      discs,
-      blockColor,
-      color,
-    )
-  ) {
-    element('blockStatus').textContent =
-      'No ' + blockColor + ' biscuit is available. The queued shooter is reserved.';
+  if (!physics.remainingBiscuits(discs, blockColor, color)) {
+    element('blockStatus').textContent = 'No ' + blockColor + ' biscuit is available. The queued shooter is reserved.';
 
     return false;
   }
 
   if (!canDrop(point)) {
-    element('blockStatus').textContent =
-      'That block position is occupied. Move the existing biscuit before adding it.';
+    element('blockStatus').textContent = 'That block position is occupied. Move the existing biscuit before adding it.';
 
     return false;
   }
 
   saveArrangement();
 
-  discs.push(
-    createDisc(
-      point.x,
-      point.y,
-      blockColor,
-    ),
-  );
+  discs.push(createDisc(point.x, point.y, blockColor));
 
   queryElements('.setup').forEach((trigger) => {
     trigger.classList.toggle('active', trigger.dataset.setup === name);
@@ -218,10 +190,7 @@ function placeBlock(name) {
   element('blockStatus').textContent = '';
 
   element('result').textContent =
-    (blockColor === 'yellow' ? 'Yellow' : 'Black') +
-    ' ' +
-    (kind === 'tampa' ? 'Tampa' : 'St. Pete') +
-    ' block added.';
+    (blockColor === 'yellow' ? 'Yellow' : 'Black') + ' ' + (kind === 'tampa' ? 'Tampa' : 'St. Pete') + ' block added.';
 
   update();
 
@@ -230,9 +199,7 @@ function placeBlock(name) {
 
 function scores() {
   // Keep the held biscuit under the pointer; collection slots settle on release.
-  physics.collectOffCourt(
-    discs.filter((disc) => dragging?.kind !== 'disc' || disc !== dragging.disc),
-  );
+  physics.collectOffCourt(discs.filter((disc) => dragging?.kind !== 'disc' || disc !== dragging.disc));
 
   let yellow = 0,
     black = 0;
@@ -277,13 +244,7 @@ function setup(name) {
     travel = 0;
 
   if (kind === 'clear') {
-    discs = [
-      createDisc(
-        3.9,
-        33.2,
-        'black',
-      ),
-    ];
+    discs = [createDisc(3.9, 33.2, 'black')];
 
     x = 4.22;
     y = 33.2;
@@ -293,13 +254,7 @@ function setup(name) {
   if (kind === 'stpete') {
     color = guardColor;
 
-    discs = [
-      createDisc(
-        color === 'black' ? 4.5 : 1.5,
-        28.5,
-        color,
-      ),
-    ];
+    discs = [createDisc(color === 'black' ? 4.5 : 1.5, 28.5, color)];
 
     element('position').value = String(95);
     x = 1.48;
@@ -309,13 +264,7 @@ function setup(name) {
   if (kind === 'tampa') {
     color = guardColor;
 
-    discs = [
-      createDisc(
-        color === 'black' ? 2.6 : 3.4,
-        28.5,
-        color,
-      ),
-    ];
+    discs = [createDisc(color === 'black' ? 2.6 : 3.4, 28.5, color)];
 
     element('position').value = String(95);
     x = 4.25;
@@ -323,13 +272,7 @@ function setup(name) {
   }
 
   if (kind === 'kitchen') {
-    discs = [
-      createDisc(
-        4.05,
-        33.3,
-        'black',
-      ),
-    ];
+    discs = [createDisc(4.05, 33.3, 'black')];
 
     x = 4.05;
     y = 33.3;

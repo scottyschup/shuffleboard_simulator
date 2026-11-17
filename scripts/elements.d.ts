@@ -65,6 +65,7 @@ interface LabElements {
   rotateFocus: HTMLButtonElement;
   savePrediction: HTMLButtonElement;
   savedPredictions: HTMLDialogElement;
+  sortSavedPredictions: HTMLButtonElement;
   scoringHeading: HTMLElement;
   settingsDialog: HTMLDialogElement;
   settingsHeading: HTMLElement;

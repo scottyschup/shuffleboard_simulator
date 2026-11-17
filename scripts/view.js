@@ -18,21 +18,9 @@ function canvasSize(c) {
 
   const ctx = c.getContext('2d');
 
-  ctx.setTransform(
-    ratio,
-    0,
-    0,
-    ratio,
-    0,
-    0,
-  );
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-  ctx.clearRect(
-    0,
-    0,
-    b.width,
-    b.height,
-  );
+  ctx.clearRect(0, 0, b.width, b.height);
 
   return {
     ctx,
@@ -62,19 +50,10 @@ function draw() {
   updateSupply();
 }
 
-function render(
-  id,
-  zoom,
-  predictionRecord = null,
-  viewport = null,
-) {
+function render(id, zoom, predictionRecord = null, viewport = null) {
   const renderEnd = predictionRecord ? predictionRecord.state.shootingEnd : shootingEnd;
 
-  const {
-    ctx,
-    w,
-    h,
-  } = canvasSize(element(id));
+  const { ctx, w, h } = canvasSize(element(id));
 
   if (w < 1 || h < 1) {
     return;
@@ -86,13 +65,7 @@ function render(
   const mirrorX = zoom && renderEnd === 'foot';
   const reverse = !zoom && renderEnd === 'foot';
 
-  const rotation = predictionRecord
-    ? h >= w
-      ? 0
-      : 1
-    : id === 'target'
-      ? ((h >= w ? 0 : 1) + focusRotation) % 4
-      : 0;
+  const rotation = predictionRecord ? (h >= w ? 0 : 1) : id === 'target' ? ((h >= w ? 0 : 1) + focusRotation) % 4 : 0;
 
   const vertical = rotation % 2 === 0;
   const yMin = isShooting ? -0.35 : zoom ? (predictionRecord ? 24.75 : focusStart) : -physics.R;
@@ -167,12 +140,7 @@ function render(
     vertical,
   };
 
-  const line = (
-    points,
-    stroke = '#e5e9cf',
-    width = physics.LINE * scale,
-    dash = [],
-  ) => {
+  const line = (points, stroke = '#e5e9cf', width = physics.LINE * scale, dash = []) => {
     ctx.beginPath();
 
     points.forEach((p, i) => {
@@ -188,33 +156,16 @@ function render(
     ctx.setLineDash([]);
   };
 
-  const rect = (
-    x,
-    y,
-    ww,
-    hh,
-    fill,
-  ) => {
+  const rect = (x, y, ww, hh, fill) => {
     const p = map(x, y),
       q = map(x + ww, y + hh);
 
     ctx.fillStyle = fill;
 
-    ctx.fillRect(
-      Math.min(p[0], q[0]),
-      Math.min(p[1], q[1]),
-      Math.abs(q[0] - p[0]),
-      Math.abs(q[1] - p[1]),
-    );
+    ctx.fillRect(Math.min(p[0], q[0]), Math.min(p[1], q[1]), Math.abs(q[0] - p[0]), Math.abs(q[1] - p[1]));
   };
 
-  const text = (
-    str,
-    x,
-    y,
-    size = 12,
-    fill = '#e3e8ce',
-  ) => {
+  const text = (str, x, y, size = 12, fill = '#e3e8ce') => {
     const q = map(x, y);
 
     ctx.fillStyle = fill;
@@ -225,53 +176,18 @@ function render(
   };
 
   // A full-width slab and muted apron: no walls or table-shuffleboard cushions.
-  rect(
-    -0.16,
-    0,
-    6.32,
-    39,
-    '#c7cebd',
-  );
+  rect(-0.16, 0, 6.32, 39, '#c7cebd');
 
-  rect(
-    0,
-    0,
-    6,
-    39,
-    '#476d56',
-  );
+  rect(0, 0, 6, 39, '#476d56');
 
-  rect(
-    0,
-    39,
-    6,
-    3 * physics.R,
-    '#dce3d4',
-  );
+  rect(0, 39, 6, 3 * physics.R, '#dce3d4');
 
-  text(
-    renderEnd === 'head' ? '🦶' : '👤',
-    3,
-    39 + 1.5 * physics.R,
-    Math.min(24, Math.max(5, scale * 0.55)),
-  );
+  text(renderEnd === 'head' ? '🦶' : '👤', 3, 39 + 1.5 * physics.R, Math.min(24, Math.max(5, scale * 0.55)));
 
-  rect(
-    0,
-    37.5,
-    6,
-    1.5,
-    '#395a48',
-  );
+  rect(0, 37.5, 6, 1.5, '#395a48');
 
   {
-    rect(
-      0,
-      0,
-      6,
-      1.5,
-      '#395a48',
-    );
+    rect(0, 0, 6, 1.5, '#395a48');
   }
   ctx.save();
 
@@ -280,12 +196,7 @@ function render(
 
   ctx.beginPath();
 
-  ctx.rect(
-    Math.min(tl[0], br[0]),
-    Math.min(tl[1], br[1]),
-    Math.abs(br[0] - tl[0]),
-    Math.abs(br[1] - tl[1]),
-  );
+  ctx.rect(Math.min(tl[0], br[0]), Math.min(tl[1], br[1]), Math.abs(br[0] - tl[0]), Math.abs(br[1] - tl[1]));
 
   ctx.clip();
   for (let n = 0; n < 39; n++) {
@@ -340,69 +251,24 @@ function render(
     physics.diagramLines.forEach((points) => line(points.map(([x, yy]) => [x, y(yy)])));
     const fs = zoom ? 18 : Math.max(7, scale * 0.55);
 
-    text(
-      '10',
-      3,
-      y(30.45),
-      fs,
-    );
+    text('10', 3, y(30.45), fs);
 
-    text(
-      '8',
-      2.25,
-      y(33),
-      fs,
-    );
+    text('8', 2.25, y(33), fs);
 
-    text(
-      '8',
-      3.75,
-      y(33),
-      fs,
-    );
+    text('8', 3.75, y(33), fs);
 
-    text(
-      '7',
-      1.6,
-      y(36),
-      fs,
-    );
+    text('7', 1.6, y(36), fs);
 
-    text(
-      '7',
-      4.4,
-      y(36),
-      fs,
-    );
+    text('7', 4.4, y(36), fs);
 
     if (zoom) {
-      text(
-        '−10',
-        1.5,
-        y(38.25),
-        15,
-      );
+      text('−10', 1.5, y(38.25), 15);
 
-      text(
-        '−10',
-        4.5,
-        y(38.25),
-        15,
-      );
+      text('−10', 4.5, y(38.25), 15);
     } else {
-      text(
-        '−10',
-        1.5,
-        y(38.25),
-        7,
-      );
+      text('−10', 1.5, y(38.25), 7);
 
-      text(
-        '−10',
-        4.5,
-        y(38.25),
-        7,
-      );
+      text('−10', 4.5, y(38.25), 7);
     }
   }
 
@@ -430,23 +296,13 @@ function render(
   }
 
   if (zoom) {
-    text(
-      'DEAD LINE',
-      3,
-      25.1,
-      8,
-      '#bcccb3',
-    );
+    text('DEAD LINE', 3, 25.1, 8, '#bcccb3');
   }
 
   if (!predictionRecord && element('trails').checked) {
     paths.forEach((path, i) => {
       if (path.length > 1) {
-        line(
-          path,
-          discs[i]?.color === 'black' ? '#c3cec399' : '#edcb6ea6',
-          zoom ? 1.8 : 1.1,
-        );
+        line(path, discs[i]?.color === 'black' ? '#c3cec399' : '#edcb6ea6', zoom ? 1.8 : 1.1);
       }
     });
   }
@@ -477,23 +333,13 @@ function render(
 
         const ink = isShooter ? '#e3ed9c' : end.color === 'black' ? '#b9dafa' : '#ffd17a';
 
-        line(
-          path,
-          ink,
-          zoom ? 1.8 : 1.2,
-          [5, 5],
-        );
+        line(path, ink, zoom ? 1.8 : 1.2, [5, 5]);
 
         const q = map(end.x, end.y);
 
         ctx.beginPath();
 
-        ctx.arc(
-          ...q,
-          physics.R * scale,
-          0,
-          Math.PI * 2,
-        );
+        ctx.arc(...q, physics.R * scale, 0, Math.PI * 2);
 
         ctx.strokeStyle = ink;
         ctx.lineWidth = 1.2;
@@ -517,12 +363,7 @@ function render(
     ctx.shadowOffsetY = 2;
     ctx.beginPath();
 
-    ctx.arc(
-      ...q,
-      radius,
-      0,
-      Math.PI * 2,
-    );
+    ctx.arc(...q, radius, 0, Math.PI * 2);
 
     ctx.fillStyle = d.color === 'yellow' ? '#edc559' : '#202e29';
     ctx.fill();
@@ -533,24 +374,13 @@ function render(
     ctx.stroke();
     ctx.beginPath();
 
-    ctx.arc(
-      ...q,
-      radius * 0.63,
-      0,
-      Math.PI * 2,
-    );
+    ctx.arc(...q, radius * 0.63, 0, Math.PI * 2);
 
     ctx.strokeStyle = d.color === 'yellow' ? '#f8df8d' : '#53665a';
     ctx.lineWidth = 0.8;
     ctx.stroke();
     if (zoom && physics.score(d)) {
-      text(
-        String(physics.score(d)),
-        d.x,
-        d.y,
-        Math.max(8, scale * 0.19),
-        d.color === 'yellow' ? '#5b4a24' : '#d5dfd3',
-      );
+      text(String(physics.score(d)), d.x, d.y, Math.max(8, scale * 0.19), d.color === 'yellow' ? '#5b4a24' : '#d5dfd3');
     }
   }
 
@@ -560,19 +390,10 @@ function render(
 
     ctx.beginPath();
 
-    ctx.arc(
-      ...q,
-      physics.R * scale,
-      0,
-      Math.PI * 2,
-    );
+    ctx.arc(...q, physics.R * scale, 0, Math.PI * 2);
 
     ctx.fillStyle =
-      physics.remainingBiscuits(discs, color) === 0
-        ? '#9aa19b'
-        : color === 'yellow'
-          ? '#f0cf6a'
-          : '#1d2b25';
+      physics.remainingBiscuits(discs, color) === 0 ? '#9aa19b' : color === 'yellow' ? '#f0cf6a' : '#1d2b25';
 
     ctx.fill();
     ctx.strokeStyle = '#fff9';
@@ -587,12 +408,7 @@ function render(
     ctx.lineWidth = 1;
     ctx.beginPath();
 
-    ctx.arc(
-      ...q,
-      zoom ? 7 : 3,
-      0,
-      Math.PI * 2,
-    );
+    ctx.arc(...q, zoom ? 7 : 3, 0, Math.PI * 2);
 
     ctx.moveTo(q[0] - (zoom ? 11 : 5), q[1]);
     ctx.lineTo(q[0] + (zoom ? 11 : 5), q[1]);
@@ -636,17 +452,9 @@ function render(
     // Preserve the original canvas and panel sizing, using its unused left apron first.
     let left = courtLeft >= panelWidth + 10 ? courtLeft - panelWidth - 6 : originalLeft - 12;
 
-    const inside = physics.startingPoint(
-      color,
-      0,
-      launchY,
-    );
+    const inside = physics.startingPoint(color, 0, launchY);
 
-    const outside = physics.startingPoint(
-      color,
-      100,
-      launchY,
-    );
+    const outside = physics.startingPoint(color, 100, launchY);
 
     const a = map(inside.x, inside.y)[0],
       b = map(outside.x, outside.y)[0];
@@ -668,12 +476,7 @@ function render(
 
     ctx.beginPath();
 
-    ctx.arc(
-      ...q,
-      physics.R * scale,
-      0,
-      2 * Math.PI,
-    );
+    ctx.arc(...q, physics.R * scale, 0, 2 * Math.PI);
 
     ctx.fillStyle = dragging.color === 'yellow' ? '#edc559' : '#202e29';
     ctx.globalAlpha = 0.8;
@@ -690,15 +493,9 @@ function update() {
   element('speedVal').textContent = `${value('speed').toFixed(2)} ft/s`;
   element('slickVal').textContent = `${value('slick')} / 100`;
 
-  const spread = physics.aimStats(
-    accuracy(),
-    value('speed'),
-    aimDistance(),
-    fastShotOptions(),
-  );
+  const spread = physics.aimStats(accuracy(), value('speed'), aimDistance(), fastShotOptions());
 
-  element('aimSpread').textContent =
-    `σ ${spread.sigmaDeg.toFixed(2)}° · miss ${(100 * spread.missChance).toFixed(1)}%`;
+  element('aimSpread').textContent = `σ ${spread.sigmaDeg.toFixed(2)}° · miss ${(100 * spread.missChance).toFixed(1)}%`;
 
   element('aimSpread').setAttribute(
     'aria-label',
@@ -711,9 +508,7 @@ function update() {
   );
 
   element('driftVal').textContent =
-    value('drift') === 0
-      ? 'None'
-      : `${Math.abs(value('drift'))}% ${value('drift') < 0 ? 'left' : 'right'}`;
+    value('drift') === 0 ? 'None' : `${Math.abs(value('drift'))}% ${value('drift') < 0 ? 'left' : 'right'}`;
 
   ['yellow', 'black'].forEach((c) => {
     element(c).classList.toggle('selected', color === c);
@@ -725,8 +520,7 @@ function update() {
     button(end + 'End').disabled = running || !!dragging;
   }
 
-  element('scoringHeading').textContent =
-    'Focus view · ' + (shootingEnd === 'head' ? 'toward Foot' : 'toward Head');
+  element('scoringHeading').textContent = 'Focus view · ' + (shootingEnd === 'head' ? 'toward Foot' : 'toward Head');
 
   element('target').setAttribute(
     'aria-label',
@@ -746,10 +540,7 @@ function update() {
   element('rotateFocus').disabled = !!dragging;
   element('biscuitLock').setAttribute('aria-pressed', String(biscuitsLocked));
 
-  element('biscuitLock').setAttribute(
-    'aria-label',
-    biscuitsLocked ? 'Unlock biscuits' : 'Lock biscuits',
-  );
+  element('biscuitLock').setAttribute('aria-label', biscuitsLocked ? 'Unlock biscuits' : 'Lock biscuits');
 
   element('biscuitLock').textContent = biscuitsLocked ? '🔒' : '🔓';
   element('biscuitLock').title = biscuitsLocked ? 'Unlock biscuits' : 'Lock biscuits';
@@ -757,9 +548,7 @@ function update() {
 
   element('shoot').disabled = running || !canShoot;
 
-  element('shoot').title = canShoot
-    ? 'Shoot the queued biscuit'
-    : 'All four ' + color + ' biscuits are used';
+  element('shoot').title = canShoot ? 'Shoot the queued biscuit' : 'All four ' + color + ' biscuits are used';
 
   queryElements(
     '#controlPanel button, .accuracy-control button, .accuracy-control input, #s' +
@@ -776,23 +565,12 @@ function update() {
     ['placePigeon', 'yellow'],
     ['placeBlackPigeon', 'black'],
   ]) {
-    button(id).disabled =
-      running ||
-      !!dragging ||
-      physics.remainingBiscuits(
-        discs,
-        biscuitColor,
-        color,
-      ) === 0;
+    button(id).disabled = running || !!dragging || physics.remainingBiscuits(discs, biscuitColor, color) === 0;
   }
 
   element('fastShotThreshold').disabled = running || !element('fastShotInaccuracy').checked;
   if (!running && canShoot) {
-    preview = physics.simulate(
-      [...structuredClone(discs.filter((d) => !d.out)), shot()],
-      courtDeceleration(),
-      drift(),
-    );
+    preview = physics.simulate([...structuredClone(discs.filter((d) => !d.out)), shot()], courtDeceleration(), drift());
   }
 
   if (!running && !canShoot) {

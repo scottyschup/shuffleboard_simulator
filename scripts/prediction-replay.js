@@ -2,18 +2,13 @@
 (function (root) {
   'use strict';
 
-  const model =
-    typeof module === 'undefined' ? root.PredictionModel : require('./prediction-model.js');
+  const model = typeof module === 'undefined' ? root.PredictionModel : require('./prediction-model.js');
 
   const physics = typeof module === 'undefined' ? root.Physics : require('./physics.js');
   const rate = 15;
 
   function build(record, outcome) {
-    if (
-      !Array.isArray(outcome.launch) ||
-      outcome.launch.length !== 2 ||
-      !outcome.launch.every(Number.isFinite)
-    ) {
+    if (!Array.isArray(outcome.launch) || outcome.launch.length !== 2 || !outcome.launch.every(Number.isFinite)) {
       throw new Error('This saved run has no delivery data. Regenerate to animate it.');
     }
 
@@ -30,11 +25,7 @@
       for (const disc of discs) {
         const point = model.physical(disc, record.state.shootingEnd);
 
-        values.push(
-          point.x,
-          point.y,
-          disc.out ? 1 : 0,
-        );
+        values.push(point.x, point.y, disc.out ? 1 : 0);
       }
     };
 
@@ -67,23 +58,11 @@
     return { ...track, scoringEntry: scoringEntryTime(track, record) };
   }
 
-  function path(
-    track,
-    biscuit,
-    time,
-    position = positions(track, time)[biscuit],
-  ) {
+  function path(track, biscuit, time, position = positions(track, time)[biscuit]) {
     const route = track.paths[biscuit];
     const past = route.filter((point) => point[2] <= time);
 
-    return [
-      ...past,
-      [
-        position[0],
-        position[1],
-        time,
-      ],
-    ];
+    return [...past, [position[0], position[1], time]];
   }
 
   function positions(track, time) {
@@ -94,9 +73,7 @@
     const end = next === count - 1 ? track.duration : next / rate;
 
     const blend =
-      time >= track.duration
-        ? 1
-        : Math.max(0, Math.min(1, (time - frame / rate) / Math.max(1e-9, end - frame / rate)));
+      time >= track.duration ? 1 : Math.max(0, Math.min(1, (time - frame / rate) / Math.max(1e-9, end - frame / rate)));
 
     return Array.from({ length: track.stride / 3 }, (_, biscuit) => {
       const a = frame * track.stride + biscuit * 3;
@@ -119,10 +96,7 @@
     const localY = (frame) => {
       const index = frame * track.stride + shooter * 3;
 
-      return model.physical(
-        { x: track.frames[index], y: track.frames[index + 1] },
-        record.state.shootingEnd,
-      ).y;
+      return model.physical({ x: track.frames[index], y: track.frames[index + 1] }, record.state.shootingEnd).y;
     };
 
     let beforeY = localY(0),
@@ -137,10 +111,7 @@
       const time = frame === count - 1 ? track.duration : frame / rate;
 
       if (y >= threshold) {
-        return (
-          beforeTime +
-          (time - beforeTime) * Math.max(0, Math.min(1, (threshold - beforeY) / (y - beforeY)))
-        );
+        return beforeTime + (time - beforeTime) * Math.max(0, Math.min(1, (threshold - beforeY) / (y - beforeY)));
       }
 
       if (track.frames[frame * track.stride + shooter * 3 + 2]) {

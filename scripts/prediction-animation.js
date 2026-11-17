@@ -68,9 +68,7 @@ const PredictionAnimation = (() => {
     element('predictionReplaySlower').onclick = () => setSpeed(speed / 2);
     element('predictionReplayFaster').onclick = () => setSpeed(speed * 2);
 
-    element('predictionReplaySeek').addEventListener('input', () =>
-      seek(Number(input('predictionReplaySeek').value)),
-    );
+    element('predictionReplaySeek').addEventListener('input', () => seek(Number(input('predictionReplaySeek').value)));
 
     updateControls();
   }
@@ -87,9 +85,7 @@ const PredictionAnimation = (() => {
     playing = false;
     lastStamp = null;
 
-    element('predictionAnimationStatus').textContent = cancelled
-      ? 'Replay preparation cancelled.'
-      : 'Replay paused.';
+    element('predictionAnimationStatus').textContent = cancelled ? 'Replay preparation cancelled.' : 'Replay paused.';
 
     updateControls();
     draw();
@@ -118,9 +114,7 @@ const PredictionAnimation = (() => {
 
           bytes += track.frames.byteLength;
           if (bytes > memoryLimit) {
-            throw new Error(
-              'This run is too large to replay smoothly. Static results remain available.',
-            );
+            throw new Error('This run is too large to replay smoothly. Static results remain available.');
           }
 
           prepared.push(track);
@@ -190,12 +184,7 @@ const PredictionAnimation = (() => {
           count: 1,
           end: position,
           key: track.key,
-          path: PredictionReplay.path(
-            track,
-            biscuit,
-            time,
-            position,
-          ),
+          path: PredictionReplay.path(track, biscuit, time, position),
           position,
         })),
       );
@@ -213,8 +202,7 @@ const PredictionAnimation = (() => {
     lastStamp = null;
     time = Math.max(0, Math.min(duration, value));
 
-    element('predictionAnimationStatus').textContent =
-      'Replay paused. Drag the timeline or press Play to resume.';
+    element('predictionAnimationStatus').textContent = 'Replay paused. Drag the timeline or press Play to resume.';
 
     updateControls();
     draw();
@@ -299,10 +287,7 @@ const PredictionAnimation = (() => {
     element('predictionAnimationTime').textContent =
       String(seconds).padStart(2, '0') + '.' + String(fraction).padStart(3, '0');
 
-    element('predictionAnimationTime').setAttribute(
-      'aria-label',
-      seconds + ' seconds ' + fraction + ' milliseconds',
-    );
+    element('predictionAnimationTime').setAttribute('aria-label', seconds + ' seconds ' + fraction + ' milliseconds');
 
     input('predictionReplaySeek').value = String(time);
 
