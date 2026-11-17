@@ -57,8 +57,8 @@
       if (d.out) {
         const i = slots[d.color]++;
 
-        d.x = (d.color === 'black' ? 0.75 : 3.3) + (i % 4) * 0.65;
-        d.y = 40 + Math.floor(i / 4) * 0.65;
+        d.x = (d.color === 'black' ? 0.55 : 3.65) + (i % 4) * 0.6;
+        d.y = 39 + (3 * R) / 2;
         d.vx = 0;
         d.vy = 0;
         d.parked = true;
@@ -263,6 +263,7 @@
     dt,
     a,
     drift = 0,
+    onContact = null,
   ) {
     for (const d of discs) {
       if (d.out) {
@@ -308,6 +309,8 @@
         p.y -= (ny * overlap) / 2;
         q.x += (nx * overlap) / 2;
         q.y += (ny * overlap) / 2;
+        onContact?.(i, p);
+        onContact?.(j, q);
         const rel = (q.vx - p.vx) * nx + (q.vy - p.vy) * ny;
 
         if (rel < 0) {

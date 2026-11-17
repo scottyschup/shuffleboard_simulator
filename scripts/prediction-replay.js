@@ -5,6 +5,7 @@
   const model =
     typeof module === 'undefined' ? root.PredictionModel : require('./prediction-model.js');
 
+  const physics = typeof module === 'undefined' ? root.Physics : require('./physics.js');
   const rate = 15;
 
   function build(record, outcome) {
@@ -37,7 +38,7 @@
       }
     };
 
-    model.trial(
+    const outcomeWithPaths = model.trial(
       {
         ...record,
         state: {
@@ -54,12 +55,35 @@
       capture,
     );
 
-    return {
+    const track = {
       duration,
       frames: new Float32Array(values),
       key: outcome.score.join(','),
+      paths: outcomeWithPaths.paths,
+      selectionKey: model.selectionKey(record, outcome),
       stride,
     };
+
+    return { ...track, scoringEntry: scoringEntryTime(track, record) };
+  }
+
+  function path(
+    track,
+    biscuit,
+    time,
+    position = positions(track, time)[biscuit],
+  ) {
+    const route = track.paths[biscuit];
+    const past = route.filter((point) => point[2] <= time);
+
+    return [
+      ...past,
+      [
+        position[0],
+        position[1],
+        time,
+      ],
+    ];
   }
 
   function positions(track, time) {
@@ -86,7 +110,56 @@
     });
   }
 
-  const api = { build, positions };
+  // The scoring viewport begins at 24.75 feet. Switch when the delivered biscuit's front edge enters.
+  function scoringEntryTime(track, record) {
+    const shooter = record.biscuits.findIndex((disc) => disc.shooter);
+    const count = track.frames.length / track.stride;
+    const threshold = 24.75 - physics.R;
+
+    const localY = (frame) => {
+      const index = frame * track.stride + shooter * 3;
+
+      return model.physical(
+        { x: track.frames[index], y: track.frames[index + 1] },
+        record.state.shootingEnd,
+      ).y;
+    };
+
+    let beforeY = localY(0),
+      beforeTime = 0;
+
+    if (beforeY >= threshold) {
+      return 0;
+    }
+
+    for (let frame = 1; frame < count; frame++) {
+      const y = localY(frame);
+      const time = frame === count - 1 ? track.duration : frame / rate;
+
+      if (y >= threshold) {
+        return (
+          beforeTime +
+          (time - beforeTime) * Math.max(0, Math.min(1, (threshold - beforeY) / (y - beforeY)))
+        );
+      }
+
+      if (track.frames[frame * track.stride + shooter * 3 + 2]) {
+        return Infinity;
+      }
+
+      beforeY = y;
+      beforeTime = time;
+    }
+
+    return Infinity;
+  }
+
+  const api = {
+    build,
+    path,
+    positions,
+    scoringEntryTime,
+  };
 
   if (typeof module !== 'undefined') {
     module.exports = api;

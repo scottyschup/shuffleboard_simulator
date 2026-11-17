@@ -1,11 +1,12 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-function createFixture() {
+function createFixture(options = {}) {
   const elements = [];
   const ids = new Map();
-  const storage = new Map();
+  const storage = new Map(Object.entries(options.storage || {}));
   let document;
+  const animationFrames = [];
 
   function createElement(tag = 'div') {
     let id = '';
@@ -40,6 +41,14 @@ function createFixture() {
       checked: false,
       children: [],
       className: '',
+      click() {
+        this.wasClicked = true;
+        if (this.tagName === 'A') {
+          document.lastDownload = { blob: document.downloadBlob, filename: this.download };
+        }
+
+        dispatch(this, 'click');
+      },
       close() {
         this.open = false;
         dispatch(this, 'close');
@@ -53,6 +62,14 @@ function createFixture() {
         const previous = document.activeElement;
 
         document.activeElement = this;
+        if (previous && previous !== this) {
+          dispatch(
+            previous,
+            'blur',
+            { relatedTarget: this },
+          );
+        }
+
         if (previous?.parentElement) {
           dispatch(
             previous.parentElement,
@@ -109,6 +126,15 @@ function createFixture() {
       listeners: {},
       open: false,
       parentElement: null,
+      remove() {
+        if (this.parentElement) {
+          this.parentElement.children = this.parentElement.children.filter(
+            (child) => child !== this,
+          );
+        }
+
+        this.parentElement = null;
+      },
       replaceChildren(...children) {
         this.children = [];
         this.append(...children);
@@ -198,6 +224,7 @@ function createFixture() {
       pointerId: 1,
       pointerType: 'mouse',
       preventDefault() {},
+      stopPropagation() {},
       target: element,
       ...event,
     };
@@ -210,9 +237,7 @@ function createFixture() {
       handler(supplied);
     }
 
-    if (type === 'click') {
-      element.onclick?.(supplied);
-    }
+    element['on' + type]?.(supplied);
   }
 
   function matches(element, selector) {
@@ -343,6 +368,7 @@ function createFixture() {
   }
 
   const context = vm.createContext({
+    Blob,
     Math,
     Physics: require('../scripts/physics.js'),
     PredictionModel: require('../scripts/prediction-model.js'),
@@ -352,13 +378,23 @@ function createFixture() {
       observe() {}
     },
     TextEncoder,
+    URL: {
+      createObjectURL(blob) {
+        document.downloadBlob = blob;
+
+        return 'blob:fixture';
+      },
+      revokeObjectURL() {},
+    },
     document,
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, item) => storage.set(key, item),
     },
     performance,
-    requestAnimationFrame() {},
+    requestAnimationFrame(callback) {
+      animationFrames.push(callback);
+    },
     setTimeout,
     structuredClone,
     window: { devicePixelRatio: 1, innerWidth: 1000 },
@@ -408,6 +444,9 @@ function createFixture() {
     context,
     dispatch,
     document,
+    frame(stamp) {
+      animationFrames.splice(0).forEach((callback) => callback(stamp));
+    },
     ids,
     pointEvent,
     run,

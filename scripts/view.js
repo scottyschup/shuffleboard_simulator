@@ -66,6 +66,7 @@ function render(
   id,
   zoom,
   predictionRecord = null,
+  viewport = null,
 ) {
   const renderEnd = predictionRecord ? predictionRecord.state.shootingEnd : shootingEnd;
 
@@ -79,8 +80,8 @@ function render(
     return;
   }
 
-  const transverse = zoom ? 6.4 : 7;
-  const padding = 12;
+  const transverse = 6.4;
+  const padding = zoom ? 8 : 4;
   const isShooting = id === 'shooting';
   const mirrorX = zoom && renderEnd === 'foot';
   const reverse = !zoom && renderEnd === 'foot';
@@ -94,25 +95,27 @@ function render(
       : 0;
 
   const vertical = rotation % 2 === 0;
-  const yMin = isShooting ? -0.35 : zoom ? (predictionRecord ? 24.75 : focusStart) : -2.25;
+  const yMin = isShooting ? -0.35 : zoom ? (predictionRecord ? 24.75 : focusStart) : -physics.R;
 
   const yMax = isShooting
     ? Math.max(1.9, (h - 12) / ((w - 12) / transverse) - 0.35)
     : zoom
       ? predictionRecord
-        ? 41.25
+        ? 39 + 3 * physics.R
         : focusStart + focusLength
-      : 41.25;
+      : 39 + 3 * physics.R;
 
   const length = yMax - yMin;
 
   // One scale for both axes preserves court and biscuit proportions.
-  const scale = Math.max(
-    0.01,
-    vertical
-      ? Math.min((w - padding) / transverse, (h - 16) / length)
-      : Math.min((w - 16) / length, (h - padding) / transverse),
-  );
+  const scale =
+    (viewport?.zoom || 1) *
+    Math.max(
+      0.01,
+      vertical
+        ? Math.min((w - padding) / transverse, (h - padding) / length)
+        : Math.min((w - padding) / length, (h - padding) / transverse),
+    );
 
   const centerY = (yMin + yMax) / 2;
 
@@ -138,12 +141,15 @@ function render(
     const across = (x - 3) * scale;
     const along = (centerY - y) * scale;
 
-    return [w / 2 + axisX * across - axisY * along, h / 2 + axisY * across + axisX * along];
+    return [
+      w / 2 + (viewport?.panX || 0) + axisX * across - axisY * along,
+      h / 2 + (viewport?.panY || 0) + axisY * across + axisX * along,
+    ];
   };
 
   const unmap = (xx, yy) => {
-    const across = (xx - w / 2) / scale;
-    const along = (yy - h / 2) / scale;
+    const across = (xx - w / 2 - (viewport?.panX || 0)) / scale;
+    const along = (yy - h / 2 - (viewport?.panY || 0)) / scale;
     const x = 3 + axisX * across + axisY * along;
     const y = centerY + axisY * across - axisX * along;
 
@@ -237,18 +243,17 @@ function render(
 
   rect(
     0,
-    39.15,
+    39,
     6,
-    1.85,
+    3 * physics.R,
     '#dce3d4',
   );
 
   text(
-    'COLLECTED',
+    renderEnd === 'head' ? '🦶' : '👤',
     3,
-    40.7,
-    zoom ? 9 : 6,
-    '#637568',
+    39 + 1.5 * physics.R,
+    Math.min(24, Math.max(5, scale * 0.55)),
   );
 
   rect(
@@ -296,6 +301,41 @@ function render(
 
   function triangle(reverse = false) {
     const y = (v) => (reverse ? 39 - v : v);
+
+    // Color only the outer corner triangles; the scoring parallelograms stay green.
+    /** @type {[string, number[][]][]} */
+    const kitchenFields = [
+      [
+        '#202e29',
+        [
+          [0, 37.5],
+          [0.5, 37.5],
+          [0, 39],
+        ],
+      ],
+      [
+        '#edc559',
+        [
+          [5.5, 37.5],
+          [6, 37.5],
+          [6, 39],
+        ],
+      ],
+    ];
+
+    for (const [fill, points] of kitchenFields) {
+      ctx.beginPath();
+
+      points.forEach(([x, yy], index) => {
+        const q = map(x, y(yy));
+
+        index ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
+      });
+
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
 
     physics.diagramLines.forEach((points) => line(points.map(([x, yy]) => [x, y(yy)])));
     const fs = zoom ? 18 : Math.max(7, scale * 0.55);
@@ -586,14 +626,40 @@ function render(
   }
 
   if (isShooting) {
+    const panel = element('controlPanel');
     const shooter = map(launch().x, launch().y);
     const courtLeft = Math.min(map(0, 0)[0], map(6, 0)[0]);
     const halfCourtWidth = 3 * scale;
+    const minWidth = w < 360 ? 148 : w < 600 ? 186 : 196;
+    const panelWidth = Math.min(w - 8, Math.max(minWidth, halfCourtWidth));
+    const originalLeft = shooter[0] > w / 2 ? courtLeft : courtLeft + halfCourtWidth;
+    // Preserve the original canvas and panel sizing, using its unused left apron first.
+    let left = courtLeft >= panelWidth + 10 ? courtLeft - panelWidth - 6 : originalLeft - 12;
 
-    element('controlPanel').style.width = halfCourtWidth + 'px';
+    const inside = physics.startingPoint(
+      color,
+      0,
+      launchY,
+    );
 
-    element('controlPanel').style.left =
-      (shooter[0] > w / 2 ? courtLeft : courtLeft + halfCourtWidth) + 'px';
+    const outside = physics.startingPoint(
+      color,
+      100,
+      launchY,
+    );
+
+    const a = map(inside.x, inside.y)[0],
+      b = map(outside.x, outside.y)[0];
+
+    const shootingLeft = Math.min(a, b) - physics.R * scale - 4;
+    const shootingRight = Math.max(a, b) + physics.R * scale + 4;
+
+    if (left + panelWidth > shootingLeft && left < shootingRight) {
+      left = shootingLeft >= panelWidth + 4 ? shootingLeft - panelWidth : shootingRight;
+    }
+
+    panel.style.width = panelWidth + 'px';
+    panel.style.left = Math.max(4, Math.min(w - panelWidth - 4, left)) + 'px';
   }
 
   if (dragging?.kind === 'supply' && dragging.id === id && dragging.point) {
@@ -671,6 +737,7 @@ function update() {
       '. Tap to aim or drag unlocked biscuits.',
   );
 
+  element('openSettings').disabled = running || !!dragging;
   element('undo').disabled = running || !!dragging || !shotHistory.length;
   element('retry').disabled = running || !!dragging || !lastShot;
   element('fastShotThreshold').disabled = running || !element('fastShotInaccuracy').checked;
@@ -695,7 +762,8 @@ function update() {
     : 'All four ' + color + ' biscuits are used';
 
   queryElements(
-    '#controlPanel button, #controlPanel input, #settingsDialog input, .shot-actions button',
+    '#controlPanel button, .accuracy-control button, .accuracy-control input, #s' +
+      'ettingsDialog input, .shot-actions button',
   ).forEach((el) => {
     /** @type {HTMLButtonElement} */ (el).disabled = running || !!dragging;
   });
@@ -704,15 +772,19 @@ function update() {
   element('undo').disabled = running || !!dragging || !shotHistory.length;
   element('retry').disabled = running || !!dragging || !lastShot;
   syncPrediction();
-
-  element('placePigeon').disabled =
-    running ||
-    !!dragging ||
-    physics.remainingBiscuits(
-      discs,
-      color,
-      color,
-    ) === 0;
+  for (const [id, biscuitColor] of [
+    ['placePigeon', 'yellow'],
+    ['placeBlackPigeon', 'black'],
+  ]) {
+    button(id).disabled =
+      running ||
+      !!dragging ||
+      physics.remainingBiscuits(
+        discs,
+        biscuitColor,
+        color,
+      ) === 0;
+  }
 
   element('fastShotThreshold').disabled = running || !element('fastShotInaccuracy').checked;
   if (!running && canShoot) {

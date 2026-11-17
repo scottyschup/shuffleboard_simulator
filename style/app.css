@@ -65,7 +65,7 @@ main {
   display: grid;
   flex: 1;
   gap: 5px;
-  grid-template-columns: minmax(0, 1fr) 38px clamp(144px, 9vw, 120px);
+  grid-template-columns: minmax(0, 1fr) 38px max(96px, calc((100dvh - 110px) * 0.16));
   grid-template-rows: minmax(0, 1fr);
   min-height: 0;
 }

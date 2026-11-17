@@ -2,10 +2,9 @@
   background: #f5f4eef0;
   border: 1px solid #b4c2af;
   border-radius: 6px;
-  bottom: 4px;
   container-type: inline-size;
-  max-height: calc(100% - 8px);
-  overflow: auto;
+  min-width: 148px;
+  overflow: visible;
   padding: 5px;
   position: absolute;
   top: 4px;
@@ -20,46 +19,71 @@
   justify-content: center;
   min-height: 0;
 }
-.controls .icon-button {
-  max-width: 38px;
-  min-width: 0;
-  width: 100%;
-}
-.controls .icon-button img {
-  max-width: 100%;
-}
 .adjustment {
   align-items: center;
   display: grid;
   gap: 2px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  justify-items: center;
+  grid-template-columns: repeat(3, minmax(0, 38px)) minmax(60px, 1fr);
+  margin-inline: auto;
+  width: 100%;
+}
+.controls .icon-button {
+  height: 34px;
+  max-width: 38px;
+  min-width: 0;
+  padding: 4px;
+  width: 100%;
+}
+.controls .icon-button img,
+.controls .control-icon img {
+  height: 23px;
+  width: 23px;
+}
+.control-icon {
+  align-items: center;
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  justify-content: center;
+}
+.adjustment > button:first-of-type {
+  grid-column: 1;
+  grid-row: 1;
+}
+.adjustment > button:last-of-type {
+  grid-column: 3;
+  grid-row: 1;
 }
 .adjustment output {
   color: var(--green);
-  font-size: 10px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  grid-column: 1/-1;
+  grid-column: 4;
+  grid-row: 1;
   line-height: 1.1;
-}
-.court-controls {
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  display: grid;
-  gap: 4px;
-  padding: 4px 2px;
+  text-align: center;
 }
 .accuracy-control {
   align-items: center;
   display: grid;
-  gap: 3px;
-  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  flex-shrink: 0;
+  gap: 2px;
+  grid-template-columns: auto 26px max-content 26px;
+}
+.accuracy-control::before {
+  content: 'Accuracy';
+  font-size: 12px;
+}
+.accuracy-control .icon-button {
+  height: 26px;
+  min-width: 26px;
+  padding: 2px;
+  width: 26px;
 }
 .accuracy-value {
   align-items: center;
   display: flex;
-  font-size: 10px;
-  justify-content: center;
+  font-size: 12px;
   min-width: 0;
 }
 .accuracy-value input {
@@ -68,12 +92,12 @@
   border: 1px solid var(--line);
   border-radius: 4px;
   color: var(--green);
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
-  min-height: 30px;
-  min-width: 0;
-  padding: 2px;
-  text-align: center;
-  width: 100%;
+  min-height: 26px;
+  padding: 1px;
+  text-align: right;
+  width: 5.5ch;
 }
 .accuracy-value input::-webkit-inner-spin-button {
   appearance: none;
@@ -112,10 +136,12 @@
   outline: 2px solid var(--green);
   outline-offset: 2px;
 }
+
+#blockStatus:empty {
+  display: none;
+}
+
 @media (min-width: 700px) {
-  .control-groups {
-    gap: 4px;
-  }
   .controls {
     padding: 8px;
   }
@@ -124,76 +150,11 @@
   .controls {
     padding: 3px;
   }
-  .control-groups {
-    gap: 2px;
-  }
-  .adjustment output {
-    font-size: 9px;
-  }
-  .accuracy-control {
-    grid-template-columns: 25px minmax(0, 1fr) 25px;
-  }
   .controls .icon-button {
     height: 30px;
-  }
-  .court-controls {
-    gap: 2px;
     padding: 2px;
-  }
-}
-@media (orientation: landscape) and (max-height: 500px) {
-  .controls {
-    padding: 3px;
   }
   .control-groups {
-    gap: 1px;
-  }
-  .controls .icon-button {
-    height: 27px;
-  }
-}
-
-@container (min-width: 110px) {
-  .court-controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@container (max-width: 130px) {
-  .accuracy-control {
-    gap: 1px;
-    grid-template-columns: 22px minmax(0, 1fr) 22px;
-  }
-  .accuracy-value > span:last-child {
-    display: none;
-  }
-  .accuracy-value input {
-    font-size: 10px;
-    padding: 1px;
-  }
-  .adjustment {
-    gap: 1px;
-  }
-}
-
-@container (max-width: 90px) {
-  .accuracy-control {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .accuracy-value {
-    grid-column: 1/-1;
-    grid-row: 1;
-  }
-  .controls .accuracy-control .icon-button {
-    height: 24px;
-  }
-  .controls .adjustment .icon-button {
-    height: 25px;
-    padding: 2px;
-  }
-  .controls .adjustment .icon-button img {
-    height: 19px;
-    max-width: 100%;
-    width: 19px;
+    gap: 4px;
   }
 }

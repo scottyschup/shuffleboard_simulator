@@ -141,6 +141,14 @@
             <div class="section-heading">
               <h2 id="scoringHeading">Focus view</h2>
               <div
+                aria-label="Current board score"
+                class="scores"
+              >
+                <span class="yellow-score">Yellow <strong id="yellowScore">0</strong></span>
+                <span>Black <strong id="blackScore">0</strong></span>
+              </div>
+
+              <div
                 aria-label="Focus view actions"
                 class="focus-actions"
                 role="group"
@@ -210,40 +218,40 @@
                     role="group"
                   >
                     <button
-                      aria-label="Softer shot"
+                      aria-label="Decrease shot speed"
                       class="icon-button"
                       id="speedDown"
-                      title="Softer shot"
+                      title="Decrease shot speed"
                       type="button"
                     >
                       <img
                         alt=""
                         src="icons/006-turtle.png"
                       /></button
-                    ><button
+                    ><span
                       aria-label="Shot speed"
-                      class="icon-button"
-                      data-settings="speed"
+                      class="control-icon"
                       id="speedSettings"
+                      role="img"
                       title="Shot speed"
-                      type="button"
-                    >
-                      <img
+                      ><img
                         alt=""
+                        height="20"
                         src="icons/041-speedometer.png"
-                      /></button
+                        width="20" /></span
+                    ><output id="speedVal"></output
                     ><button
-                      aria-label="Harder shot"
+                      aria-label="Increase shot speed"
                       class="icon-button"
                       id="speedUp"
-                      title="Harder shot"
+                      title="Increase shot speed"
                       type="button"
                     >
                       <img
                         alt=""
                         src="icons/005-hare.png"
-                      /></button
-                    ><output id="speedVal"></output>
+                      />
+                    </button>
                   </div>
 
                   <div
@@ -252,163 +260,123 @@
                     role="group"
                   >
                     <button
-                      aria-label="Nudge left"
+                      aria-label="Decrease aim"
                       class="icon-button"
                       id="left"
-                      title="Nudge left"
+                      title="Decrease aim"
                       type="button"
                     >
                       <img
                         alt=""
                         src="icons/044-left-arrow.png"
                       /></button
-                    ><button
+                    ><span
                       aria-label="Aim"
-                      class="icon-button"
-                      data-settings="angle"
+                      class="control-icon"
                       id="aimSettings"
+                      role="img"
                       title="Aim"
-                      type="button"
-                    >
-                      <img
+                      ><img
                         alt=""
+                        height="20"
                         src="icons/008-aim.png"
-                      /></button
+                        width="20" /></span
+                    ><output id="angleVal"></output
                     ><button
-                      aria-label="Nudge right"
+                      aria-label="Increase aim"
                       class="icon-button"
                       id="right"
-                      title="Nudge right"
+                      title="Increase aim"
                       type="button"
                     >
                       <img
                         alt=""
                         src="icons/045-right-arrow.png"
-                      /></button
-                    ><output id="angleVal"></output>
-                  </div>
-
-                  <div class="court-controls">
-                    <div
-                      aria-label="Court speed"
-                      class="adjustment"
-                      role="group"
-                    >
-                      <button
-                        aria-label="Slower court"
-                        class="icon-button"
-                        id="slickDown"
-                        title="Slower court"
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          src="icons/037-snail.png"
-                        /></button
-                      ><button
-                        aria-label="Court speed"
-                        class="icon-button"
-                        data-settings="slick"
-                        id="slickSettings"
-                        title="Court speed"
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          src="icons/042-slippery-floor.png"
-                        /></button
-                      ><button
-                        aria-label="Faster court"
-                        class="icon-button"
-                        id="slickUp"
-                        title="Faster court"
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          src="icons/040-car.png"
-                        /></button
-                      ><output id="slickVal"></output>
-                    </div>
-
-                    <div
-                      aria-label="Court drift"
-                      class="adjustment"
-                      role="group"
-                    >
-                      <button
-                        aria-label="Drift left"
-                        class="icon-button"
-                        id="driftLeft"
-                        title="Drift left"
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          src="icons/046-arrow-up-left.png"
-                        /></button
-                      ><button
-                        aria-label="Court drift"
-                        class="icon-button"
-                        data-settings="drift"
-                        id="driftSettings"
-                        title="Court drift"
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          src="icons/043-slippery-road.png"
-                        /></button
-                      ><button
-                        aria-label="Drift right"
-                        class="icon-button"
-                        id="driftRight"
-                        title="Drift right"
-                        type="button"
-                      >
-                        <img
-                          alt=""
-                          src="icons/047-arrow-up-right.png"
-                        /></button
-                      ><output id="driftVal"></output>
-                    </div>
+                      />
+                    </button>
                   </div>
 
                   <div
-                    aria-label="Accuracy"
-                    class="accuracy-control"
+                    aria-label="Court speed"
+                    class="adjustment"
                     role="group"
                   >
                     <button
-                      aria-label="Decrease accuracy by 0.1 percentage points"
+                      aria-label="Decrease court speed"
                       class="icon-button"
-                      id="accuracyDown"
-                      title="Decrease accuracy by 0.1 percentage points"
+                      id="slickDown"
+                      title="Decrease court speed"
                       type="button"
                     >
-                      <span aria-hidden="true">−</span>
+                      <img
+                        alt=""
+                        src="icons/037-snail.png"
+                      /></button
+                    ><span
+                      aria-label="Court speed"
+                      class="control-icon"
+                      id="slickSettings"
+                      role="img"
+                      title="Court speed"
+                      ><img
+                        alt=""
+                        height="20"
+                        src="icons/042-slippery-floor.png"
+                        width="20" /></span
+                    ><output id="slickVal"></output
+                    ><button
+                      aria-label="Increase court speed"
+                      class="icon-button"
+                      id="slickUp"
+                      title="Increase court speed"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/040-car.png"
+                      />
                     </button>
-                    <label class="accuracy-value"
-                      ><span class="sr-only">Accuracy percent</span>
-                      <input
-                        aria-describedby="accuracyNote"
-                        id="accuracy"
-                        inputmode="decimal"
-                        max="100"
-                        min="0"
-                        step="0.1"
-                        type="number"
-                        value="95.0"
-                      /><span>%</span></label
-                    >
+                  </div>
+
+                  <div
+                    aria-label="Court drift"
+                    class="adjustment"
+                    role="group"
+                  >
                     <button
-                      aria-label="Increase accuracy by 0.1 percentage points"
+                      aria-label="Decrease court drift"
                       class="icon-button"
-                      id="accuracyUp"
-                      title="Increase accuracy by 0.1 percentage points"
+                      id="driftLeft"
+                      title="Decrease court drift"
                       type="button"
                     >
-                      <span aria-hidden="true">+</span>
+                      <img
+                        alt=""
+                        src="icons/046-arrow-up-left.png"
+                      /></button
+                    ><span
+                      aria-label="Court drift"
+                      class="control-icon"
+                      id="driftSettings"
+                      role="img"
+                      title="Court drift"
+                      ><img
+                        alt=""
+                        height="20"
+                        src="icons/043-slippery-road.png"
+                        width="20" /></span
+                    ><output id="driftVal"></output
+                    ><button
+                      aria-label="Increase court drift"
+                      class="icon-button"
+                      id="driftRight"
+                      title="Increase court drift"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/047-arrow-up-right.png"
+                      />
                     </button>
                   </div>
                 </div>
@@ -428,18 +396,24 @@
                 title="Place a block"
                 type="button"
               >
-                <span aria-hidden="true">🙅</span>
-              </button>
-              <button
-                aria-label="Place a pigeon"
-                class="icon-button"
+                <span aria-hidden="true">🙅</span></button
+              ><button
+                aria-label="Place a Yellow pigeon"
+                class="icon-button yellow"
                 id="placePigeon"
-                title="Place a pigeon"
+                title="Place a Yellow pigeon"
                 type="button"
               >
-                <span aria-hidden="true">🦆</span>
-              </button>
-              <button
+                <span aria-hidden="true">🦆</span></button
+              ><button
+                aria-label="Place a Black pigeon"
+                class="icon-button black"
+                id="placeBlackPigeon"
+                title="Place a Black pigeon"
+                type="button"
+              >
+                <span aria-hidden="true">🦆</span></button
+              ><button
                 aria-label="Undo shot"
                 class="icon-button"
                 id="undo"
@@ -449,9 +423,8 @@
                 <img
                   alt=""
                   src="icons/027-undo-circular-arrow.png"
-                />
-              </button>
-              <button
+                /></button
+              ><button
                 aria-label="Shoot!"
                 class="icon-button"
                 id="shoot"
@@ -461,9 +434,8 @@
                 <img
                   alt=""
                   src="icons/035-puck.png"
-                />
-              </button>
-              <button
+                /></button
+              ><button
                 aria-label="Replay shot"
                 class="icon-button"
                 id="retry"
@@ -473,9 +445,8 @@
                 <img
                   alt=""
                   src="icons/028-redo.png"
-                />
-              </button>
-              <button
+                /></button
+              ><button
                 aria-label="Predict shot outcomes"
                 class="icon-button"
                 id="predictOutcomes"
@@ -524,13 +495,56 @@
       </div>
       <footer class="readout">
         <div
-          aria-label="Current board score"
-          class="scores"
+          aria-label="Accuracy"
+          class="accuracy-control"
+          role="group"
         >
-          <span class="yellow-score">Yellow <strong id="yellowScore">0</strong></span>
-          <span>Black <strong id="blackScore">0</strong></span>
+          <button
+            aria-label="Decrease accuracy by 0.1 percentage points"
+            class="icon-button"
+            id="accuracyDown"
+            title="Decrease accuracy by 0.1 percentage points"
+            type="button"
+          >
+            −</button
+          ><label class="accuracy-value"
+            ><span class="sr-only">Accuracy percent</span
+            ><input
+              aria-describedby="accuracyNote"
+              id="accuracy"
+              inputmode="decimal"
+              max="100"
+              min="0"
+              step="0.1"
+              type="number"
+              value="95.0"
+            /><span>%</span></label
+          ><button
+            aria-label="Increase accuracy by 0.1 percentage points"
+            class="icon-button"
+            id="accuracyUp"
+            title="Increase accuracy by 0.1 percentage points"
+            type="button"
+          >
+            +
+          </button>
         </div>
-
+        <span
+          class="sr-only"
+          id="accuracyNote"
+          >Accuracy controls aim and speed. Fast shots add aim variation above the threshold even at
+          100%. Preview paths use nominal settings.<output id="aimSpread"></output
+        ></span>
+        <button
+          aria-haspopup="dialog"
+          aria-label="Shot and court settings"
+          class="icon-button"
+          id="openSettings"
+          title="Shot and court settings"
+          type="button"
+        >
+          ⚙
+        </button>
         <div
           aria-live="polite"
           class="result"
@@ -538,27 +552,6 @@
           role="status"
         >
           Ready when you are.
-        </div>
-
-        <div class="accuracy-help">
-          <button
-            aria-describedby="accuracyNote"
-            aria-label="Shot accuracy help"
-            class="info-button"
-            id="accuracyHelp"
-            title="Aim and speed share accuracy. Fast shots can vary at 100%. Previews use nominal settings."
-            type="button"
-          >
-            ⓘ
-          </button>
-          <span
-            class="sr-only"
-            id="accuracyNote"
-            >Accuracy controls aim and speed. Fast shot inaccuracy adds aim variation above its
-            threshold, even at 100% accuracy. Preview paths use nominal settings.<output
-              id="aimSpread"
-            ></output
-          ></span>
         </div>
       </footer>
       <input
@@ -592,17 +585,18 @@
         at that end. Undo restores the last shot’s starting state, including its shooting end.
       </p>
       <p>
-        Choose a setup, tap the scoring end to set direction and launch speed for a target, then
-        shoot or fine-tune the controls. Drag the top biscuit from the alternating supply column
-        into a magnified court view, or select it and tap to place it. A valid drop advances the
-        shooter. Each color has four biscuits in total across the court, collection area, queued
-        shooter, and supply. Drag stationary biscuits in magnified views to rearrange them. Dropping
-        one off court returns it to supply; overlapping placements are cancelled. A magnified court
-        click sets both direction and speed using current slickness and drift for an unobstructed
-        shot; collisions can change its destination. Choose one of the four labeled yellow/black St.
-        Pete and Tampa setup buttons. Starting positions keep the biscuit clear of both the angled
-        outside border and the angled center separator. Aim angles are relative to straight down the
-        court.
+        Choose a setup, tap or drag on the scoring end to set direction and launch speed for a
+        target, then shoot or fine-tune the controls. Drag any biscuit from the alternating supply
+        column into a magnified court view, or select it and tap to place it. The supply reorders
+        after each valid drop. Each color has four biscuits in total across the court, collection
+        area, queued shooter, and supply. Drag stationary biscuits in magnified views to rearrange
+        them. Dropping one off court collects it; drop it onto the queue between the courts to
+        return it to supply. Overlapping court placements are cancelled. A magnified court click
+        sets both direction and speed using current slickness and drift for an unobstructed shot;
+        collisions can change its destination. Choose one of the four labeled yellow/black St. Pete
+        and Tampa block buttons; each adds its block without clearing the board. Starting positions
+        keep the biscuit clear of both the angled outside border and the angled center separator.
+        Aim angles are relative to straight down the court.
       </p>
       <p>
         Switch colors to shoot from either side at the head. Starting position moves from the inside
@@ -742,6 +736,7 @@
     >
       <div class="dialog-top">
         <h2 id="setupHeading">Place a block</h2>
+
         <button
           aria-label="Close block setups"
           autofocus
@@ -752,6 +747,11 @@
         </button>
       </div>
 
+      <p
+        aria-live="polite"
+        id="blockStatus"
+        role="status"
+      ></p>
       <div
         aria-label="Block setups"
         class="setup-grid"
@@ -941,7 +941,7 @@
             />
           </label>
           <label class="prediction-name"
-            >Shot name
+            ><span class="sr-only">Shot name</span>
             <input
               id="predictionName"
               maxlength="120"
@@ -964,21 +964,6 @@
         >
           <div class="prediction-layout">
             <figure class="prediction-map">
-              <label for="predictionCourtView">Court view</label>
-              <select id="predictionCourtView">
-                <option value="receiving">Receiving end</option>
-                <option value="full">Full court</option>
-              </select>
-              <button
-                aria-describedby="predictionMapSummary predictionCollected"
-                aria-label="About prediction visualization"
-                class="info-button"
-                id="predictionCourtHelp"
-                title="Predicted biscuit positions and collection rates"
-                type="button"
-              >
-                ⓘ
-              </button>
               <div
                 aria-label="Board score before shot"
                 class="prediction-scoreboard"
@@ -989,28 +974,154 @@
                 <span class="prediction-black">Black <b id="predictionBeforeBlack">0</b></span>
               </div>
 
-              <div class="prediction-animation-controls">
-                <button
-                  aria-pressed="false"
-                  id="animatePrediction"
-                  type="button"
+              <div class="prediction-selected">
+                <span
+                  class="prediction-selected-label"
+                  id="predictionSelectedLabel"
+                  >Selected Outcome %</span
+                ><output
+                  aria-labelledby="predictionSelectedLabel"
+                  id="predictionSelectedChance"
+                  >100.0%</output
                 >
-                  Animate all shots
-                </button>
-                <output
-                  aria-live="off"
-                  id="predictionAnimationTime"
-                ></output>
+              </div>
+
+              <div class="prediction-animation-controls">
+                <div class="prediction-replay">
+                  <div class="prediction-stopwatch">
+                    <output
+                      aria-label="0 seconds 0 milliseconds"
+                      id="predictionAnimationTime"
+                      >00.000</output
+                    ><span class="stopwatch-unit">sec</span
+                    ><output id="predictionReplaySpeed">1×</output>
+                  </div>
+
+                  <div
+                    aria-label="Replay controls"
+                    class="prediction-replay-buttons"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Slower replay"
+                      class="icon-button"
+                      id="predictionReplaySlower"
+                      title="Slower replay"
+                      type="button"
+                    >
+                      🐢</button
+                    ><button
+                      aria-label="Play all shots"
+                      aria-pressed="false"
+                      class="icon-button"
+                      id="animatePrediction"
+                      title="Play all shots"
+                      type="button"
+                    >
+                      ▶️</button
+                    ><button
+                      aria-label="Faster replay"
+                      class="icon-button"
+                      id="predictionReplayFaster"
+                      title="Faster replay"
+                      type="button"
+                    >
+                      🐇
+                    </button>
+                  </div>
+                  <input
+                    aria-label="Replay position"
+                    id="predictionReplaySeek"
+                    max="0"
+                    min="0"
+                    step="0.001"
+                    type="range"
+                    value="0"
+                  />
+                </div>
+
                 <span
                   id="predictionAnimationStatus"
                   role="status"
                 ></span>
+              </div>
+
+              <div class="prediction-view-controls">
+                <button
+                  aria-pressed="true"
+                  id="predictionToggleIntention"
+                  type="button"
+                >
+                  Hide Shot Intention</button
+                ><button
+                  aria-pressed="true"
+                  id="predictionToggleStarts"
+                  type="button"
+                >
+                  Hide Starting Biscuits
+                </button>
+                <div
+                  aria-label="Prediction zoom"
+                  class="prediction-zoom"
+                  role="group"
+                >
+                  <button
+                    aria-label="Zoom out"
+                    id="predictionZoomOut"
+                    type="button"
+                  >
+                    −</button
+                  ><label for="predictionZoom">Zoom</label
+                  ><input
+                    aria-label="Prediction zoom"
+                    id="predictionZoom"
+                    max="4"
+                    min="1"
+                    step="0.25"
+                    type="range"
+                    value="1"
+                  /><button
+                    aria-label="Zoom in"
+                    id="predictionZoomIn"
+                    type="button"
+                  >
+                    +</button
+                  ><output id="predictionZoomValue">100%</output
+                  ><button
+                    id="predictionZoomReset"
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <div
+                  aria-label="Court view"
+                  class="prediction-button-pair"
+                  id="predictionCourtView"
+                  role="group"
+                >
+                  <button
+                    aria-pressed="false"
+                    id="predictionFullCourt"
+                    type="button"
+                  >
+                    Full Court</button
+                  ><button
+                    aria-pressed="true"
+                    id="predictionScoringEnd"
+                    type="button"
+                  >
+                    Scoring End
+                  </button>
+                </div>
               </div>
               <canvas
                 aria-describedby="predictionMapSummary predictionCollected"
                 aria-label="Predicted final biscuit positions"
                 id="predictionCourt"
                 role="img"
+                tabindex="0"
               ></canvas>
               <div
                 aria-label="Board score after shot"
@@ -1035,45 +1146,92 @@
               aria-label="Prediction score distribution"
               class="prediction-distribution"
             >
-              <label for="predictionScoreMode">Score table</label>
-              <select id="predictionScoreMode">
-                <option value="final">Final board scores</option>
-                <option value="delta">Score changes per player</option>
-              </select>
-              <button
-                aria-describedby="predictionBaseline"
-                aria-label="About prediction scores"
-                class="info-button"
-                id="predictionScoreHelp"
-                title="Final board scores include prior biscuits. Intended shows the perfect shot. Remaining rows are sorted by likelihood."
-                type="button"
-              >
-                ⓘ
-              </button>
               <span
                 class="sr-only"
                 id="predictionBaseline"
               ></span>
-              <button
-                id="predictionShowAll"
-                type="button"
-              >
-                Show all outcomes
-              </button>
+
+              <div class="prediction-filters">
+                <div
+                  aria-label="Select outcomes by scenario"
+                  class="prediction-scenario-group"
+                  role="group"
+                >
+                  <button
+                    id="predictionShowAll"
+                    type="button"
+                  >
+                    Show All
+                  </button>
+                  <button
+                    id="predictionClearAll"
+                    type="button"
+                  >
+                    Clear All
+                  </button>
+                  <div
+                    class="prediction-scenarios"
+                    id="predictionScenarios"
+                  ></div>
+                </div>
+                <fieldset
+                  aria-label="Visible biscuits"
+                  class="prediction-biscuits"
+                  id="predictionBiscuits"
+                ></fieldset>
+              </div>
+
+              <div class="prediction-outcomes-heading">
+                <div class="prediction-title">
+                  <h2 id="predictionTableCaption">Outcomes</h2>
+                  <em id="predictionShooterLabel"></em>
+                  <button
+                    aria-describedby="predictionBaseline"
+                    aria-label="About prediction scores"
+                    class="info-button"
+                    id="predictionScoreHelp"
+                    title="Final board scores include prior biscuits. Intended shows the perfect shot. Remaining rows are sorted by likelihood."
+                    type="button"
+                  >
+                    ⓘ
+                  </button>
+                </div>
+
+                <div
+                  aria-label="Score display"
+                  class="prediction-button-pair prediction-score-pair"
+                  id="predictionScoreMode"
+                  role="group"
+                >
+                  <button
+                    aria-pressed="false"
+                    id="predictionFinalScore"
+                    type="button"
+                  >
+                    Final Score</button
+                  ><button
+                    aria-pressed="true"
+                    id="predictionDeltaScore"
+                    type="button"
+                  >
+                    Delta Score
+                  </button>
+                </div>
+              </div>
+
               <div class="prediction-table-wrap">
-                <table class="prediction-table">
-                  <caption id="predictionTableCaption">
-                    Predicted final board scores
-                  </caption>
+                <table
+                  aria-labelledby="predictionTableCaption"
+                  class="prediction-table"
+                >
+                  <colgroup>
+                    <col span="5" />
+                  </colgroup>
                   <thead id="predictionTableHead"></thead>
                   <tbody id="predictionTableBody"></tbody>
                 </table>
+                <p class="prediction-intended-note">* This was the intended shot.</p>
               </div>
-              <fieldset
-                aria-label="Visible biscuits"
-                class="prediction-biscuits"
-                id="predictionBiscuits"
-              ></fieldset>
             </section>
           </div>
         </div>
@@ -1089,8 +1247,25 @@
           id="savedPredictionCount"
           tabindex="-1"
         >
-          Saved shots (0/20)
+          Saved shots (0/25)
         </h2>
+        <output
+          id="savedPredictionSize"
+          title="Serialized JSON size; browser storage accounting can differ"
+        ></output>
+        <div class="prediction-actions">
+          <button
+            id="exportPredictions"
+            type="button"
+          >
+            Export all</button
+          ><button
+            id="importPredictions"
+            type="button"
+          >
+            Import
+          </button>
+        </div>
         <button
           aria-label="Close saved shots"
           autofocus
@@ -1100,7 +1275,38 @@
           ✕
         </button>
       </div>
+      <p
+        id="savedPredictionStatus"
+        role="status"
+      ></p>
+      <input
+        accept="application/json,.json"
+        hidden
+        id="importPredictionFile"
+        type="file"
+      />
       <ul id="savedPredictionList"></ul>
+    </dialog>
+
+    <dialog
+      aria-labelledby="accuracyRestoreHeading"
+      id="accuracyRestoreDialog"
+    >
+      <h2 id="accuracyRestoreHeading">Restore accuracy?</h2>
+      <p>Use your saved accuracy of <strong id="accuracyRestoreValue"></strong>?</p>
+      <div class="prediction-actions">
+        <button
+          id="restoreSavedAccuracy"
+          type="button"
+        >
+          Restore</button
+        ><button
+          id="useDefaultAccuracy"
+          type="button"
+        >
+          Use default
+        </button>
+      </div>
     </dialog>
 
     <script src="scripts/physics.js"></script>

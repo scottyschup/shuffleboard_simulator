@@ -100,7 +100,7 @@ assert.equal(ids.get('accuracy').value, '95.0');
 assert.equal(run('focusStart'), 24.75);
 assert.equal(run('supplyOrder().join(",")'), 'black,yellow,black,yellow,black,yellow,black');
 assert.equal(ids.get('supply0').disabled, false);
-assert.equal(ids.get('supply1').disabled, true);
+assert.equal(ids.get('supply1').disabled, false);
 inventory();
 for (const end of ['head', 'foot']) {
   run(`selectShootingEnd('${end}');setup('open')`);
@@ -155,9 +155,17 @@ for (const end of ['head', 'foot']) {
   );
 
   assert.ok(Math.abs(run('aimPoint.x') - 4) < 1e-8);
+
+  send(
+    'target',
+    'pointerup',
+    4,
+    34,
+  );
+
   supplyDrop(4.5, 35);
   assert.equal(run('discs.length'), 1);
-  assert.equal(run('color'), 'black');
+  assert.equal(run('color'), 'yellow');
   inventory();
 
   send(
@@ -279,7 +287,15 @@ send(
   34,
 );
 
-assert.equal(run('dragging'), null);
+assert.equal(run('dragging.kind'), 'aim');
+
+send(
+  'target',
+  'pointerup',
+  4,
+  34,
+);
+
 assert.ok(Math.abs(run('aimPoint.x') - 4) < 1e-8);
 supplyDrop(2, 34);
 
@@ -294,7 +310,7 @@ for (const [x, y] of [
   [-0.1, 34],
   [6.1, 34],
   [4, -0.1],
-  [4, 39.1],
+  [4, 39.9],
 ]) {
   run("setup('open');discs=[createDisc(4,34,'black')];update()");
 
@@ -319,12 +335,37 @@ for (const [x, y] of [
     y,
   );
 
+  assert.equal(run('discs.length'), 1);
+  assert.equal(run('discs[0].out'), true);
+  assert.equal(run('discs[0].parked'), true);
+  const queue = ids.get('supplyColumn').getBoundingClientRect();
+  const collected = run('discs[0]');
+
+  send(
+    'target',
+    'pointerdown',
+    collected.x,
+    collected.y,
+  );
+
+  dispatch(
+    ids.get('target'),
+    'pointerup',
+    {
+      button: -1,
+      clientX: queue.left + queue.width / 2,
+      clientY: queue.top + queue.height / 2,
+      pointerId: 10,
+      pointerType: 'touch',
+    },
+  );
+
   assert.equal(run('discs.length'), 0);
   inventory();
 }
 
 console.log(
-  'PASS: top-only alternating supply, overlap/cancel handling, four-per-color ' +
+  'PASS: alternating supply, overlap/cancel handling, four-per-color ' +
     'limits, lock, and manual removal.',
 );
 
@@ -338,13 +379,13 @@ assert.equal(run('discs.length'), 1);
 for (const color of ['yellow', 'black']) {
   run(`setup('open');switchShooter('${color}')`);
   for (let i = 0; i < 3; i++) {
-    click('placePigeon');
+    click(color === 'yellow' ? 'placePigeon' : 'placeBlackPigeon');
     assert.equal(physics.score(run('discs[discs.length-1]')), 7);
     assert.equal(run('discs[discs.length-1].color'), color);
     inventory();
   }
 
-  assert.equal(ids.get('placePigeon').disabled, true);
+  assert.equal(ids.get(color === 'yellow' ? 'placePigeon' : 'placeBlackPigeon').disabled, true);
 }
 
 console.log(
@@ -405,16 +446,14 @@ assert.equal(ids.get('fastShotThreshold').disabled, true);
 run('saveCourtSettings();element("slick").value=1;loadCourtSettings()');
 assert.equal(run('value("slick")'), 51);
 click('aimSettings');
-assert.equal(ids.get('settingsDialog').open, true);
-assert.equal(document.activeElement.id, 'angle');
-ids.get('settingsDialog').close();
 
 assert.equal(
-  document.activeElement.id,
-  'aimSettings',
-  'Dialog returns to the icon that opened it',
+  ids.get('settingsDialog').open,
+  false,
+  'Control icons are not clickable',
 );
 
+assert.equal(ids.get('aimSettings').tagName, 'SPAN');
 click('aboutBtn');
 assert.equal(ids.get('about').open, true);
 click('closeDialog');
@@ -570,6 +609,17 @@ for (const [width, height] of [
 
       assert.ok(Math.abs(rotated.run('aimPoint.x') - 4.5) < 1e-8);
       assert.ok(Math.abs(rotated.run('aimPoint.y') - 36) < 1e-8);
+
+      rotated.dispatch(
+        rotated.ids.get('target'),
+        'pointerup',
+        rotated.pointEvent(
+          'target',
+          4.5,
+          36,
+        ),
+      );
+
       rotated.run("discs=[createDisc(4.5,36,'black')];update()");
       for (const [
         type,

@@ -26,7 +26,7 @@ dialog#predictionDialog {
   align-items: end;
   display: grid;
   gap: 8px;
-  grid-template-columns: auto 90px minmax(0, 1fr) auto;
+  grid-template-columns: auto max-content minmax(0, 1fr) auto;
   margin: 8px 0;
 }
 
@@ -65,8 +65,8 @@ dialog#predictionDialog {
 
 .prediction-layout {
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
+  gap: 8px;
+  grid-template-columns: minmax(0, 3fr) minmax(350px, 2fr);
 }
 
 .prediction-map {
@@ -75,21 +75,20 @@ dialog#predictionDialog {
 }
 
 #predictionCourt {
-  aspect-ratio: 16.5 / 7;
+  aspect-ratio: 15 / 6.4;
   border-radius: 6px;
   display: block;
   height: auto;
   margin-top: 4px;
-  max-height: max(180px, calc(100dvh - 320px));
   min-height: 110px;
+  touch-action: pan-y;
   width: 100%;
 }
 
 .prediction-biscuits {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  margin: 12px 0;
-  padding: 8px;
+  border: 0;
+  margin: 4px 0 0;
+  padding: 0;
 }
 
 .prediction-toggle {
@@ -112,6 +111,7 @@ dialog#predictionDialog {
 .prediction-table {
   border-collapse: collapse;
   font-size: 16px;
+  table-layout: auto;
   width: 100%;
 }
 
@@ -120,11 +120,11 @@ dialog#predictionDialog {
   border-bottom: 1px solid var(--line);
   padding: 3px 4px;
   text-align: right;
+  white-space: nowrap;
 }
 
-.prediction-table button[aria-pressed='true'] {
-  background: var(--green);
-  color: white;
+.prediction-scenario-group button[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px currentColor;
 }
 
 #savedPredictionList {
@@ -149,7 +149,7 @@ dialog#predictionDialog {
 }
 
 .prediction-intended {
-  outline: 2px solid var(--green);
+  outline: 2px solid #55a080;
   outline-offset: -2px;
 }
 
@@ -187,7 +187,9 @@ dialog#predictionDialog {
 }
 
 #predictionCourt[data-view='full'] {
-  aspect-ratio: 43.5 / 7;
+  aspect-ratio: 40 / 6.4;
+  height: auto;
+  max-height: none;
   min-height: 60px;
 }
 
@@ -233,14 +235,26 @@ dialog#predictionDialog {
   flex-basis: 100%;
   font-size: 11px;
 }
-.prediction-table th[data-shooter='yellow'] {
-  outline: 2px solid var(--gold);
-  outline-offset: -2px;
+.prediction-table [data-shooter] {
+  border-left: 2px solid var(--shooter-outline);
+  border-right: 2px solid var(--shooter-outline);
 }
-.prediction-table th[data-shooter='black'] {
-  outline: 2px solid #202e29;
-  outline-offset: -2px;
+.prediction-table [data-shooter='yellow'] {
+  --shooter-outline: var(--gold);
 }
+.prediction-table [data-shooter='black'] {
+  --shooter-outline: #202e29;
+}
+.prediction-table th[data-shooter] {
+  border-top: 2px solid var(--shooter-outline);
+}
+.prediction-table tr:last-child [data-shooter] {
+  border-bottom: 2px solid var(--shooter-outline);
+}
+.prediction-table .prediction-intended [data-shooter] {
+  border-color: #55a080;
+}
+
 .prediction-black .negative-score {
   color: #ffb4ab;
 }
@@ -251,7 +265,7 @@ dialog#predictionDialog {
   }
 
   .prediction-toolbar {
-    grid-template-columns: auto minmax(80px, 1fr) auto;
+    grid-template-columns: auto max-content auto;
   }
   .prediction-name {
     grid-column: 1 / -1;
@@ -269,32 +283,14 @@ dialog#predictionDialog {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .prediction-body {
+  #predictionDialog .prediction-body {
     padding: 8px;
   }
 }
 
-#predictionShowAll {
-  font-size: 15px;
-  min-height: 28px;
-  padding: 2px 6px;
-}
-.prediction-table caption {
-  font-size: 16px;
-  padding: 4px 0;
-  text-align: left;
-}
-.prediction-distribution select {
-  font: inherit;
-  max-width: 100%;
-}
 #predictionScoreHelp {
   font-size: 18px;
   vertical-align: middle;
-}
-#predictionShowAll {
-  display: block;
-  margin: 5px 0;
 }
 #predictionMapSummary,
 #predictionCollected,
@@ -306,8 +302,7 @@ dialog#predictionDialog {
   font-size: 18px;
 }
 
-#predictionDialog input,
-#predictionDialog select {
+#predictionDialog input {
   font-size: 16px;
 }
 
@@ -357,27 +352,25 @@ dialog#predictionDialog[open] {
   width: 18px;
 }
 .prediction-outcome-choice span {
-  font-size: 12px;
+  font-size: 16px;
 }
-.score-benefit {
+.score-positive {
   color: #17633d;
+  font-weight: 700;
 }
-.score-cost {
+.score-negative {
   color: #9c1c14;
-}
-#predictionCourtHelp {
-  font-size: 18px;
-  vertical-align: middle;
+  font-weight: 700;
 }
 dialog#savedPredictions {
   border-radius: 14px 14px 6px 6px;
   bottom: 6px;
   font-size: 15px;
   height: min(65dvh, 560px);
-  left: 6px;
+  left: auto;
   margin: 0;
   max-height: calc(100dvh - 12px);
-  max-width: none;
+  max-width: 650px;
   overflow: hidden;
   padding: 0;
   position: fixed;
@@ -398,6 +391,8 @@ dialog#savedPredictions[open] {
   border-bottom: 1px solid var(--line);
   display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 6px;
   justify-content: space-between;
   padding: 8px 12px;
 }
@@ -424,4 +419,262 @@ dialog#savedPredictions[open] {
   dialog#savedPredictions[open] {
     animation: none;
   }
+}
+
+.prediction-scenarios {
+  display: contents;
+}
+.prediction-score-filters {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+.prediction-score-filters button {
+  white-space: nowrap;
+}
+.prediction-scenario-group {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.prediction-scenario-group button {
+  font-size: 15px;
+  min-height: 32px;
+  padding: 2px 5px;
+}
+.prediction-filters {
+  margin-block: 4px;
+}
+.prediction-selected {
+  align-items: center;
+  display: flex;
+  font-size: 16px;
+  gap: 8px;
+  justify-content: center;
+  margin-block: 6px;
+}
+#predictionSelectedChance {
+  font-size: 20px;
+  font-weight: bold;
+}
+@media (orientation: portrait) {
+  #predictionCourt[data-view='full'] {
+    aspect-ratio: 6.4 / 40;
+    height: 65dvh;
+    margin-inline: auto;
+    max-width: 100%;
+    min-height: 0;
+    width: auto;
+  }
+}
+@media (max-width: 700px) {
+  .prediction-selected-label {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+  }
+}
+
+.prediction-accuracy input {
+  appearance: textfield;
+  padding: 2px;
+  width: 6.5ch;
+}
+.prediction-accuracy input::-webkit-inner-spin-button {
+  appearance: none;
+}
+
+.prediction-toolbar button {
+  border: 2px solid var(--green);
+}
+.prediction-button-pair {
+  display: inline-flex;
+  gap: 2px;
+}
+.prediction-button-pair button {
+  border: 1px solid var(--green);
+  font-size: 14px;
+  min-height: 30px;
+  padding: 3px 6px;
+}
+.prediction-button-pair button[aria-pressed='true'] {
+  background: var(--green);
+  color: white;
+}
+.prediction-distribution {
+  container-type: inline-size;
+  min-width: 0;
+}
+.prediction-outcomes-heading {
+  align-items: center;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  margin-block: 4px;
+}
+.prediction-title {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  grid-column: 2;
+  justify-content: center;
+  position: relative;
+}
+.prediction-title h2 {
+  font-size: 24px;
+  text-align: center;
+}
+.prediction-title .info-button {
+  position: absolute;
+  right: 100%;
+}
+.prediction-score-pair {
+  grid-column: 3;
+  justify-self: end;
+}
+.prediction-view-controls .prediction-button-pair button {
+  min-height: 32px;
+  padding: 3px 6px;
+}
+@container (max-width: 440px) {
+  .prediction-score-pair {
+    align-items: stretch;
+    flex-direction: column;
+    max-width: 100%;
+  }
+  .prediction-score-pair button {
+    font-size: 14px;
+    min-height: 28px;
+    padding: 2px 4px;
+  }
+}
+
+.prediction-table col {
+  width: 20%;
+}
+#predictionShooterLabel {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.prediction-zoom {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-block: 4px;
+}
+.prediction-zoom input {
+  accent-color: var(--green);
+  margin: 0;
+  max-width: 100%;
+  width: 80px;
+}
+.prediction-zoom button {
+  min-height: 30px;
+  padding: 2px 6px;
+}
+#predictionCourt[data-zoomed='true'] {
+  cursor: grab;
+  touch-action: none;
+}
+#savedPredictionStatus {
+  font-size: 14px;
+  margin: 0;
+  padding: 4px 8px;
+}
+#savedPredictionStatus:empty {
+  display: none;
+}
+#savedPredictionSize {
+  font-size: 14px;
+}
+
+.saved-prediction-name {
+  align-items: center;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.saved-prediction-name input {
+  height: 36px;
+}
+.saved-prediction-name input[readonly] {
+  background: transparent;
+}
+.saved-prediction-name .icon-button {
+  height: 36px;
+  min-height: 36px;
+  padding: 3px;
+  width: 38px;
+}
+.prediction-actions .saved-prediction-delete {
+  background: #f4d8d3;
+  border: 1px solid #9c3229;
+  color: #7c241b;
+}
+.prediction-intended-note {
+  font-size: 12px;
+  margin: 4px 0;
+}
+.prediction-replay {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  max-width: 100%;
+  width: 180px;
+}
+.prediction-stopwatch {
+  align-items: baseline;
+  background: #202e29;
+  border: 2px solid #55a080;
+  border-radius: 6px;
+  color: #e5efd9;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 4px 8px;
+  width: 100%;
+}
+#predictionAnimationTime {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  text-shadow: 0 0 2px #edc55955;
+}
+.stopwatch-unit,
+#predictionReplaySpeed {
+  font-size: 11px;
+}
+.prediction-replay-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.prediction-replay-buttons .icon-button {
+  height: 34px;
+  min-height: 34px;
+  min-width: 38px;
+  padding: 4px;
+  width: 38px;
+}
+#predictionReplaySeek {
+  accent-color: var(--green);
+  height: 20px;
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.prediction-view-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

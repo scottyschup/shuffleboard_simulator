@@ -254,7 +254,7 @@ async function main() {
   assert.equal(persistence.read(store)[0].name, '<b>My shot</b>');
   persistence.remove(store, saved.id);
   assert.equal(persistence.read(store).length, 0);
-  for (let index = 0; index < 20; index++) {
+  for (let index = 0; index < 25; index++) {
     persistence.save(
       store,
       record,
@@ -262,7 +262,7 @@ async function main() {
     );
   }
 
-  assert.equal(persistence.read(store).length, 20);
+  assert.equal(persistence.read(store).length, 25);
 
   assert.throws(
     () =>
@@ -271,10 +271,10 @@ async function main() {
         record,
         '',
       ),
-    /20 saved/,
+    /25 saved/,
   );
 
-  assert.equal(persistence.read(store).length, 20);
+  assert.equal(persistence.read(store).length, 25);
   const quota = memory(persistence.bytes(compact) + 500);
 
   assert.equal(
@@ -313,7 +313,7 @@ async function main() {
         record,
         '',
       ),
-    /Nothing was saved/,
+    /Nothing was saved|No saved shots were changed/,
   );
 
   const corrupt = {
@@ -445,7 +445,7 @@ async function main() {
   );
 
   console.log(
-    'PASS: full/summary persistence, exact score totals, size/quota fallback, 20' +
+    'PASS: full/summary persistence, exact score totals, size/quota fallback, 25' +
       '-shot cap, rename/delete, and target-based names.',
   );
 
@@ -467,9 +467,12 @@ async function main() {
     dispatch,
   } = fixture;
 
+  assert.equal(ids.get('predictionDeltaScore').getAttribute('aria-pressed'), 'true');
+  click('predictionFinalScore');
+
   function selectOutcome(index, checked = true) {
     const row = ids.get('predictionTableBody').children[index];
-    const checkbox = row.children[3].children[0].children[0];
+    const checkbox = row.children[4].children[0].children[0];
 
     checkbox.checked = checked;
     checkbox.onchange();
@@ -505,7 +508,13 @@ async function main() {
   );
 
   savedName.value = 'Renamed test shot';
-  savedRow.children[2].children[1].onclick();
+
+  dispatch(
+    savedName,
+    'keydown',
+    { key: 'Enter' },
+  );
+
   savedRow.children[2].children[0].onclick();
   assert.equal(ids.get('predictionName').value, 'Renamed test shot');
 
@@ -579,14 +588,14 @@ async function main() {
     'Default scores retain prior biscuits',
   );
 
-  assert.equal(rows[0].children[2].textContent, '25.0%');
-  assert.equal(rows[1].children[2].textContent, '50.0%');
-  assert.equal(rows[2].children[2].textContent, '25.0%');
+  assert.equal(rows[0].children[3].textContent, '25.0%');
+  assert.equal(rows[1].children[3].textContent, '50.0%');
+  assert.equal(rows[2].children[3].textContent, '25.0%');
 
   assert.equal(
     ids.get('predictionTableHead').children[0].children.length,
-    4,
-    'No Trials column',
+    5,
+    'Includes Delta without a Trials column',
   );
 
   assert.equal(ids.get('predictionBeforeYellow').textContent, '7');
@@ -598,6 +607,7 @@ async function main() {
     'Default after score uses the most likely outcome',
   );
 
+  run("predictionFilter='';drawPrediction()");
   selectOutcome(0);
   assert.equal(ids.get('predictionAfterYellow').textContent, '7');
 
@@ -609,20 +619,19 @@ async function main() {
 
   selectOutcome(1);
   assert.equal(run("predictionFilter.split(';').length"), 2);
-  assert.match(ids.get('predictionMapSummary').textContent, /3 of 4 trials shown/);
+  assert.match(ids.get('predictionMapSummary').textContent, /3 of 4 trials selected/);
   assert.equal(ids.get('predictionAfterYellow').textContent, '15');
   assert.match(ids.get('predictionAfterLabel').textContent, /most likely selected/);
   selectOutcome(1, false);
   assert.equal(ids.get('predictionAfterYellow').textContent, '7');
-  assert.ok(ids.get('predictionCourtHelp').title.includes('Collected'));
+  assert.ok(ids.get('predictionCourt').title.includes('Collected'));
   assert.ok(ids.get('predictionMapSummary').classList.contains('sr-only'));
-  ids.get('predictionScoreMode').value = 'delta';
-  dispatch(ids.get('predictionScoreMode'), 'change');
+  click('predictionDeltaScore');
   rows = ids.get('predictionTableBody').children;
   assert.equal(rows[0].children[0].textContent, '—');
   assert.equal(rows[0].children[1].textContent, '+7');
-  assert.ok(rows[0].children[1].classList.contains('score-cost'));
-  assert.ok(rows[1].children[0].classList.contains('score-benefit'));
+  assert.ok(rows[0].children[1].classList.contains('score-positive'));
+  assert.ok(rows[1].children[0].classList.contains('score-positive'));
 
   assert.equal(
     rows.length,
@@ -634,22 +643,22 @@ async function main() {
   rows = ids.get('predictionTableBody').children;
 
   assert.equal(
-    rows[0].children[2].textContent,
+    rows[0].children[3].textContent,
     '0.0%',
     'Unobserved intended outcome is still shown first',
   );
 
-  assert.ok(rows[0].children[0].classList.contains('score-cost'));
-  assert.ok(rows[0].children[1].classList.contains('score-benefit'));
+  assert.ok(rows[0].children[0].classList.contains('score-negative'));
+  assert.ok(rows[0].children[1].classList.contains('score-negative'));
   run("predictionResult.state.color='black';renderPredictionTable()");
   rows = ids.get('predictionTableBody').children;
-  assert.ok(rows[0].children[0].classList.contains('score-benefit'));
-  assert.ok(rows[0].children[1].classList.contains('score-cost'));
+  assert.ok(rows[0].children[0].classList.contains('score-negative'));
+  assert.ok(rows[0].children[1].classList.contains('score-negative'));
   run("predictionResult.state.color='yellow'");
-  click('predictionShowAll');
+  run("predictionFilter='';drawPrediction()");
   selectOutcome(0);
   assert.equal(ids.get('predictionAfterYellow').textContent, '-10');
-  assert.match(ids.get('predictionMapSummary').textContent, /0 of 4 sampled trials matched/);
+  assert.match(ids.get('predictionMapSummary').textContent, /0 of 4 trials selected/);
   run('loadPrediction(PredictionModel.summarize(PredictionStorage.read(localStorage)[0].record))');
   assert.equal(run('predictionResult.storage'), 'summary');
 
@@ -710,7 +719,7 @@ async function main() {
   assert.equal(ids.get('predictionSyncMessage').hidden, true);
   assert.equal(ids.get('regeneratePrediction').classList.contains('prediction-out-of-sync'), false);
   assert.equal(ids.get('predictionTableHead').children[0].children[0].dataset.shooter, 'yellow');
-  run("input('predictionCourtView').value='receiving'");
+  click('predictionScoringEnd');
   const beforeAnimation = JSON.stringify(run('predictionResult'));
   const pendingAnimation = run('PredictionAnimation.play()');
 
@@ -724,28 +733,37 @@ async function main() {
   );
 
   run("element('predictionDialog').showModal()");
-  ids.get('predictionCourtView').value = 'receiving';
+  click('predictionScoringEnd');
   await run('PredictionAnimation.play()');
 
   assert.equal(
-    ids.get('predictionCourtView').value,
+    run('predictionCourtView'),
     'receiving',
     'Playback preserves the chosen court view',
   );
 
   assert.equal(ids.get('animatePrediction').getAttribute('aria-pressed'), 'true');
+  run("predictionFilter='';drawPrediction()");
 
   assert.equal(
-    run('PredictionAnimation.points(predictionResult, "").length'),
+    ids.get('animatePrediction').disabled,
+    false,
+    'Stop remains available with no selected trials',
+  );
+
+  run("predictionFilter='*';drawPrediction()");
+
+  assert.equal(
+    run('PredictionAnimation.points(predictionResult, "*").length'),
     run('predictionResult.count * predictionResult.biscuits.length'),
     'Every trial starts on the same clock',
   );
 
-  ids.get('predictionCourtView').value = 'full';
+  click('predictionFullCourt');
   run("element('predictionDialog').close()");
 
   assert.equal(
-    ids.get('predictionCourtView').value,
+    run('predictionCourtView'),
     'full',
     'Stopping also preserves view changes',
   );
@@ -760,7 +778,7 @@ async function main() {
 
   run(
     "element('predictionDialog').showModal();predictionResult.intended.score=[-10,7];" +
-      "predictionFilter='-10,7';renderPredictionTable();drawPrediction()",
+      "predictionFilter='-10,7|0';renderPredictionTable();drawPrediction()",
   );
 
   assert.ok(ids.get('predictionAfterYellow').classList.contains('negative-score'));

@@ -3,6 +3,7 @@
   animate,
   finish,
   fire,
+  placeBlock,
   scores,
   setup
 */
@@ -163,8 +164,76 @@ function fire(retry = false) {
   requestAnimationFrame(animate);
 }
 
+function placeBlock(name) {
+  if (running || dragging) {
+    return false;
+  }
+
+  const [kind, blockColor] = name.split('-');
+
+  if (!['tampa', 'stpete'].includes(kind) || !['yellow', 'black'].includes(blockColor)) {
+    return false;
+  }
+
+  const x =
+    kind === 'tampa' ? (blockColor === 'black' ? 2.6 : 3.4) : blockColor === 'black' ? 4.5 : 1.5;
+
+  const point = { x, y: 28.5 };
+
+  if (
+    !physics.remainingBiscuits(
+      discs,
+      blockColor,
+      color,
+    )
+  ) {
+    element('blockStatus').textContent =
+      'No ' + blockColor + ' biscuit is available. The queued shooter is reserved.';
+
+    return false;
+  }
+
+  if (!canDrop(point)) {
+    element('blockStatus').textContent =
+      'That block position is occupied. Move the existing biscuit before adding it.';
+
+    return false;
+  }
+
+  saveArrangement();
+
+  discs.push(
+    createDisc(
+      point.x,
+      point.y,
+      blockColor,
+    ),
+  );
+
+  queryElements('.setup').forEach((trigger) => {
+    trigger.classList.toggle('active', trigger.dataset.setup === name);
+    trigger.setAttribute('aria-pressed', String(trigger.dataset.setup === name));
+  });
+
+  element('blockStatus').textContent = '';
+
+  element('result').textContent =
+    (blockColor === 'yellow' ? 'Yellow' : 'Black') +
+    ' ' +
+    (kind === 'tampa' ? 'Tampa' : 'St. Pete') +
+    ' block added.';
+
+  update();
+
+  return true;
+}
+
 function scores() {
-  physics.collectOffCourt(discs);
+  // Keep the held biscuit under the pointer; collection slots settle on release.
+  physics.collectOffCourt(
+    discs.filter((disc) => dragging?.kind !== 'disc' || disc !== dragging.disc),
+  );
+
   let yellow = 0,
     black = 0;
 

@@ -7,8 +7,9 @@ interface LabElements {
   accuracyDown: HTMLButtonElement;
   accuracyHelp: HTMLButtonElement;
   accuracyNote: HTMLElement;
+  accuracyRestoreDialog: HTMLDialogElement;
   accuracyUp: HTMLButtonElement;
-  aimSettings: HTMLButtonElement;
+  aimSettings: HTMLElement;
   aimSpread: HTMLOutputElement;
   angle: HTMLInputElement;
   angleVal: HTMLOutputElement;
@@ -21,15 +22,20 @@ interface LabElements {
   drift: HTMLInputElement;
   driftLeft: HTMLButtonElement;
   driftRight: HTMLButtonElement;
-  driftSettings: HTMLButtonElement;
+  driftSettings: HTMLElement;
   driftVal: HTMLOutputElement;
+  exportPredictions: HTMLButtonElement;
   fastShotInaccuracy: HTMLInputElement;
   fastShotThreshold: HTMLInputElement;
   focusPosition: HTMLInputElement;
   footEnd: HTMLButtonElement;
   headEnd: HTMLButtonElement;
+  importPredictionFile: HTMLInputElement;
+  importPredictions: HTMLButtonElement;
   left: HTMLButtonElement;
+  openSettings: HTMLButtonElement;
   overview: HTMLCanvasElement;
+  placeBlackPigeon: HTMLButtonElement;
   placeBlock: HTMLButtonElement;
   placePigeon: HTMLButtonElement;
   position: HTMLInputElement;
@@ -37,7 +43,20 @@ interface LabElements {
   prediction: HTMLInputElement;
   predictionAccuracy: HTMLInputElement;
   predictionCourt: HTMLCanvasElement;
+  predictionCourtView: HTMLElement;
+  predictionDeltaScore: HTMLButtonElement;
   predictionDialog: HTMLDialogElement;
+  predictionFinalScore: HTMLButtonElement;
+  predictionFullCourt: HTMLButtonElement;
+  predictionReplayFaster: HTMLButtonElement;
+  predictionReplaySeek: HTMLInputElement;
+  predictionReplaySlower: HTMLButtonElement;
+  predictionScoreMode: HTMLElement;
+  predictionScoringEnd: HTMLButtonElement;
+  predictionZoom: HTMLInputElement;
+  predictionZoomIn: HTMLButtonElement;
+  predictionZoomOut: HTMLButtonElement;
+  predictionZoomReset: HTMLButtonElement;
   regeneratePrediction: HTMLButtonElement;
   reset: HTMLButtonElement;
   result: HTMLElement;
@@ -55,13 +74,13 @@ interface LabElements {
   shooting: HTMLCanvasElement;
   slick: HTMLInputElement;
   slickDown: HTMLButtonElement;
-  slickSettings: HTMLButtonElement;
+  slickSettings: HTMLElement;
   slickUp: HTMLButtonElement;
   slickVal: HTMLOutputElement;
   sourceList: HTMLElement;
   speed: HTMLInputElement;
   speedDown: HTMLButtonElement;
-  speedSettings: HTMLButtonElement;
+  speedSettings: HTMLElement;
   speedUp: HTMLButtonElement;
   speedVal: HTMLOutputElement;
   supplyColumn: HTMLElement;
@@ -77,13 +96,17 @@ declare var PredictionStorage: typeof import('./prediction-storage');
 interface PredictionOutcome {
   ends?: number[][];
   launch: number[];
+  paths?: number[][][];
   positions: number[][];
   score: number[];
+  selfKitchen?: boolean;
 }
 interface PredictionRecord {
   beforeScore: number[];
   bins?: {
     end?: number[];
+    path?: number[][];
+    selectionKey?: string;
     biscuit: number;
     count: number;
     key: string;
@@ -104,6 +127,11 @@ interface PredictionRecord {
   elapsedMs: number;
   intended?: PredictionOutcome;
   outcomes?: PredictionOutcome[];
+  selectionGroups?: {
+    count: number;
+    key: string;
+    score: number[];
+  }[];
   state: ReturnType<typeof snapshot>;
   storage?: string;
   summary?: {

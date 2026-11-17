@@ -39,3 +39,23 @@ fixtures after changing HTML or script loading order.
 Fix failures and repeat affected checks. Once checks pass, repeat only for new changes or unresolved
 concerns. Report what changed, which checks ran, and any actual verification gaps. Follow the requested
 phase checkpoint; this skill does not grant permission to commit, publish, or advance scope.
+
+For route and selection refinements, run the refinements regression suite (included in npm test).
+Check dragged target updates/cancel, arbitrary queue pulls with equal/unequal counts, independent
+Yellow/Black pigeons and reservations, collection overlap without collisions, contact/drift route
+bends for both ends, full/compact self-kitchen correlation, mixed rows, selected 0/50/100%, and Delta
+advantage in both modes. Browser-check full-court sizing, centered actions and equal control rows,
+settings gear access/focus, mobile probability tooltip, and full column/intended-row outline overlap.
+
+For control/toolbar corrections, verify four adjustment rows, the unchanged three-icon order with
+values to the right, matched icon sizes, no internal scrollbar, and side-by-side court/control layout
+when space permits. Check both labeled view pairs, default Delta Score, filter ordering and color,
+0.2 trial opacity versus opaque intent, additive blocks preserving board/aim/history and rejecting
+occupied/full positions, and collection drop/drag-back with retained inventory for both ends.
+
+For transfer/replay changes, run replay-library regressions (included in npm test): 25 records,
+full/summary round trips, malformed input and capacity/quota atomicity, duplicate and conflicting IDs,
+pencil Enter/blur/Escape, export payloads, pause/resume/seek/speed without source mutation, zoom/pan
+coordinate inverses, kitchen colors/end icons, and collection versus explicit queue return. Browser
+verification must separately cover download/file chooser behavior, the 650px right anchor, equal replay
+button sizes, stopwatch legibility, table nowrap layout, original-size controls, and touch panning.

@@ -6,9 +6,116 @@
 
   const key = 'shotLab.predictions.v1';
   const fullLimit = 500 * 1024;
+  const maxRecords = 25;
 
   function bytes(value) {
     return new TextEncoder().encode(JSON.stringify(value)).length;
+  }
+
+  function exportRecords(records) {
+    if (
+      !Array.isArray(records) ||
+      records.length > maxRecords ||
+      records.some((entry) => !validImportEntry(entry))
+    ) {
+      throw new Error('These saved records cannot be exported because their data is invalid.');
+    }
+
+    return JSON.stringify(
+      {
+        exportedAt: new Date().toISOString(),
+        format: 'shuffleboard-shot-lab',
+        shots: records,
+        version: 1,
+      },
+      null,
+      2,
+    );
+  }
+
+  function importRecords(storage, json) {
+    let data;
+
+    try {
+      data = JSON.parse(json);
+    } catch {
+      throw new Error('This file is not valid JSON. No saved shots were changed.');
+    }
+
+    let incoming;
+
+    if (Array.isArray(data)) {
+      incoming = data;
+    } else if (data?.format === 'shuffleboard-shot-lab' && data.version === 1) {
+      incoming = data.shots;
+    } else if (data?.record && typeof data.name === 'string') {
+      incoming = [data];
+    }
+
+    if (
+      !Array.isArray(incoming) ||
+      incoming.length > maxRecords ||
+      incoming.some((entry) => !validImportEntry(entry))
+    ) {
+      throw new Error(
+        'This file contains invalid or unsupported shot records. No saved shots were changed.',
+      );
+    }
+
+    const current = read(storage);
+    const merged = current.slice();
+
+    const fingerprints = new Set(
+      current.map((entry) => entry.name + '\u0000' + JSON.stringify(entry.record)),
+    );
+
+    let imported = 0,
+      skipped = 0;
+
+    for (const entry of incoming) {
+      const record =
+        bytes(entry.record) < fullLimit
+          ? structuredClone(entry.record)
+          : model.summarize(entry.record);
+
+      const name = entry.name.trim().slice(0, 120) || model.suggestedName(record);
+      const fingerprint = name + '\u0000' + JSON.stringify(record);
+
+      if (fingerprints.has(fingerprint)) {
+        skipped++;
+        continue;
+      }
+
+      fingerprints.add(fingerprint);
+      const seed = Date.now() + '-' + Math.random().toString(36).slice(2);
+      let id = entry.id || seed,
+        suffix = 0;
+
+      while (merged.some((saved) => saved.id === id)) {
+        id = seed + '-' + ++suffix;
+      }
+
+      merged.push({
+        id,
+        name,
+        record,
+      });
+
+      imported++;
+    }
+
+    if (merged.length > maxRecords) {
+      throw new Error('Import would exceed the 25-shot limit. No saved shots were changed.');
+    }
+
+    const stored = imported ? write(storage, merged) : current;
+
+    return {
+      bytes: bytes(stored),
+      count: stored.length,
+      imported,
+      skipped,
+    };
   }
 
   function read(storage) {
@@ -28,7 +135,7 @@
 
     if (
       !Array.isArray(records) ||
-      records.length > 20 ||
+      records.length > maxRecords ||
       records.some(
         (entry) =>
           !entry ||
@@ -70,11 +177,11 @@
   ) {
     const records = read(storage);
 
-    if (records.length >= 20) {
-      throw new Error('You have 20 saved shots. Delete one before saving another.');
+    if (records.length >= maxRecords) {
+      throw new Error('You have 25 saved shots. Delete one before saving another.');
     }
 
-    let saved = bytes(record) < fullLimit ? structuredClone(record) : model.summarize(record);
+    const saved = bytes(record) < fullLimit ? structuredClone(record) : model.summarize(record);
 
     const entry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -82,29 +189,91 @@
       record: saved,
     };
 
-    try {
-      storage.setItem(key, JSON.stringify([...records, entry]));
-    } catch {
-      // Quotas vary by browser and origin. Try compact summaries atomically; never evict a saved shot.
-      saved = model.summarize(record);
-      entry.record = saved;
-      try {
-        storage.setItem(
-          key,
-          JSON.stringify([
-            ...records.map((item) => ({ ...item, record: model.summarize(item.record) })),
-            entry,
-          ]),
-        );
-      } catch {
-        throw new Error(
-          'Storage is full or unavailable. Nothing was saved or deleted. Delete a save' +
-            'd shot and try again.',
-        );
-      }
+    const stored = write(storage, [...records, entry]);
+    const savedEntry = stored.find((item) => item.id === entry.id);
+
+    return { ...savedEntry, bytes: bytes(savedEntry.record) };
+  }
+
+  function validImportEntry(entry) {
+    if (
+      !entry ||
+      typeof entry.name !== 'string' ||
+      (entry.id !== undefined && (typeof entry.id !== 'string' || entry.id.length > 200)) ||
+      !validRecord(entry.record)
+    ) {
+      return false;
     }
 
-    return { ...entry, bytes: bytes(saved) };
+    const record = entry.record,
+      state = record.state;
+
+    if (
+      !Array.isArray(state.paths) ||
+      !state.paths.every(
+        (path) =>
+          Array.isArray(path) &&
+          path.every(
+            (point) => Array.isArray(point) && point.length === 2 && point.every(Number.isFinite),
+          ),
+      ) ||
+      ((record.bins !== undefined || record.summary !== undefined) &&
+        record.storage !== 'summary') ||
+      (record.outcomes !== undefined && !Array.isArray(record.outcomes)) ||
+      state.discs.some((disc) => typeof disc.out !== 'boolean') ||
+      record.biscuits.some(
+        (disc, index) =>
+          typeof disc.label !== 'string' ||
+          disc.label.length > 120 ||
+          typeof disc.out !== 'boolean' ||
+          disc.shooter !== (index === state.discs.length) ||
+          disc.color !== (state.discs[index]?.color || state.color),
+      )
+    ) {
+      return false;
+    }
+
+    const validOutcome = (outcome) =>
+      (!outcome.ends ||
+        (Array.isArray(outcome.ends) &&
+          outcome.ends.length === record.biscuits.length &&
+          outcome.ends.every(
+            (point) =>
+              Array.isArray(point) &&
+              point.length === 3 &&
+              point.every(Number.isFinite) &&
+              [0, 1].includes(point[2]),
+          ))) &&
+      (!outcome.launch ||
+        (Array.isArray(outcome.launch) &&
+          outcome.launch.length === 2 &&
+          outcome.launch.every(Number.isFinite)));
+
+    if (
+      (record.intended && !validOutcome(record.intended)) ||
+      record.outcomes?.some((outcome) => !validOutcome(outcome))
+    ) {
+      return false;
+    }
+
+    if (
+      record.bins &&
+      (record.bins.some(
+        (bin) =>
+          typeof bin.key !== 'string' ||
+          !record.summary.some((group) => group.score.join(',') === bin.key),
+      ) ||
+        record.biscuits.some(
+          (_, index) =>
+            record.bins
+              .filter((bin) => bin.biscuit === index)
+              .reduce((sum, bin) => sum + bin.count, 0) !== record.count,
+        ))
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   function validRecord(record) {
@@ -162,6 +331,13 @@
       return false;
     }
 
+    const path = (p) =>
+      Array.isArray(p) &&
+      p.every((point) => Array.isArray(point) && point.length === 3 && point.every(finite));
+
+    const paths = (p) =>
+      p === undefined || (Array.isArray(p) && p.length === record.biscuits.length && p.every(path));
+
     const position = (p) =>
       Array.isArray(p) && p.length === 3 && p.every(finite) && [0, 1].includes(p[2]);
 
@@ -173,6 +349,7 @@
       !score(record.beforeScore) ||
       (record.intended &&
         (!score(record.intended.score) ||
+          !paths(record.intended.paths) ||
           !Array.isArray(record.intended.positions) ||
           record.intended.positions.length !== record.biscuits.length ||
           !record.intended.positions.every(position))) ||
@@ -185,6 +362,18 @@
 
     if (record.storage === 'summary') {
       return (
+        (record.selectionGroups === undefined ||
+          (Array.isArray(record.selectionGroups) &&
+            record.selectionGroups.every(
+              (group) =>
+                score(group.score) &&
+                typeof group.key === 'string' &&
+                group.key === group.score.join(',') + (group.key.endsWith('|1') ? '|1' : '|0') &&
+                Number.isInteger(group.count) &&
+                group.count > 0,
+            ) &&
+            record.selectionGroups.reduce((sum, group) => sum + group.count, 0) ===
+              record.count)) &&
         Array.isArray(record.summary) &&
         Array.isArray(record.bins) &&
         record.summary.every(
@@ -194,6 +383,9 @@
         record.bins.every(
           (bin) =>
             position(bin.position) &&
+            (bin.path === undefined || bin.path === null || path(bin.path)) &&
+            (!record.selectionGroups ||
+              record.selectionGroups.some((group) => group.key === bin.selectionKey)) &&
             Number.isInteger(bin.biscuit) &&
             bin.biscuit >= 0 &&
             bin.biscuit < record.biscuits.length &&
@@ -209,6 +401,8 @@
       record.outcomes.every(
         (outcome) =>
           score(outcome.score) &&
+          paths(outcome.paths) &&
+          (outcome.selfKitchen === undefined || typeof outcome.selfKitchen === 'boolean') &&
           Array.isArray(outcome.positions) &&
           outcome.positions.length === record.biscuits.length &&
           outcome.positions.every(position),
@@ -216,8 +410,32 @@
     );
   }
 
+  function write(storage, records) {
+    try {
+      storage.setItem(key, JSON.stringify(records));
+
+      return records;
+    } catch {
+      const compact = records.map((entry) => ({ ...entry, record: model.summarize(entry.record) }));
+
+      try {
+        storage.setItem(key, JSON.stringify(compact));
+
+        return compact;
+      } catch {
+        throw new Error(
+          'Storage is full or unavailable. No saved shots were changed. Export or dele' +
+            'te a saved shot and try again.',
+        );
+      }
+    }
+  }
+
   const api = {
     bytes,
+    exportRecords,
+    importRecords,
+    limit: maxRecords,
     read,
     remove,
     rename,

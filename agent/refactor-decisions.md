@@ -98,3 +98,63 @@ session; the user does not want Chrome refocused. Full assistive-technology conf
   all trials. The lower scoreboard uses the most likely checked outcome, or overall outcome if none.
 - Delta colors are relative to the shooter: own gains/opponent losses green, own losses/opponent gains
   red. Display zero score cells as — in both table modes.
+
+## Route, queue, and control refinements
+
+- Collection is now an unlabeled 0.75-foot strip. It remains display-only: out biscuits never collide.
+- Tap or continuously drag an aim target; cancel restores the previous aim and settings.
+- Every queued supply biscuit is usable. Reorder alternating colors as inventory permits. Compare queued
+  column counts before a pull: preserve the shooter for equal counts; switch only when its own color
+  was pulled while it had more queued biscuits. The separate queued shooter remains reserved.
+- Yellow and Black pigeon actions have matching backgrounds and place independently of the shooter.
+- Stack the four adjustment rows, use noninteractive middle icons with hover titles, and align values
+  beside them. Keep accuracy compact and buttons equal-size. The gear opens exact settings.
+- Center actions with a 16px gap. Place board scores in the focus header and remove the old info button.
+- Use checkboxes/two-button choices for binary views; never a dropdown.
+- Default all outcome rows checked; none checked means 0%. Scenario buttons select matching trials,
+  then table checkboxes add/remove score groups. Partial score rows show mixed checkboxes.
+- Self-kitchen means the delivered biscuit finishes at −10, tracked separately from board totals.
+- Show combined Selected Outcome % above the map, with its label in a mobile native tooltip.
+- Draw actual collision/drift routes at 0.3 opacity per trial and opaque intended finals/short dotted
+  paths. Keep starting outlines at longer dash lengths. Subsets rename Animate selected shots.
+- Both score modes include score-change advantage naming the leading color. Pin the intention with
+  #55a080; outline the full shooting column and label its header (Shooting) in italics.
+- New compact saves retain route bins and self-kitchen groups. Old full saves reconstruct routes from
+  launches; old compact saves need regeneration for the newly introduced data.
+
+## Control-panel and outcome-toolbar corrections
+
+- Four adjustment rows retain decrease/icon/increase order; the value follows the three-icon group.
+  Use matched 20px icons, a compact separate accuracy strip, and no panel scrollbar.
+- Place controls beside the shooting court when the panel has at least 480px, with the narrow opposite-half
+  overlay as fallback. Do not change the two top adjustment groups when stacking the bottom groups.
+- Put filters above the table in this order: Show all outcomes, Self-kitchen, Yellow up/down, Black
+  up/down; use the corresponding colors and include biscuit checkboxes in the same area.
+- Center the 24px Outcomes heading and put Final Score/Delta Score button pairs to its right. Delta
+  Score is the default. Full Court/Scoring End buttons sit beside animation. Save-line actions have green borders.
+- Sampled routes and biscuits now use 0.2 opacity; the intended result remains at 1.0.
+- Keep actions easy to reach, avoid scrolling where controls can fit, and prefer one-click alternatives
+  over dropdowns. The user’s reference to a third part meant that paragraph, not a new document section.
+- A block choice adds only its biscuit, preserving board/shooter/aim/history. Reject occupied positions
+  and unavailable inventory without clearing. Collection drops keep biscuits used and allow return to court.
+
+## Latest replay, library, and court refinements
+
+- Restore original control sizes/canvas, shift the panel left clear of launch positions, and center
+  the values in the remaining right-hand space. Do not shrink the court to fit a new control grid.
+- Opacity returns to twice the original density formula rather than a fixed 0.2/0.3 per trial.
+- Put the shooting label above the table, keep columns approximately equal without wrapping, and add zoom/pan/reset.
+- Cap the library at 25. Show JSON byte sizes, remove visible name labels, use inline ✏️ editing, 🔮 load,
+  red 🗑️ delete, and a 650px right-anchored drawer. Import/export uses validated, atomic versioned JSON.
+- All positive table scores are bold green, all negative scores bold red, and dashes/percentages neutral.
+  The intention gets a 16px asterisk and a 12px explanation below the table.
+- Replay has a seconds.milliseconds stopwatch, turtle/play/pause/rabbit controls and a seek slider.
+  Playback speed is separate from sampled launch speed; pause, seeking and speed never sample again.
+- Color outer kitchens by the biscuit sides and show the receiving-end icon in collection. Parked slots
+  leave the center clear. Manual off-court drops collect; explicit queue drops restore supply/order.
+
+## Kitchen color correction
+
+Color only the two outer corner triangles: left vertices (0,37.5), (0.5,37.5), (0,39),
+and right vertices (5.5,37.5), (6,37.5), (6,39), reflected for the other end. The broad
+scoring parallelograms and center triangle retain their green fill and original score text contrast.

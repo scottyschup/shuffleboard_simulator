@@ -20,11 +20,13 @@
   focusRotation,
   focusStart,
   input,
+  isCollectionPoint,
   lastFrame,
   lastShot,
   lastShotUndone,
   launch,
   launchY,
+  loadAccuracyPreference,
   loadCourtSettings,
   moving,
   paths,
@@ -34,6 +36,7 @@
   queryElements,
   restoreShot,
   running,
+  saveAccuracyPreference,
   saveArrangement,
   saveCourtSettings,
   shootingEnd,
@@ -91,6 +94,10 @@ function button(id) {
 }
 
 function canDrop(p, except = null) {
+  if (isCollectionPoint(p)) {
+    return true;
+  }
+
   return (
     p &&
     p.x >= 0 &&
@@ -137,6 +144,26 @@ function input(id) {
   return /** @type {HTMLInputElement} */ (element(id));
 }
 
+function isCollectionPoint(point) {
+  return !!point && point.x >= 0 && point.x <= 6 && point.y >= 39 && point.y <= 39 + 3 * physics.R;
+}
+
+function loadAccuracyPreference() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('shotLab.accuracy'));
+
+    return saved?.version === 1 &&
+      typeof saved.value === 'number' &&
+      Number.isFinite(saved.value) &&
+      saved.value >= 0 &&
+      saved.value <= 100
+      ? saved.value
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function loadCourtSettings() {
   try {
     applyCourtSettings(JSON.parse(localStorage.getItem('shotLab.court')));
@@ -168,6 +195,21 @@ function restoreShot(state) {
   element('accuracy').value = state.accuracy.toFixed(1);
   applyCourtSettings(state.court);
   saveCourtSettings();
+}
+
+function saveAccuracyPreference(value) {
+  if (!Number.isFinite(value)) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      'shotLab.accuracy',
+      JSON.stringify({ value: Number(Math.max(0, Math.min(100, value)).toFixed(1)), version: 1 }),
+    );
+  } catch {
+    /* Accuracy editing remains available when browser storage is unavailable. */
+  }
 }
 
 function saveArrangement() {
@@ -300,5 +342,5 @@ const shot = (randomize = false) => {
 const value = (id) => Number(input(id).value);
 let focusStart = 24.75;
 let focusRotation = 0;
-const focusLength = 16.5;
+const focusLength = 15;
 let pendingSupplyColor = null;

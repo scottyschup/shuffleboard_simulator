@@ -6,32 +6,40 @@ Optional Google Fonts have local system-font fallbacks.
 
 ## Practice
 
-Choose a Yellow/Black Tampa or St. Pete setup, select the shooting end, and tap the court to aim.
+Choose a Yellow/Black Tampa or St. Pete setup, select the shooting end, and tap or drag on the court to aim.
 Target selection sets both direction and launch speed for an unobstructed shot under the current court
 speed and drift. Collisions may change the outcome. Drag the queued shooter to adjust its starting point.
 
 Each color has four biscuits total across the court, dead-biscuit collection area, queued shooter, and
-supply. One alternating supply column shows the remaining shot order; only its top biscuit is available.
-Drag it into a magnified view, or select it and tap to place. A valid placement advances the shooter.
+supply. One supply column alternates colors as the remaining inventory allows. Any queued biscuit can be dragged
+into a magnified view, or selected and tapped to place. Equal queued counts preserve the shooter. Pulling
+the shooter’s color when it has more queued biscuits than the opponent switches the shooting color.
 Biscuits knocked off court or short
 of the far dead line are collected behind the receiving kitchen and still count as used. Manually
-dragging a biscuit off court returns it to supply. A drop is off court when its center is outside the
+dragging a biscuit off court moves it into collection. Drop it onto the queue between the courts
+to return it to supply, alternating the remaining colors as inventory permits. Dragging a court
+or queued biscuit into the collection strip parks it as used, excluded from collisions and scoring;
+collected biscuits can be dragged back onto the court. A drop is off court when its center is outside the
 39 × 6 ft playing area. Overlapping placements are canceled. Canceling a drag restores its starting state.
 
 The lock button in the scoring view prevents biscuit dragging there so a tap can place a target on an
 existing biscuit. Unlock to rearrange biscuits. The full-court overview only moves the focus window.
 
-The shooting-end view keeps the queued biscuit visible and overlays its opposite half with controls.
-Use the central speed, aim, court-speed, and drift icons to open their exact settings. Block opens the
-four practice setups. Pigeon places the current color randomly inside a 7 beside the kitchen line.
+The shooting-end canvas keeps its original proportions and control sizing. The panel shifts left into
+unused space to clear launch positions. Four stacked adjustment rows retain decrease/icon/increase
+order, with values centered in the extra space to the right. Middle icons are labels with native hover
+tooltips. Accuracy remains in the compact footer strip. The gear button opens exact shot/court settings. Block adds only the selected Tampa/St. Pete biscuit, preserving the board, shooter, aim, and shot history.
+Occupied positions or exhausted inventory are rejected without altering the board. Yellow
+and Black pigeon buttons place their own color randomly inside a 7 beside the kitchen line, without
+changing the shooter and while reserving the queued shooter’s biscuit.
 Lock, clockwise quarter-turn rotation, and Clear sit together above the focus view. Rotation changes
 only that view; aiming and biscuit dragging use its rotated coordinates. The action row is Block,
-Pigeon, Undo, Shoot, Replay, and outcome Prediction.
+Yellow Pigeon, Black Pigeon, Undo, Shoot, Replay, and outcome Prediction.
 
 Undo restores the starting state of the last shot, including biscuits, shooter, aim, accuracy, and court
 settings. Arrangement edits do not add Undo entries. Replay restores that starting state and immediately
 shoots with fresh accuracy errors. Replay works after a completed shot or after Undo; it does not restore
-an old sampled outcome. Clear court and practice setups reset shot history and preserve court settings.
+an old sampled outcome. Clear court resets shot history and preserves court settings. Adding a block preserves shot history.
 
 ## Outcome predictions and saved shots
 
@@ -41,45 +49,54 @@ or 1,000 when the first 100 project a runtime below one second with scheduling h
 between short batches; closing the dialog cancels an unfinished run. Regenerate samples fresh outcomes.
 Board, shooter, target, or non-accuracy shot/court changes discard active results until regenerated.
 
-The court map overlays six-inch final-position footprints, with denser areas indicating more frequent
-endpoints. Straight translucent lines connect each starting position to its final stopping/departure
-position; they are displacement lines, not collision trajectories. Dashed labeled outlines mark starts. Toggle individual biscuits, either color,
-or all biscuits; these visibility controls do not alter score probabilities. Collected-biscuit rates
-appear separately. Switch between receiving-end and full-court views. The prediction dialog nearly fills the viewport,
-with a larger court, compact 16px score rows, and native score-help and court-note tooltips.
-Its header sits outside the scrolling content so mobile court content cannot scroll above it. Coordinates in results are physical
-feet measured from Head, independent of viewport and shooting end.
+The map shows trial positions and actual routes through collisions and drift with twice the original density-scaled opacity per trial: `min(1, 2 × max(1/255, 1 − exp(−12 × count / selectedTrials)))`.
+Dashed labeled outlines mark starts. Opaque intended final positions and short dotted paths show the
+perfect shot independently of the selected trials. Individual, color, and all-biscuit visibility
+controls affect drawing only, never score probabilities. Collection rates and map notes are in the
+court tooltip. The unlabeled collection strip is 1.5 biscuit diameters deep and collected biscuits do
+not participate in physics. Receiving/full-court and final/delta views use labeled button pairs. The full-court
+map fills its available width in landscape or height in portrait without changing court proportions.
+The prediction dialog nearly fills the viewport with compact 16px score rows. Its header sits outside
+the scrolling content. Results use physical feet from Head, independent of viewport and shooting end.
 
-The default table shows final Yellow and Black board scores, including previously placed biscuits.
-Switch to per-player deltas to subtract the starting score from each color separately. The shooting
-color’s column header is outlined in that color, and negative scoreboard totals are red. In delta
-view, green marks changes that benefit the shooter and red marks changes that benefit the opponent.
-Zero score cells display — in both table modes. The perfect
-nominal shot (100% accuracy, fast-shot handicap disabled) defines the intended outcome. Its outlined
-row stays first, including at 0% sampled likelihood; other rows descend by likelihood. Checking outcome rows filters the map to their combined trials. Multiple rows can be checked. If no trial matched the intended score, selecting it shows the nominal result with an
-explicit zero-matches label. Show all outcomes clears the filter. Percentages use the complete run.
-The scoreboard above the court shows the starting score; the lower scoreboard shows the selected
-outcome; with multiple checked, it shows the most likely checked outcome. Without a selection it
-shows the most likely overall outcome. Both scoreboards always show final totals.
+The table defaults to Delta Score, subtracting each color’s starting score. Final Score shows final
+Yellow and Black totals including previously placed biscuits. Both modes include a Delta column showing the score-change
+advantage: Black −10 and Yellow +7 becomes Yellow +17. The shooter’s entire column is outlined in its
+color, with an italic shooting label above the table; the perfect nominal outcome (100% accuracy and no fast-shot handicap)
+is pinned first with a #55a080 outline that takes precedence where outlines cross. Other rows descend
+by likelihood. In both table views, positive score values are bold green and negative values are bold red; zero
+score cells display —, and percentages remain neutral. Negative scoreboard totals remain red.
+
+All sampled outcomes start selected. Scenario buttons select Yellow/Black score increases/decreases
+or self-kitchen (the delivered biscuit finishes in the kitchen). Use table checkboxes to add or remove
+score groups; a mixed checkbox means a scenario selected only part of that score group. Scenarios
+use trial-level results, so identical board totals can have different self-kitchen status. Selected
+Outcome % shows the probability of the selected union against the complete run; its label becomes a
+tooltip on mobile. No selection means 0%; Show all outcomes restores 100%. The upper scoreboard shows
+the starting score; the lower scoreboard shows the most likely selected result, or the intention
+when no sampled trials are selected. Both scoreboards show final totals. The intended positions and
+route remain visible even when no sampled trial matched them.
 Adjust Accuracy % in the dialog, then explicitly Regenerate. This updates the shared shot accuracy.
 These are simulated estimates, not measured real-world odds.
 
-Save up to 20 named predictions in this browser's localStorage. Suggested names compare the perfect
+Save up to 25 named predictions in this browser's localStorage. Suggested names compare the perfect
 nominal end state with the starting board, recognizing kitchen shots, replacements, combinations via
 another biscuit, clears, kitchen rescues, bump-ups, doubles, and scoring draws. They describe the
 simulated intention rather than assuming the first biscuit touched is the target to clear. Names remain
 editable. Saving opens a bottom drawer above predictions and selects the new shot name for immediate editing.
 Saved shots is also available in the prediction header, at any scroll position. The drawer has its own
 scroll area and native modal focus handling; Escape closes the drawer before closing predictions.
-Saved shots support Load, Rename, and Delete. Load restores the starting arrangement, shooter, target,
+Saved shots support 🔮 Load, inline ✏️ editing, red 🗑️ Delete, and Export. Load restores the starting arrangement, shooter, target,
 accuracy, court settings, and stored results, and resets shot history. Close the dialog to shoot normally;
 Regenerate produces fresh trials. Loading never silently rerandomizes a stored run. Older saves without
 an intended result derive it from their stored starting state, preserving their existing names.
 
 Full records smaller than 500 KiB retain each trial's sampled launch, final biscuit positions, collection
-flags, scores, and actual stopping/departure coordinates. Larger runs retain score distributions and
+flags, scores, actual stopping/departure coordinates, and simplified timed routes. Larger runs retain score distributions and
 per-biscuit endpoint counts on a 0.1-foot
-grid, grouped by score outcome so map filtering still works. If browser storage rejects a write, the
+grid, with route coordinates rounded to 0.01 feet and groups split by score and self-kitchen status.
+Older full saves reconstruct routes from their sampled launches. Older compact saves need explicit
+regeneration for routes and self-kitchen filtering because they did not retain that information. If browser storage rejects a write, the
 library retries with compact summaries, including existing runs. It never evicts a saved shot. If that
 also fails, the existing library remains intact and an error is shown. Browser quotas vary; no 20 MB
 capacity is assumed. Saved shots are local to the browser and origin, and clearing site data removes them.
@@ -93,17 +110,18 @@ Returning to the generated accuracy clears the warning. Save is disabled while a
 The draft survives closing/reopening the dialog; Close and Escape remain available during generation
 and animation preparation. Non-accuracy board/shot changes still invalidate predictions.
 
-Animate all shots replays the original sampled launches together on one clock at real-time speed.
-It keeps the court view selected by the user throughout playback and stopping.
-Multi-outcome filters and individual biscuit visibility still apply. Playback does not sample new errors or change
-any saved outcome. Full saved runs can be animated; compact summaries need explicit regeneration.
+Replay reads the original sampled launches on one shared clock. The digital stopwatch shows seconds
+and milliseconds. Turtle/Play/Pause/Rabbit buttons adjust speed from 0.25× to 4×, resume, or hold the
+current frame. After preparation, the timeline slider seeks backward and forward without sampling new
+errors. Reaching the end leaves the final frame visible; Play restarts it. Closing the modal cancels
+preparation/playback. The selected court view, zoom, and pan remain unchanged during replay.
+Full runs support replay; compact summaries need explicit regeneration.
 
 Motion is prepared in short yielding batches with the same 1/240-second physics, stored temporarily
 as 15 Hz Float32 frames, and interpolated for display. A 48 MiB preparation limit prevents runaway
 memory use; no animation frames enter localStorage. Rendering can reduce to 30 fps if paint work exceeds
-12 ms. In local 1,000-trial benchmarks preparation took about 0.5 s for three biscuits and 2 s for eight,
-using approximately 4.7 and 12.2 MiB. A three-biscuit browser check averaged about 2.4 ms per draw.
-Those are sample measurements on the development machine, not guaranteed device performance.
+12 ms. Route geometry is simplified within 0.002 feet before coordinate rounding; collision contacts
+and curved motion are retained without storing the full physics-step history.
 
 ## Accuracy and court settings
 
@@ -181,7 +199,7 @@ JavaScript and CSS load directly. Refresh with the browser cache disabled if old
 - `scripts/app.js`: control events, dialogs, pigeon placement, and startup.
 - `scripts/supply.js`: alternating supply inventory, drag placement, and select-then-tap placement.
 - `scripts/prediction-model.js`: isolated trials, score distributions, physical coordinates, and compact summaries.
-- `scripts/prediction-storage.js`: validated, size-aware localStorage library with a 20-shot limit.
+- `scripts/prediction-storage.js`: validated, size-aware localStorage library with a 25-shot limit.
 - `scripts/prediction-replay.js`: exact sampled-launch replay and compact in-memory motion frames.
 - `scripts/prediction-animation.js`: batched preparation, synchronized playback, and cancellation.
 - `scripts/prediction-ui.js`: generation, heat maps, filters, and saved-shot controls.
@@ -216,3 +234,24 @@ The Gaussian motor-error form and speed–accuracy principle are research-inform
 [Zhang, Daw & Maloney (2015)](https://doi.org/10.1038/nn.4055), and
 [Harris & Wolpert (1998)](https://doi.org/10.1038/29528).
 These do not validate the simulator’s particular scales, thresholds, or calibration.
+
+## Saved-shot transfer and viewing controls
+
+The library allows up to 25 shots, subject to the browser’s actual storage quota. Full records under
+500 KiB stay full; larger records and quota retries use compact summaries. Per-record and total library
+sizes are serialized UTF-8 JSON sizes, not guaranteed browser quota accounting. The drawer is at most
+650px wide and sits on the right on larger screens. Shot names have no visible label: use the yellow
+pencil to edit, then Enter or blur to save; Escape cancels. New saves open with their name selected.
+The crystal ball loads a shot and the red trash button deletes it.
+
+Export an individual shot or the entire library as a versioned JSON file. Import validates every
+record before writing, merges without overwriting existing entries, skips identical name/data pairs,
+and rejects an over-capacity library or failed quota write without partial changes. Files up to 50 MiB
+are accepted. A conflicting ID with different content receives a new ID. Browser downloads and imports
+need a live-browser check in addition to the pure format/merge regressions.
+
+Zoom ranges from 100% to 400%. Use +/− or the slider, drag the zoomed canvas to pan, and Reset to fit.
+Keyboard +/− and arrows work while the canvas is focused. Both modes keep the same physical coordinates.
+The intended checkbox uses an asterisk with its explanation below the table; the shooting label sits
+above the table so no column needs a long inline annotation. Only the outer corner triangles beside the kitchen scoring parallelograms match biscuit colors
+and reverse with the viewed shooting end; the parallelograms and center triangle stay green. The center collection icon identifies the receiving Head/Foot.

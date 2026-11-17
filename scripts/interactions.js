@@ -1,6 +1,7 @@
 /* exported
   endDrag,
   isOffCourt,
+  isQueueDrop,
   isSecondaryPointer,
   moveBiscuit,
   pointerDown,
@@ -40,6 +41,26 @@ function endDrag(
     return;
   }
 
+  if (drag.kind === 'aim') {
+    if (cancel) {
+      restoreShot(drag.before);
+    } else {
+      const point = courtPoint(e, id);
+
+      if (point.x >= 0 && point.x <= 6 && point.y >= 0 && point.y <= 39) {
+        aimAt(
+          point.x,
+          point.y,
+          true,
+        );
+      }
+    }
+
+    update();
+
+    return;
+  }
+
   if (drag.kind === 'shooter' && cancel) {
     restoreShot(drag.before);
   }
@@ -50,10 +71,21 @@ function endDrag(
 
     if (cancel) {
       discs[discs.indexOf(drag.disc)] = structuredClone(drag.before);
-    } else if (isOffCourt(destination)) {
+    } else if (isQueueDrop(e)) {
       discs = discs.filter((disc) => disc !== drag.disc);
       saveArrangement();
-      element('result').textContent = 'Biscuit returned to supply.';
+      element('result').textContent = 'Biscuit returned to queue.';
+    } else if (isCollectionPoint(destination) || isOffCourt(destination)) {
+      Object.assign(drag.disc, {
+        ...destination,
+        out: true,
+        parked: true,
+        vx: 0,
+        vy: 0,
+      });
+
+      saveArrangement();
+      element('result').textContent = 'Biscuit moved to collection.';
     } else if (canDrop(destination, drag.disc)) {
       Object.assign(drag.disc, {
         ...destination,
@@ -74,6 +106,17 @@ function isOffCourt(point) {
   return point.x < 0 || point.x > 6 || point.y < 0 || point.y > 39;
 }
 
+function isQueueDrop(event) {
+  const box = element('supplyColumn').getBoundingClientRect();
+
+  return (
+    event.clientX >= box.left &&
+    event.clientX <= box.right &&
+    event.clientY >= box.top &&
+    event.clientY <= box.bottom
+  );
+}
+
 function isSecondaryPointer(e) {
   return e.pointerType !== 'touch' && e.button > 0;
 }
@@ -87,6 +130,20 @@ function moveBiscuit(e, id) {
 
   if (dragging.kind === 'focus') {
     setFocus(p.y - dragging.dy);
+
+    return;
+  }
+
+  if (dragging.kind === 'aim') {
+    if (p.x >= 0 && p.x <= 6 && p.y >= 0 && p.y <= 39) {
+      aimAt(
+        p.x,
+        p.y,
+        true,
+      );
+
+      update();
+    }
 
     return;
   }
@@ -108,9 +165,11 @@ function moveBiscuit(e, id) {
   const y = p.y + dragging.dy;
 
   if (isOffCourt({ x, y }) || canDrop({ x, y }, dragging.disc)) {
+    const collected = isOffCourt({ x, y }) || isCollectionPoint({ x, y });
+
     Object.assign(dragging.disc, {
-      out: false,
-      parked: false,
+      out: collected,
+      parked: collected,
       x,
       y,
     });
@@ -226,6 +285,15 @@ function pointerDown(e, id) {
   }
 
   if (p.y >= 20) {
+    dragging = {
+      before: snapshot(),
+      id,
+      kind: 'aim',
+      pointerId: e.pointerId,
+    };
+
+    element(id).setPointerCapture(e.pointerId);
+
     aimAt(
       p.x,
       p.y,
@@ -292,7 +360,7 @@ function selectShootingEnd(next) {
 }
 
 function setFocus(start) {
-  focusStart = Math.max(-0.5, Math.min(41.25 - focusLength, start));
+  focusStart = Math.max(-0.5, Math.min(39 + 3 * physics.R - focusLength, start));
   element('focusPosition').value = String(focusStart);
 
   element('focusPosition').setAttribute(

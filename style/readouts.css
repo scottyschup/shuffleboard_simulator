@@ -32,8 +32,9 @@
   background: var(--paper);
   display: flex;
   flex-shrink: 0;
-  gap: 6px;
-  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
   min-height: 43px;
   padding: 4px;
 }
@@ -57,7 +58,6 @@
     font-size: 13px;
   }
   .shot-actions {
-    gap: 2px;
     padding: 3px;
   }
   .shot-actions .icon-button {
@@ -69,4 +69,17 @@
 
 .negative-score {
   color: #9c1c14;
+}
+
+.target-panel .scores {
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.readout .icon-button {
+  height: 26px;
+  min-width: 26px;
+  padding: 2px;
+  width: 26px;
 }

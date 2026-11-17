@@ -33,6 +33,29 @@ function bindDialog(id, trigger) {
   });
 }
 
+function initializeAccuracyRestore() {
+  const saved = loadAccuracyPreference();
+
+  if (saved === null) {
+    return;
+  }
+
+  const initial = accuracy();
+
+  element('accuracyRestoreValue').textContent = saved.toFixed(1) + '%';
+  bindDialog('accuracyRestoreDialog', element('accuracy'));
+
+  const choose = (value) => {
+    element('accuracy').value = value.toFixed(1);
+    update();
+    element('accuracyRestoreDialog').close();
+  };
+
+  element('restoreSavedAccuracy').onclick = () => choose(saved);
+  element('useDefaultAccuracy').onclick = () => choose(initial);
+  openDialog('accuracyRestoreDialog', 'restoreSavedAccuracy');
+}
+
 function nudge(amount) {
   if (running || dragging) {
     return;
@@ -49,6 +72,7 @@ function nudgeAccuracy(amount) {
   }
 
   element('accuracy').value = Math.max(0, Math.min(100, accuracy() + amount)).toFixed(1);
+  saveAccuracyPreference(accuracy());
   update();
 }
 
@@ -93,13 +117,13 @@ function openDialog(id, focusId = null) {
   }
 }
 
-function placePigeon() {
+function placePigeon(pigeonColor = color) {
   if (
     running ||
     dragging ||
     physics.remainingBiscuits(
       discs,
-      color,
+      pigeonColor,
       color,
     ) === 0
   ) {
@@ -126,8 +150,16 @@ function placePigeon() {
   const point = slots[Math.floor(Math.random() * slots.length)];
 
   saveArrangement();
-  discs.push(createDisc(point.x, point.y));
-  element('result').textContent = color + ' pigeon placed in the 7.';
+
+  discs.push(
+    createDisc(
+      point.x,
+      point.y,
+      pigeonColor,
+    ),
+  );
+
+  element('result').textContent = pigeonColor + ' pigeon placed in the 7.';
   update();
 }
 
@@ -149,8 +181,15 @@ element('driftRight').onclick = () => nudgeCourt('drift', 1);
 element('footEnd').onclick = () => selectShootingEnd('foot');
 element('headEnd').onclick = () => selectShootingEnd('head');
 element('left').onclick = () => nudge(-0.05);
-element('placeBlock').onclick = () => openDialog('setupDialog');
-element('placePigeon').onclick = placePigeon;
+element('openSettings').onclick = () => openDialog('settingsDialog', 'speed');
+
+element('placeBlock').onclick = () => {
+  element('blockStatus').textContent = '';
+  openDialog('setupDialog');
+};
+
+element('placePigeon').onclick = () => placePigeon('yellow');
+element('placeBlackPigeon').onclick = () => placePigeon('black');
 
 element('reset').onclick = () => {
   pendingSupplyColor = null;
@@ -195,6 +234,7 @@ element('focusPosition').addEventListener('input', () => setFocus(value('focusPo
 
 element('accuracy').addEventListener('change', () => {
   element('accuracy').value = accuracy().toFixed(1);
+  saveAccuracyPreference(accuracy());
   update();
 });
 
@@ -238,15 +278,10 @@ for (const id of ['prediction', 'trails']) {
 
 queryElements('[data-setup]').forEach((trigger) => {
   trigger.onclick = () => {
-    pendingSupplyColor = null;
-    setup(trigger.dataset.setup);
-    element('setupDialog').close();
-    setFocus(24.75);
+    if (placeBlock(trigger.dataset.setup)) {
+      element('setupDialog').close();
+    }
   };
-});
-
-queryElements('[data-settings]').forEach((trigger) => {
-  trigger.onclick = () => openDialog('settingsDialog', trigger.dataset.settings);
 });
 
 queryElements('[data-close]').forEach((trigger) => {
@@ -254,7 +289,7 @@ queryElements('[data-close]').forEach((trigger) => {
 });
 
 bindDialog('about', element('aboutBtn'));
-bindDialog('settingsDialog', element('speedSettings'));
+bindDialog('settingsDialog', element('openSettings'));
 bindDialog('setupDialog', element('placeBlock'));
 
 document.addEventListener('keydown', (event) => {
@@ -308,6 +343,7 @@ initializePredictions();
 initializeSupply();
 loadCourtSettings();
 setup('open');
+initializeAccuracyRestore();
 for (const id of [
   'overview',
   'shooting',

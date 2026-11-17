@@ -53,7 +53,7 @@ function initializeSupply() {
         return;
       }
 
-      if (index !== 0 || running) {
+      if (running) {
         return;
       }
 
@@ -62,7 +62,7 @@ function initializeSupply() {
     };
 
     supply.addEventListener('pointerdown', (event) => {
-      if (index !== 0 || running || dragging || isSecondaryPointer(event)) {
+      if (running || dragging || isSecondaryPointer(event)) {
         return;
       }
 
@@ -77,6 +77,8 @@ function initializeSupply() {
         moved: false,
         point: null,
         pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
       };
 
       supply.setPointerCapture(event.pointerId);
@@ -90,7 +92,9 @@ function initializeSupply() {
 
       const id = findDropView(event);
 
-      dragging.moved = true;
+      dragging.moved ||=
+        Math.hypot(event.clientX - dragging.startX, event.clientY - dragging.startY) > 4;
+
       dragging.id = id || 'target';
       dragging.point = id ? courtPoint(event, id) : null;
       draw();
@@ -108,13 +112,29 @@ function initializeSupply() {
       const id = findDropView(event);
 
       if (!cancel && id) {
-        placeSupply(
-          drag.color,
-          courtPoint(event, id),
-          id,
-        );
+        const point = courtPoint(event, id);
+
+        if (isOffCourt(point)) {
+          placeSupply(
+            drag.color,
+            { x: 3, y: 39 + 1.5 * physics.R },
+            'collection',
+          );
+        } else {
+          placeSupply(
+            drag.color,
+            point,
+            id,
+          );
+        }
       } else if (!cancel && !drag.moved) {
         armSupply(drag.color);
+      } else if (!cancel && !isQueueDrop(event)) {
+        placeSupply(
+          drag.color,
+          { x: 3, y: 39 + 1.5 * physics.R },
+          'collection',
+        );
       }
 
       suppressSupplyClick = true;
@@ -146,6 +166,17 @@ function placeSupply(
     return false;
   }
 
+  const own = physics.remainingBiscuits(
+    discs,
+    color,
+    color,
+  );
+
+  const otherColor = color === 'yellow' ? 'black' : 'yellow';
+  const other = physics.remainingBiscuits(discs, otherColor);
+  // Compare the queued column before pulling; keep the separate shooter reserved.
+  const next = biscuitColor === color && own > other ? otherColor : color;
+
   saveArrangement();
 
   discs.push(
@@ -156,8 +187,12 @@ function placeSupply(
     ),
   );
 
+  if (isCollectionPoint(point)) {
+    Object.assign(discs[discs.length - 1], { out: true, parked: true });
+  }
+
   pendingSupplyColor = null;
-  switchShooter(color === 'yellow' ? 'black' : 'yellow');
+  switchShooter(next);
   element('result').textContent = 'Biscuit placed. ' + color + ' shoots next.';
 
   return true;
@@ -177,7 +212,14 @@ function supplyOrder() {
     ),
   };
 
-  let next = color === 'yellow' ? 'black' : 'yellow';
+  let next =
+    remaining.black === remaining.yellow
+      ? color === 'yellow'
+        ? 'black'
+        : 'yellow'
+      : remaining.black > remaining.yellow
+        ? 'black'
+        : 'yellow';
   const order = [];
 
   while (remaining.black + remaining.yellow > 0) {
@@ -198,7 +240,7 @@ function updateSupply() {
 
   supplyButtons.forEach((supply, index) => {
     supply.hidden = index >= order.length;
-    supply.disabled = running || index !== 0 || (!!dragging && dragging.button !== supply);
+    supply.disabled = running || (!!dragging && dragging.button !== supply);
     supply.dataset.color = order[index] || '';
 
     supply.className =
@@ -213,9 +255,7 @@ function updateSupply() {
         (index + 1) +
         ' of ' +
         order.length +
-        (index === 0
-          ? '. Drag to a magnified court, or select then tap to place.'
-          : '. Waiting in shot order.'),
+        '. Drag to a magnified court, or select then tap to place.',
     );
   });
 }

@@ -2,6 +2,7 @@
 (function (root) {
   'use strict';
   const physics = typeof module === 'undefined' ? root.Physics : require('./physics.js');
+  const legacyRoutes = new WeakMap();
 
   function deterministic(state) {
     return state.accuracy === 100 && (!state.court.enabled || state.speed <= state.court.threshold);
@@ -30,7 +31,7 @@
   }
 
   function intended(record) {
-    if (record.intended?.ends) {
+    if (record.intended?.paths) {
       return record.intended;
     }
 
@@ -44,6 +45,10 @@
     });
   }
 
+  function matches(key, filter) {
+    return filter === '*' || filter.split(';').includes(key);
+  }
+
   function physical(point, end) {
     return end === 'foot' ? physics.reversePoint(point) : point;
   }
@@ -55,15 +60,40 @@
 
     return record.outcomes
       .filter((outcome) => !scoreKey || outcome.score.join(',') === scoreKey)
-      .flatMap((outcome) =>
-        outcome.positions.map((position, biscuit) => ({
+      .flatMap((outcome) => {
+        const key = selectionKey(record, outcome);
+        let paths = outcome.paths;
+
+        if (!paths && outcome.launch?.length === 2) {
+          if (!legacyRoutes.has(outcome)) {
+            // Old full saves retain the sampled launch, so their exact routes can be reconstructed.
+            const result = trial({
+              ...record,
+              state: {
+                ...record.state,
+                accuracy: 100,
+                angle: outcome.launch[0],
+                court: { ...record.state.court, enabled: false },
+                speed: outcome.launch[1],
+              },
+            });
+
+            legacyRoutes.set(outcome, result.paths);
+          }
+
+          paths = legacyRoutes.get(outcome);
+        }
+
+        return outcome.positions.map((position, biscuit) => ({
           biscuit,
           count: 1,
           end: outcome.ends?.[biscuit] || null,
           key: outcome.score.join(','),
+          path: paths?.[biscuit] || null,
           position,
-        })),
-      );
+          selectionKey: key,
+        }));
+      });
   }
 
   function prepare(snapshot) {
@@ -121,6 +151,104 @@
     record.intended = intended(record);
 
     return record;
+  }
+
+  function scenario(
+    record,
+    group,
+    name,
+  ) {
+    if (name === 'self-kitchen') {
+      return group.key.endsWith('|1');
+    }
+
+    const index = name.startsWith('yellow') ? 0 : 1;
+    const change = group.score[index] - record.beforeScore[index];
+
+    return name.endsWith('increases') ? change > 0 : change < 0;
+  }
+
+  function selectionGroups(record) {
+    if (record.selectionGroups) {
+      return record.selectionGroups;
+    }
+
+    if (!record.outcomes) {
+      return record.summary.map((group) => ({ ...group, key: group.score.join(',') + '|0' }));
+    }
+
+    const groups = new Map();
+
+    for (const outcome of record.outcomes) {
+      const key = selectionKey(record, outcome);
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          count: 0,
+          key,
+          score: outcome.score,
+        });
+      }
+
+      groups.get(key).count++;
+    }
+
+    return [...groups.values()];
+  }
+
+  function selectionKey(record, outcome) {
+    return outcome.score.join(',') + '|' + Number(selfKitchen(record, outcome));
+  }
+
+  function selfKitchen(record, outcome) {
+    if (typeof outcome.selfKitchen === 'boolean') {
+      return outcome.selfKitchen;
+    }
+
+    const index = record.biscuits.findIndex((disc) => disc.shooter);
+    const position = outcome.ends?.[index] || outcome.positions[index];
+    const point = physical({ x: position[0], y: position[1] }, record.state.shootingEnd);
+
+    return physics.score({ ...point, out: !!position[2] }) === -10;
+  }
+
+  // Retain contacts and curved motion within 0.002 feet while collapsing straight travel.
+  function simplifyPath(path) {
+    if (path.length < 3) {
+      return path;
+    }
+
+    const a = path[0],
+      b = path[path.length - 1];
+
+    const dx = b[0] - a[0],
+      dy = b[1] - a[1],
+      length = dx * dx + dy * dy;
+
+    let distance = 0.002,
+      split = -1;
+
+    for (let index = 1; index < path.length - 1; index++) {
+      const p = path[index];
+
+      const t = length
+        ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length))
+        : 0;
+
+      const error = Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+
+      if (error > distance) {
+        distance = error;
+        split = index;
+      }
+    }
+
+    return split < 0
+      ? [a, b]
+      : [
+          ...simplifyPath(path.slice(0, split + 1)).slice(0, -1),
+          ...simplifyPath(path.slice(split)),
+        ];
   }
 
   function suggestedName(record) {
@@ -283,13 +411,22 @@
         ? point.end.map((value, index) => (index < 2 ? Math.round(value * 10) / 10 : value))
         : null;
 
-      const key = `${point.key}:${point.biscuit}:${position.join(',')}:${end?.join(',') || ''}`;
+      const path = point.path?.map((p) => p.map((v) => Math.round(v * 100) / 100)) || null;
+
+      const key = JSON.stringify([
+        point.selectionKey,
+        point.biscuit,
+        position,
+        end,
+        path,
+      ]);
 
       if (!bins.has(key)) {
         bins.set(key, {
           ...point,
           count: 0,
           end,
+          path,
           position,
         });
       }
@@ -304,6 +441,7 @@
     return {
       ...metadata,
       bins: [...bins.values()],
+      selectionGroups: selectionGroups(record),
       storage: 'summary',
       summary: groups(record),
     };
@@ -361,19 +499,46 @@
       vy: Math.cos(radians) * speed,
     });
 
-    let settled = false;
     let elapsed = 0;
+
+    const paths = discs.map((disc) => [
+      [
+        disc.x,
+        disc.y,
+        0,
+      ],
+    ]);
+
+    const contact = (index, disc) => {
+      paths[index].push([
+        disc.x,
+        disc.y,
+        elapsed,
+      ]);
+    };
+
+    let settled = false;
 
     capture?.(discs, 0);
     for (let step = 0; step < 240 * 100; step++) {
+      elapsed = (step + 1) * physics.DT;
+
       physics.step(
         discs,
         physics.DT,
         physics.deceleration(state.court.slick),
         state.court.drift * 0.00055,
+        contact,
       );
 
-      elapsed = (step + 1) * physics.DT;
+      if ((step + 1) % 16 === 0) {
+        discs.forEach((disc, index) => {
+          if (!disc.out) {
+            contact(index, disc);
+          }
+        });
+      }
+
       if (capture && (step + 1) % 16 === 0) {
         capture(discs, elapsed);
       }
@@ -384,6 +549,7 @@
       }
     }
 
+    discs.forEach((disc, index) => contact(index, disc));
     // Same settling and short-biscuit collection rules as simulation.finish().
     for (const disc of discs) {
       if (!disc.out && disc.y + physics.R < 25.5 - physics.LINE / 2) {
@@ -408,6 +574,23 @@
     return {
       ends,
       launch: [angle, speed],
+      paths: paths.map((path) =>
+        simplifyPath(path).map(
+          ([
+            x,
+            y,
+            time,
+          ]) => {
+            const point = physical({ x, y }, state.shootingEnd);
+
+            return [
+              Number(point.x.toFixed(4)),
+              Number(point.y.toFixed(4)),
+              Number(time.toFixed(4)),
+            ];
+          },
+        ),
+      ),
       positions: discs.map((disc) => {
         const point = physical(disc, state.shootingEnd);
 
@@ -418,6 +601,7 @@
         ];
       }),
       score: totals(discs),
+      selfKitchen: physics.score(discs[discs.length - 1]) === -10,
       settled,
     };
   }
@@ -426,9 +610,14 @@
     deterministic,
     groups,
     intended,
+    matches,
     physical,
     points,
     prepare,
+    scenario,
+    selectionGroups,
+    selectionKey,
+    selfKitchen,
     suggestedName,
     summarize,
     trial,
