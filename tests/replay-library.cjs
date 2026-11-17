@@ -14,6 +14,7 @@ async function main() {
 
   verifyAccuracyAndLayers(data);
   verifyScoringEntry();
+  verifyDeliveryTiming();
 
   const library = Array.from({ length: 25 }, (_, index) => ({
     id: 'test-' + index,
@@ -553,6 +554,60 @@ function verifyAccuracyAndLayers(data) {
   assert.equal(f.ids.get('predictionToggleIntention').textContent, 'Hide Shot Intention');
   assert.equal(f.ids.get('predictionSelectedChance').textContent, '100.0%');
   assert.equal(JSON.stringify(f.run('predictionResult')), before);
+}
+
+function verifyDeliveryTiming() {
+  const replay = require('../scripts/prediction-replay.js');
+  const fixture = createFixture();
+
+  fixture.run(
+    "element('accuracy').value='100';element('fastShotInaccuracy').checked=false;update()",
+  );
+
+  const current = model.prepare(fixture.run('snapshot()'));
+  const outcome = model.trial(current);
+  const track = replay.build(current, outcome);
+
+  assert.ok(track.duration >= 3 && track.duration <= 6);
+  fixture.click('shoot');
+  for (let frame = 0; frame <= 400 && fixture.run('running'); frame++) {
+    fixture.frame(1000 + (frame * 1000) / 60);
+  }
+
+  assert.ok(Math.abs(fixture.run('time') - track.duration) <= physics.DT * 2);
+  const legacy = structuredClone(current);
+
+  delete legacy.state.court.deceleration;
+  legacy.state.speed = 7;
+  const old = model.trial(legacy);
+  const oldTrack = replay.build(legacy, old);
+  const explicit = structuredClone(legacy);
+
+  explicit.state.court.deceleration = 0.12 + 1.35 * (1 - explicit.state.court.slick / 100);
+  const reference = replay.build(explicit, model.trial(explicit));
+
+  assert.equal(oldTrack.duration, reference.duration);
+  assert.deepEqual(oldTrack.frames, reference.frames);
+  assert.ok(oldTrack.duration > track.duration);
+
+  const entry = {
+    id: 'timing',
+    name: 'Timing',
+    record: {
+      ...current,
+      count: 1,
+      outcomes: [outcome],
+    },
+  };
+
+  const destination = memory();
+
+  storage.importRecords(destination, storage.exportRecords([entry]));
+
+  assert.equal(
+    storage.read(destination)[0].record.state.court.deceleration,
+    current.state.court.deceleration,
+  );
 }
 
 function verifyScoringEntry() {

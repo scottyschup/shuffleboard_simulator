@@ -345,6 +345,14 @@ dialog#predictionDialog[open] {
   min-height: 28px;
   min-width: 28px;
 }
+.prediction-outcome-only {
+  border-color: var(--green);
+  font-size: 12px;
+  margin-left: 4px;
+  min-height: 26px;
+  padding: 2px 4px;
+  vertical-align: middle;
+}
 .prediction-outcome-choice input {
   accent-color: var(--green);
   height: 18px;
@@ -353,6 +361,14 @@ dialog#predictionDialog[open] {
 }
 .prediction-outcome-choice span {
   font-size: 16px;
+}
+.advantage-yellow {
+  color: #a07800;
+  font-weight: 700;
+}
+.advantage-black {
+  color: #202e29;
+  font-weight: 700;
 }
 .score-positive {
   color: #17633d;

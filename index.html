@@ -56,57 +56,6 @@
         href="./"
         >Shot Lab</a
       >
-      <div
-        aria-label="Shooter color"
-        class="color-picker"
-        role="group"
-      >
-        <button
-          aria-pressed="true"
-          class="yellow"
-          id="yellow"
-          title="Yellow shoots"
-          type="button"
-        >
-          Yellow
-        </button>
-        <button
-          aria-pressed="false"
-          class="black"
-          id="black"
-          title="Black shoots"
-          type="button"
-        >
-          Black
-        </button>
-      </div>
-      <span class="shooting-from">shooting from</span>
-      <div
-        aria-label="Shooting end"
-        class="end-picker"
-        role="group"
-      >
-        <button
-          aria-label="Shoot from Head"
-          aria-pressed="true"
-          class="icon-button"
-          id="headEnd"
-          title="Shoot from Head"
-          type="button"
-        >
-          <span aria-hidden="true">👤</span>
-        </button>
-        <button
-          aria-label="Shoot from Foot"
-          aria-pressed="false"
-          class="icon-button"
-          id="footEnd"
-          title="Shoot from Foot"
-          type="button"
-        >
-          <span aria-hidden="true">🦶</span>
-        </button>
-      </div>
 
       <div class="header-actions">
         <button
@@ -139,7 +88,70 @@
             class="target-panel panel"
           >
             <div class="section-heading">
-              <h2 id="scoringHeading">Focus view</h2>
+              <h2
+                class="sr-only"
+                id="scoringHeading"
+              >
+                Focus view
+              </h2>
+              <div
+                aria-label="Shooter and shooting end"
+                class="shooter-controls"
+                role="group"
+              >
+                <div
+                  aria-label="Shooter color"
+                  class="color-picker"
+                  role="group"
+                >
+                  <button
+                    aria-pressed="true"
+                    class="yellow"
+                    id="yellow"
+                    title="Yellow shoots"
+                    type="button"
+                  >
+                    Yellow
+                  </button>
+                  <button
+                    aria-pressed="false"
+                    class="black"
+                    id="black"
+                    title="Black shoots"
+                    type="button"
+                  >
+                    Black
+                  </button>
+                </div>
+                <span class="shooting-from">shooting from</span>
+                <div
+                  aria-label="Shooting end"
+                  class="end-picker"
+                  role="group"
+                >
+                  <button
+                    aria-label="Shoot from Head"
+                    aria-pressed="true"
+                    class="icon-button"
+                    id="headEnd"
+                    title="Shoot from Head"
+                    type="button"
+                  >
+                    <span aria-hidden="true">👤</span>
+                  </button>
+                  <button
+                    aria-label="Shoot from Foot"
+                    aria-pressed="false"
+                    class="icon-button"
+                    id="footEnd"
+                    title="Shoot from Foot"
+                    type="button"
+                  >
+                    <span aria-hidden="true">🦶</span>
+                  </button>
+                </div>
+              </div>
+
               <div
                 aria-label="Current board score"
                 class="scores"
@@ -671,7 +683,7 @@
         touching its ¾ in border to score. The kitchen separator does not invalidate a −10.
       </p>
       <p>
-        Constant sliding friction slows each disc. Slickness maps to a deceleration of 1.47–0.12
+        Constant sliding friction slows each disc. Slickness maps to a deceleration of 5.4–2.1
         ft/s². Optional uniform sideways acceleration approximates drift. Collisions use equal
         masses and a restitution coefficient of 0.94. These are illustrative parameters, not
         measurements from the books or a calibrated court.
@@ -818,7 +830,7 @@
         <label for="speed">Shot speed (ft/s)</label
         ><input
           id="speed"
-          max="18"
+          max="24"
           min="1"
           step="0.01"
           type="range"

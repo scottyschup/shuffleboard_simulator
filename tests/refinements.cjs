@@ -71,7 +71,7 @@ function state(overrides = {}) {
     paths: [],
     position: 12,
     shootingEnd: 'head',
-    speed: 7.5,
+    speed: 7.5 * Math.sqrt(physics.deceleration(50) / 0.795),
     ...overrides,
   };
 }
@@ -524,3 +524,29 @@ assert.ok(
 );
 
 assert.equal(oldFixture.run('discs[0].y'), 39 + 1.5 * physics.R);
+{
+  const separate = structuredClone(record);
+
+  separate.outcomes[1].score = [0, 0];
+  for (const data of [separate, model.summarize(separate)]) {
+    const only = createFixture();
+
+    only.context.saved = data;
+    only.run("element('predictionDialog').showModal();loadPrediction(saved)");
+    const before = JSON.stringify(only.run('predictionResult'));
+    const rows = only.ids.get('predictionTableBody').children;
+    const selected = rows.find((row) => row.dataset.score === '-3,0');
+    const button = selected.children[4].children[1];
+
+    assert.equal(button.textContent, 'Only');
+    button.onclick();
+    assert.equal(only.ids.get('predictionSelectedChance').textContent, '50.0%');
+    for (const row of rows) {
+      assert.equal(row.children[4].children[0].children[0].checked, row.dataset.score === '-3,0');
+    }
+
+    assert.equal(JSON.stringify(only.run('predictionResult')), before);
+    only.click('predictionShowAll');
+    assert.equal(only.ids.get('predictionSelectedChance').textContent, '100.0%');
+  }
+}

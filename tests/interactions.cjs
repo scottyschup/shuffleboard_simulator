@@ -670,3 +670,36 @@ console.log(
   'PASS: four clockwise rotations, unchanged shot state and other views, rotat' +
     'ed aim/drag mapping, and relocated Clear.',
 );
+
+{
+  const timing = createFixture();
+
+  timing.click('shoot');
+  timing.frame(1000);
+  for (let frame = 1; frame <= 60; frame++) {
+    timing.frame(1000 + (frame * 1000) / 60);
+  }
+
+  assert.ok(
+    Math.abs(timing.run('time') - 1) <= physics.DT,
+    'One wall-clock second advances one simulated second',
+  );
+}
+{
+  const shooter = createFixture();
+
+  const yellow = shooter.ids.get('yellow'),
+    black = shooter.ids.get('black');
+
+  const controls = yellow.parentElement.parentElement;
+
+  assert.equal(controls.className, 'shooter-controls');
+  assert.equal(controls.parentElement.className, 'section-heading');
+  assert.equal(shooter.ids.get('headEnd').parentElement.parentElement, controls);
+  shooter.click('black');
+  assert.equal(black.getAttribute('aria-pressed'), 'true');
+  assert.equal(yellow.getAttribute('aria-pressed'), 'false');
+  shooter.click('yellow');
+  assert.equal(yellow.getAttribute('aria-pressed'), 'true');
+  assert.equal(black.getAttribute('aria-pressed'), 'false');
+}

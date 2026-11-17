@@ -141,7 +141,7 @@ const fast = P.simulate(
         3,
         1.18,
         0,
-        6.5,
+        14,
       ),
     ],
     P.deceleration(90),
@@ -152,7 +152,7 @@ const fast = P.simulate(
         3,
         1.18,
         0,
-        6.5,
+        14,
       ),
     ],
     P.deceleration(20),
@@ -879,3 +879,44 @@ assert.ok(
 );
 
 console.log('PASS: angled center-separator clearance and slider/drag limits for both colors.');
+// A release near the head kitchen travels about 29–37 feet into the scoring end.
+for (const slick of [
+  0,
+  50,
+  100,
+]) {
+  for (const y of [
+    30,
+    33.1,
+    38,
+  ]) {
+    const start = { x: 3, y: 1.18 };
+    const a = P.deceleration(slick);
+
+    const launch = P.targetShot(
+      start,
+      { x: 3, y },
+      a,
+    );
+
+    const result = P.simulate(
+      [
+        disc(
+          3,
+          start.y,
+          0,
+          launch.speed,
+        ),
+      ],
+      a,
+    );
+
+    assert.ok(result.time >= 3 && result.time <= 6.1, 'Ordinary delivery settles in 3–6 seconds');
+    assert.ok(Math.abs(result.discs[0].y - y) < 0.01);
+
+    assert.ok(
+      launch.speed <= 24,
+      'Every court speed can reach the far kitchen within the control range',
+    );
+  }
+}

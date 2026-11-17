@@ -151,7 +151,7 @@ score; the kitchen center separator is ignored. The far dead line is 25.5 ft fro
 Partial overhang remains in play during shots; a biscuit is out only once it completely passes an edge.
 There are no cushion rebounds. Collected biscuits score zero and do not collide with live biscuits.
 
-Slickness maps linearly to deceleration from 1.47 down to 0.12 ft/s². Collision restitution is 0.94.
+Slickness maps linearly to deceleration from 5.4 down to 2.1 ft/s². Collision restitution is 0.94.
 Drift is uniform cross-court acceleration. Animation runs at 3× real time using a fixed 1/240-second
 physics step and exact friction-only displacement. Spin, cue contact, variable friction, and environmental
 effects are not modeled. This is an illustrative teaching model, not calibrated predictive software.
@@ -255,3 +255,9 @@ Keyboard +/− and arrows work while the canvas is focused. Both modes keep the 
 The intended checkbox uses an asterisk with its explanation below the table; the shooting label sits
 above the table so no column needs a long inline annotation. Only the outer corner triangles beside the kitchen scoring parallelograms match biscuit colors
 and reverse with the viewed shooting end; the parallelograms and center triangle stay green. The center collection icon identifies the receiving Head/Foot.
+
+Both main shooting and prediction replay default to real time. The 39-foot playing surface sits
+within the full 52-foot court including standing areas. Friction is calibrated to approximately
+3–6 seconds for an ordinary scoring delivery, with auto-aim recomputing the launch velocity.
+Physics steps at 240 Hz; replay tracks interpolate 15 Hz samples independently of rendering FPS.
+Prediction records retain their deceleration so historical saved outcomes replay with their original calibration.

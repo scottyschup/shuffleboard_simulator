@@ -373,7 +373,7 @@ async function main() {
     paths: [],
     position: 12,
     shootingEnd: 'head',
-    speed: 7.559999999999997,
+    speed: 7.559999999999997 * Math.sqrt(physics.deceleration(50) / 0.795),
   };
 
   for (const shootingEnd of ['head', 'foot']) {

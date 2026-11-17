@@ -100,6 +100,7 @@
     const state = structuredClone(snapshot);
 
     state.paths = [];
+    state.court.deceleration = physics.deceleration(state.court.slick);
     if (physics.remainingBiscuits(state.discs, state.color) === 0) {
       throw new Error('All four biscuits of this color are already used.');
     }
@@ -526,7 +527,8 @@
       physics.step(
         discs,
         physics.DT,
-        physics.deceleration(state.court.slick),
+        // Legacy saves retain their original physical timing and outcomes.
+        state.court.deceleration ?? 0.12 + 1.35 * (1 - state.court.slick / 100),
         state.court.drift * 0.00055,
         contact,
       );

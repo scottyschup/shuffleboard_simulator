@@ -14,6 +14,7 @@ header {
   text-decoration: none;
   white-space: nowrap;
 }
+.shooter-controls,
 .color-picker,
 .end-picker,
 .header-actions {
@@ -21,9 +22,23 @@ header {
   display: flex;
   gap: 4px;
 }
+.shooter-controls {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  max-width: 100%;
+  min-width: 0;
+}
 .color-picker button {
   min-height: 34px;
   padding: 5px 9px;
+}
+.color-picker .yellow[aria-pressed='false'] {
+  background: #c3b893;
+  color: #455047;
+}
+.color-picker .black[aria-pressed='false'] {
+  background: #7c8580;
+  color: #f5f4ee;
 }
 .color-picker button[aria-pressed='true'],
 .end-picker button[aria-pressed='true'] {
@@ -59,7 +74,8 @@ header {
   .header-actions {
     gap: 2px;
   }
-  header .icon-button {
+  header .icon-button,
+  .shooter-controls .icon-button {
     height: 30px;
     min-width: 27px;
     width: 27px;

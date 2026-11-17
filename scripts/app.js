@@ -101,7 +101,7 @@ function nudgeSpeed(amount) {
     return;
   }
 
-  element('speed').value = Math.max(1, Math.min(18, value('speed') + amount)).toFixed(2);
+  element('speed').value = Math.max(1, Math.min(24, value('speed') + amount)).toFixed(2);
   update();
 }
 

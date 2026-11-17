@@ -304,7 +304,7 @@
       state.accuracy < 0 ||
       state.accuracy > 100 ||
       state.speed < 1 ||
-      state.speed > 18 ||
+      state.speed > 24 ||
       Math.abs(state.angle) > 20 ||
       state.position < 0 ||
       state.position > 100 ||
@@ -312,6 +312,10 @@
       state.court.slick > 100 ||
       Math.abs(state.court.drift) > 100 ||
       state.court.threshold < 0 ||
+      (state.court.deceleration !== undefined &&
+        (!finite(state.court.deceleration) ||
+          state.court.deceleration <= 0 ||
+          state.court.deceleration > 20)) ||
       typeof state.court.enabled !== 'boolean' ||
       (state.aimPoint && ![state.aimPoint.x, state.aimPoint.y].every(finite)) ||
       state.discs.some(

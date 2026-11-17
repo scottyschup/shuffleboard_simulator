@@ -110,6 +110,7 @@ function canDrop(p, except = null) {
 
 function courtSettings() {
   return {
+    deceleration: courtDeceleration(),
     drift: value('drift'),
     slick: value('slick'),
     ...fastShotOptions(),

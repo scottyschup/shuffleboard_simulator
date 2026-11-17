@@ -6,7 +6,7 @@
     LINE = 0.0625,
     DT = 1 / 240;
 
-  const deceleration = (slick) => 0.12 + 1.35 * (1 - slick / 100);
+  const deceleration = (slick) => 2.1 + 3.3 * (1 - slick / 100);
 
   function aimStats(
     accuracy,

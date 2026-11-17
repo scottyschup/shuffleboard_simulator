@@ -1197,7 +1197,7 @@ function renderPredictionTable() {
       predictionNode(
         'td',
         balance === 0 ? '—' : (balance > 0 ? 'Yellow +' : 'Black +') + Math.abs(balance),
-        balance === 0 ? '' : 'score-positive',
+        balance === 0 ? '' : balance > 0 ? 'advantage-yellow' : 'advantage-black',
       ),
     );
 
@@ -1247,7 +1247,24 @@ function renderPredictionTable() {
       label.title = 'Intended result with perfect accuracy and no fast-shot handicap';
     }
 
-    cell.append(label);
+    const only = predictionAction('Only', () => {
+      predictionFilter = predictionSelectionGroups()
+        .filter((group) => group.score.join(',') === key)
+        .map((group) => group.key)
+        .join(';');
+
+      drawPrediction();
+    });
+
+    only.className = 'prediction-outcome-only';
+
+    only.setAttribute(
+      'aria-label',
+      'Show only this outcome: Yellow ' + numbers[0] + ', Black ' + numbers[1],
+    );
+
+    only.title = 'Select only this row’s outcomes';
+    cell.append(label, only);
     tr.append(cell);
     body.append(tr);
   }
@@ -1267,7 +1284,8 @@ function renderPredictionTable() {
       '. No checks means no sampled outcomes. ') +
     ('The after scoreboard shows the most likely checked outcome. Delta is the sc' +
       'ore-change advantage, naming the player ahead. — means zero. ') +
-    'Positive scores are bold green; negative scores are bold red.';
+    ('Player scores are bold green when positive and bold red when negative. Delt' +
+      'a text uses the leading player’s color.');
 
   element('predictionScoreHelp').title = element('predictionBaseline').textContent;
 }

@@ -31,7 +31,7 @@ function aimAt(
 
   element('angle').value = Math.max(-20, Math.min(20, solution.angle)).toFixed(2);
   if (setSpeed) {
-    element('speed').value = Math.max(1, Math.min(18, solution.speed)).toFixed(2);
+    element('speed').value = Math.max(1, Math.min(24, solution.speed)).toFixed(2);
   }
 
   aimPoint = {
@@ -49,7 +49,7 @@ function animate(stamp) {
     lastFrame = stamp;
   }
 
-  accumulator += Math.min((stamp - lastFrame) / 1000, 0.05) * 3;
+  accumulator += Math.min((stamp - lastFrame) / 1000, 0.05);
   lastFrame = stamp;
   while (accumulator >= physics.DT) {
     physics.step(
