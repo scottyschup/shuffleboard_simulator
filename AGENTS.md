@@ -22,24 +22,7 @@
 
 ## Code style
 
-- Prefer descriptive names, standard JavaScript practices, small coherent files, and verified dead-code
-  removal. Comment complex or unusual logic and behavior where changes could introduce subtle bugs.
-- Keep source lines below 120 characters.
-- Apply the rule of threes: with three or more attributes, arguments, parameters, array elements, object
-  properties, or similar items, put each on its own line.
-- Alphabetize like-items whose order is independent: object keys, CSS declarations, function groups,
-  attributes, and comparable lists. Preserve execution, dependency, semantic, and override order.
-- Preserve geometry/coordinate arrays, script loading order, object spread boundaries, side-effect order,
-  CSS fallbacks, and shorthand/longhand dependencies. Do not sort these blindly.
-- Use blank lines to separate logical sections in JavaScript and HTML, including function groups,
-  initialization, event bindings, and major page regions.
-- Consolidate repeated CSS selectors within the same media-query scope. For intentional overrides,
-  use meaningful state/context selectors with appropriate specificity rather than duplicate rules,
-  source-order patches, or `!important`.
-- Use native HTML `title` tooltips and accessible names for icon buttons. Do not add tooltip bubbles
-  that appear on clicks or focus.
-- Run `npm run format`; it maintains ordering, spacing, and the rule of threes. Keep its behavior aligned
-  with these conventions when extending the project.
+Use ~/code/.agents/skills/code-like-shannon/SKILL.md when writing code.
 
 ## Work and verification
 
