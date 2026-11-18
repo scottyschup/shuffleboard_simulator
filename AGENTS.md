@@ -105,3 +105,8 @@ Use ~/.agents/skills/code-like-shannon/SKILL.md when writing code.
 - Persist explicit accuracy edits and offer Restore/Use default on reload. Saved-shot loading and undo must not overwrite this preference.
 - Provide independent Hide/Show Shot Intention and Starting Biscuits drawing controls without changing probabilities.
 - Replay Play/Pause uses one button. Fit Full Court on Play, then Scoring End on the first selected delivery's entry; manual camera controls take over. Place the court-view pair after Zoom/Reset.
+
+- Shot controls have five rows, including Accuracy with its label at the right and matched input/button heights. The footer has no accuracy or gear controls.
+- Prediction settings use a separate draft: Reset restores the opening values, Close/X/Escape discard, and Save accepts all five settings without regenerating. Show a definition-list summary beside the controls button. Keep the whole court visible while editing.
+- Outcome headings sort with directional arrows; keep the intended row pinned. Target dragging may extend past the receiving baseline to increase power within the launch limit.
+- Opening the saved-shot drawer starts its list at the top, except Save intentionally reveals the new shot for renaming.

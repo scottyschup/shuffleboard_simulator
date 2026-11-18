@@ -261,3 +261,9 @@ within the full 52-foot court including standing areas. Friction is calibrated t
 3–6 seconds for an ordinary scoring delivery, with auto-aim recomputing the launch velocity.
 Physics steps at 240 Hz; replay tracks interpolate 15 Hz samples independently of rendering FPS.
 Prediction records retain their deceleration so historical saved outcomes replay with their original calibration.
+
+Prediction shot controls edit speed, aim, court speed/drift, and accuracy in a separate draft.
+Save accepts the draft; Reset restores the values from opening the editor, and Close/X/Escape discard it.
+Retained outcomes stay visible with an out-of-sync warning until explicit Regenerate.
+Column headings toggle ascending/descending sorts; the intended shot remains pinned.
+Target drags can extend beyond the receiving baseline to request more power, up to the launch limit.

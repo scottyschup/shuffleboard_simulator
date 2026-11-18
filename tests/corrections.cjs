@@ -29,8 +29,12 @@ function pointer(
 
 const f = createFixture();
 
-assert.equal(f.document.querySelectorAll('#controlPanel .adjustment').length, 4);
-assert.equal(f.ids.get('accuracy').parentElement.parentElement.parentElement.className, 'readout');
+assert.equal(f.document.querySelectorAll('#controlPanel .adjustment').length, 5);
+
+assert.equal(
+  f.ids.get('accuracy').parentElement.parentElement.parentElement.className,
+  'control-groups',
+);
 
 f.ids.get('shooting').parentElement.rect = {
   height: 200,

@@ -64,40 +64,41 @@
   text-align: center;
 }
 .accuracy-control {
-  align-items: center;
-  display: grid;
-  flex-shrink: 0;
-  gap: 2px;
-  grid-template-columns: auto 26px max-content 26px;
+  grid-template-columns: minmax(0, 38px) 68px minmax(0, 38px) minmax(48px, 1fr);
 }
-.accuracy-control::before {
-  content: 'Accuracy';
+.accuracy-caption {
   font-size: 12px;
-}
-.accuracy-control .icon-button {
-  height: 26px;
-  min-width: 26px;
-  padding: 2px;
-  width: 26px;
+  grid-column: 4;
+  text-align: center;
 }
 .accuracy-value {
   align-items: center;
-  display: flex;
-  font-size: 12px;
-  min-width: 0;
-}
-.accuracy-value input {
-  appearance: textfield;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 4px;
   color: var(--green);
+  display: flex;
+  font-size: 12px;
+  grid-column: 2;
+  grid-row: 1;
+  height: 34px;
+  min-width: 0;
+  padding: 1px 3px;
+}
+.accuracy-value input {
+  appearance: textfield;
+  background: transparent;
+  border: 0;
+  color: var(--green);
+  flex: 1;
   font-size: 16px;
   font-variant-numeric: tabular-nums;
-  min-height: 26px;
-  padding: 1px;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
   text-align: right;
-  width: 5.5ch;
+  width: 0;
 }
 .accuracy-value input::-webkit-inner-spin-button {
   appearance: none;
@@ -153,6 +154,9 @@
   .controls .icon-button {
     height: 30px;
     padding: 2px;
+  }
+  .accuracy-value {
+    height: 30px;
   }
   .control-groups {
     gap: 4px;

@@ -3,7 +3,7 @@
   display: flex;
   flex-shrink: 0;
   gap: 10px;
-  min-height: 30px;
+  min-height: 18px;
   padding: 2px 4px;
 }
 .scores {
@@ -45,7 +45,7 @@
 @media (max-width: 599px) {
   .readout {
     gap: 5px;
-    min-height: 30px;
+    min-height: 18px;
   }
   .result {
     font-size: 9px;
@@ -75,11 +75,4 @@
   flex: 1;
   flex-wrap: wrap;
   justify-content: center;
-}
-
-.readout .icon-button {
-  height: 26px;
-  min-width: 26px;
-  padding: 2px;
-  width: 26px;
 }

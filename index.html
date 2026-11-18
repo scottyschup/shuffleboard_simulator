@@ -20,15 +20,15 @@
       rel="stylesheet"
     />
     <link
-      href="style/controls.css"
+      href="style/controls.css?v=20261117"
       rel="stylesheet"
     />
     <link
-      href="style/court.css"
+      href="style/court.css?v=20261117"
       rel="stylesheet"
     />
     <link
-      href="style/readouts.css"
+      href="style/readouts.css?v=20261117"
       rel="stylesheet"
     />
     <link
@@ -40,7 +40,7 @@
       rel="stylesheet"
     />
     <link
-      href="style/prediction.css"
+      href="style/prediction.css?v=20261117"
       rel="stylesheet"
     />
     <link
@@ -391,6 +391,43 @@
                       />
                     </button>
                   </div>
+
+                  <div
+                    aria-label="Accuracy"
+                    class="adjustment accuracy-control"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Decrease accuracy by 0.1 percentage points"
+                      class="icon-button"
+                      id="accuracyDown"
+                      title="Decrease accuracy by 0.1 percentage points"
+                      type="button"
+                    >
+                      −</button
+                    ><label class="accuracy-value"
+                      ><span class="sr-only">Accuracy percent</span
+                      ><input
+                        aria-describedby="accuracyNote"
+                        id="accuracy"
+                        inputmode="decimal"
+                        max="100"
+                        min="0"
+                        step="0.1"
+                        type="number"
+                        value="95.0"
+                      /><span>%</span></label
+                    ><button
+                      aria-label="Increase accuracy by 0.1 percentage points"
+                      class="icon-button"
+                      id="accuracyUp"
+                      title="Increase accuracy by 0.1 percentage points"
+                      type="button"
+                    >
+                      +
+                    </button>
+                    <span class="accuracy-caption">Accuracy</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -506,57 +543,13 @@
         </section>
       </div>
       <footer class="readout">
-        <div
-          aria-label="Accuracy"
-          class="accuracy-control"
-          role="group"
-        >
-          <button
-            aria-label="Decrease accuracy by 0.1 percentage points"
-            class="icon-button"
-            id="accuracyDown"
-            title="Decrease accuracy by 0.1 percentage points"
-            type="button"
-          >
-            −</button
-          ><label class="accuracy-value"
-            ><span class="sr-only">Accuracy percent</span
-            ><input
-              aria-describedby="accuracyNote"
-              id="accuracy"
-              inputmode="decimal"
-              max="100"
-              min="0"
-              step="0.1"
-              type="number"
-              value="95.0"
-            /><span>%</span></label
-          ><button
-            aria-label="Increase accuracy by 0.1 percentage points"
-            class="icon-button"
-            id="accuracyUp"
-            title="Increase accuracy by 0.1 percentage points"
-            type="button"
-          >
-            +
-          </button>
-        </div>
         <span
           class="sr-only"
           id="accuracyNote"
           >Accuracy controls aim and speed. Fast shots add aim variation above the threshold even at
           100%. Preview paths use nominal settings.<output id="aimSpread"></output
         ></span>
-        <button
-          aria-haspopup="dialog"
-          aria-label="Shot and court settings"
-          class="icon-button"
-          id="openSettings"
-          title="Shot and court settings"
-          type="button"
-        >
-          ⚙
-        </button>
+
         <div
           aria-live="polite"
           class="result"
@@ -937,21 +930,14 @@
               id="predictionSyncMessage"
               role="status"
             >
-              Results and accuracy are out of sync. Click to regenerate.
+              Results and settings are out of sync. Click to regenerate.
             </p>
           </div>
-          <label class="prediction-accuracy"
-            >Accuracy %
-            <input
-              id="predictionAccuracy"
-              inputmode="decimal"
-              max="100"
-              min="0"
-              step="0.1"
-              type="number"
-              value="95.0"
-            />
-          </label>
+          <input
+            id="predictionAccuracy"
+            type="hidden"
+            value="95.0"
+          />
           <label class="prediction-name"
             ><span class="sr-only">Shot name</span>
             <input
@@ -1052,6 +1038,21 @@
                   />
                 </div>
 
+                <div class="prediction-settings-block">
+                  <button
+                    aria-controls="predictionControls"
+                    aria-expanded="false"
+                    id="openPredictionControls"
+                    type="button"
+                  >
+                    Shot controls
+                  </button>
+                  <dl
+                    aria-label="Prediction settings"
+                    class="prediction-settings-values"
+                    id="predictionSettingsValues"
+                  ></dl>
+                </div>
                 <span
                   id="predictionAnimationStatus"
                   role="status"
@@ -1158,6 +1159,260 @@
               aria-label="Prediction score distribution"
               class="prediction-distribution"
             >
+              <section
+                aria-label="Prediction shot controls"
+                aria-modal="false"
+                class="prediction-controls-editor"
+                hidden
+                id="predictionControls"
+                role="dialog"
+              >
+                <div class="prediction-controls-heading">
+                  <h3>Shot controls</h3>
+                  <button
+                    aria-label="Close shot controls"
+                    id="closePredictionControlsX"
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div class="control-groups">
+                  <div
+                    aria-label="Shot speed"
+                    class="adjustment"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Decrease shot speed"
+                      class="icon-button"
+                      data-setting="Speed"
+                      data-step="-0.05"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/006-turtle.png"
+                      /></button
+                    ><span
+                      class="control-icon"
+                      title="Shot speed"
+                      ><img
+                        alt="Shot speed"
+                        src="icons/041-speedometer.png" /></span
+                    ><button
+                      aria-label="Increase shot speed"
+                      class="icon-button"
+                      data-setting="Speed"
+                      data-step="0.05"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/005-hare.png"
+                      /></button
+                    ><label class="prediction-setting-value"
+                      ><span class="sr-only">Shot speed</span
+                      ><input
+                        id="settingsSpeed"
+                        max="24"
+                        min="1"
+                        step="0.01"
+                        type="number"
+                    /></label>
+                  </div>
+
+                  <div
+                    aria-label="Shot aim"
+                    class="adjustment"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Decrease shot aim"
+                      class="icon-button"
+                      data-setting="Aim"
+                      data-step="-0.05"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/044-left-arrow.png"
+                      /></button
+                    ><span
+                      class="control-icon"
+                      title="Shot aim"
+                      ><img
+                        alt="Shot aim"
+                        src="icons/008-aim.png" /></span
+                    ><button
+                      aria-label="Increase shot aim"
+                      class="icon-button"
+                      data-setting="Aim"
+                      data-step="0.05"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/045-right-arrow.png"
+                      /></button
+                    ><label class="prediction-setting-value"
+                      ><span class="sr-only">Shot aim</span
+                      ><input
+                        id="settingsAim"
+                        max="20"
+                        min="-20"
+                        step="0.01"
+                        type="number"
+                    /></label>
+                  </div>
+
+                  <div
+                    aria-label="Court speed"
+                    class="adjustment"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Decrease court speed"
+                      class="icon-button"
+                      data-setting="Slick"
+                      data-step="-1"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/037-snail.png"
+                      /></button
+                    ><span
+                      class="control-icon"
+                      title="Court speed"
+                      ><img
+                        alt="Court speed"
+                        src="icons/042-slippery-floor.png" /></span
+                    ><button
+                      aria-label="Increase court speed"
+                      class="icon-button"
+                      data-setting="Slick"
+                      data-step="1"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/040-car.png"
+                      /></button
+                    ><label class="prediction-setting-value"
+                      ><span class="sr-only">Court speed</span
+                      ><input
+                        id="settingsSlick"
+                        max="100"
+                        min="0"
+                        step="1"
+                        type="number"
+                    /></label>
+                  </div>
+
+                  <div
+                    aria-label="Court drift"
+                    class="adjustment"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Decrease court drift"
+                      class="icon-button"
+                      data-setting="Drift"
+                      data-step="-1"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/046-arrow-up-left.png"
+                      /></button
+                    ><span
+                      class="control-icon"
+                      title="Court drift"
+                      ><img
+                        alt="Court drift"
+                        src="icons/043-slippery-road.png" /></span
+                    ><button
+                      aria-label="Increase court drift"
+                      class="icon-button"
+                      data-setting="Drift"
+                      data-step="1"
+                      type="button"
+                    >
+                      <img
+                        alt=""
+                        src="icons/047-arrow-up-right.png"
+                      /></button
+                    ><label class="prediction-setting-value"
+                      ><span class="sr-only">Court drift</span
+                      ><input
+                        id="settingsDrift"
+                        max="100"
+                        min="-100"
+                        step="1"
+                        type="number"
+                    /></label>
+                  </div>
+
+                  <div
+                    aria-label="Accuracy"
+                    class="adjustment accuracy-control"
+                    role="group"
+                  >
+                    <button
+                      aria-label="Decrease accuracy"
+                      class="icon-button"
+                      data-setting="Accuracy"
+                      data-step="-0.1"
+                      type="button"
+                    >
+                      −</button
+                    ><label class="accuracy-value"
+                      ><span class="sr-only">Accuracy percent</span
+                      ><input
+                        id="settingsAccuracy"
+                        max="100"
+                        min="0"
+                        step="0.1"
+                        type="number"
+                      /><span>%</span></label
+                    ><button
+                      aria-label="Increase accuracy"
+                      class="icon-button"
+                      data-setting="Accuracy"
+                      data-step="0.1"
+                      type="button"
+                    >
+                      +</button
+                    ><span class="accuracy-caption">Accuracy</span>
+                  </div>
+                </div>
+
+                <div class="prediction-controls-actions">
+                  <button
+                    id="closePredictionControls"
+                    type="button"
+                  >
+                    Close</button
+                  ><button
+                    id="savePredictionControls"
+                    type="button"
+                  >
+                    Save</button
+                  ><button
+                    id="resetPredictionControls"
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <p
+                  aria-live="polite"
+                  id="predictionControlsError"
+                  role="status"
+                ></p>
+              </section>
               <span
                 class="sr-only"
                 id="predictionBaseline"
@@ -1261,9 +1516,7 @@
         >
           Saved shots (0/25)
         </h2>
-        <output
-          id="savedPredictionSize"
-                ></output>
+        <output id="savedPredictionSize"></output>
         <div class="prediction-actions">
           <button
             id="exportPredictions"
@@ -1330,6 +1583,7 @@
     <script src="scripts/interactions.js"></script>
     <script src="scripts/supply.js"></script>
     <script src="scripts/prediction-animation.js"></script>
+    <script src="scripts/prediction-controls.js"></script>
     <script src="scripts/prediction-ui.js"></script>
     <script src="scripts/app.js"></script>
   </body>

@@ -1,7 +1,7 @@
 .detail-column {
   display: grid;
   gap: 5px;
-  grid-template-rows: minmax(0, 1fr) clamp(220px, 30dvh, 270px);
+  grid-template-rows: minmax(0, 1fr) clamp(254px, calc(30dvh + 34px), 304px);
   min-height: 0;
   min-width: 0;
 }
@@ -121,7 +121,7 @@ button.supply-biscuit {
 @media (max-width: 599px) {
   .detail-column {
     gap: 3px;
-    grid-template-rows: minmax(0, 1fr) clamp(238px, 33dvh, 282px);
+    grid-template-rows: minmax(0, 1fr) clamp(254px, calc(33dvh + 16px), 298px);
   }
   button.supply-biscuit {
     height: 32px;
@@ -173,7 +173,7 @@ button.supply-biscuit {
     display: contents;
   }
   .workspace {
-    grid-template-rows: minmax(0, 1fr) 238px;
+    grid-template-rows: minmax(0, 1fr) 254px;
   }
   .target-panel {
     grid-column: 1;

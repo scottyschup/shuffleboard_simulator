@@ -398,7 +398,11 @@ function createFixture(options = {}) {
     },
     setTimeout,
     structuredClone,
-    window: { devicePixelRatio: 1, innerWidth: 1000 },
+    window: {
+      devicePixelRatio: 1,
+      innerHeight: 800,
+      innerWidth: 1000,
+    },
   });
 
   for (const file of [
@@ -408,6 +412,7 @@ function createFixture(options = {}) {
     'interactions',
     'supply',
     'prediction-animation',
+    'prediction-controls',
     'prediction-ui',
     'app',
   ]) {

@@ -10,7 +10,7 @@
     "format": "node scripts/format.cjs",
     "lint": "eslint scripts tests --ext .js,.cjs",
     "run": "python2 -m SimpleHTTPServer",
-    "test": "node tests/physics.cjs && node tests/aim-accuracy.cjs && node tests/interactions.cjs && node tests/formatting.cjs && node tests/predictions.cjs && node tests/refinements.cjs && node tests/corrections.cjs && node tests/replay-library.cjs",
+    "test": "node tests/physics.cjs && node tests/aim-accuracy.cjs && node tests/interactions.cjs && node tests/formatting.cjs && node tests/predictions.cjs && node tests/refinements.cjs && node tests/corrections.cjs && node tests/replay-library.cjs && node tests/prediction-controls.cjs",
     "typecheck": "tsc -p jsconfig.json"
   },
   "version": "1.0.0"

@@ -7,6 +7,7 @@
   biscuitsLocked,
   button,
   canDrop,
+  clearAccuracyPreference,
   color,
   courtDeceleration,
   courtSettings,
@@ -36,7 +37,6 @@
   queryElements,
   restoreShot,
   running,
-  clearAccuracyPreference,
   saveAccuracyPreference,
   saveArrangement,
   saveCourtSettings,
@@ -58,11 +58,23 @@ function applyCourtSettings(settings) {
 
   /** @type {[string, number, number][]} */
   const ranges = [
-    ['slick', 0, 100],
-    ['drift', -100, 100],
+    [
+      'slick',
+      0,
+      100,
+    ],
+    [
+      'drift',
+      -100,
+      100,
+    ],
   ];
 
-  for (const [id, min, max] of ranges) {
+  for (const [
+    id,
+    min,
+    max,
+  ] of ranges) {
     if (Number.isFinite(settings[id])) {
       input(id).value = String(Math.max(min, Math.min(max, settings[id])));
     }
@@ -97,6 +109,14 @@ function canDrop(p, except = null) {
   );
 }
 
+function clearAccuracyPreference() {
+  try {
+    localStorage.removeItem('shotLab.accuracy');
+  } catch {
+    /* The simulator also works when browser storage is unavailable. */
+  }
+}
+
 function courtSettings() {
   return {
     deceleration: courtDeceleration(),
@@ -121,7 +141,9 @@ function fastShotOptions() {
   return {
     enabled: element('fastShotInaccuracy').checked,
     threshold:
-      String(element('fastShotThreshold').value).trim() !== '' && Number.isFinite(threshold) && threshold >= 0
+      String(element('fastShotThreshold').value).trim() !== '' &&
+      Number.isFinite(threshold) &&
+      threshold >= 0
         ? threshold
         : 8,
   };
@@ -172,21 +194,17 @@ function restoreShot(state) {
   shootingEnd = state.shootingEnd;
   launchY = state.launchY;
   aimPoint = state.aimPoint ? { ...state.aimPoint } : null;
-  for (const id of ['angle', 'speed', 'position']) {
+  for (const id of [
+    'angle',
+    'speed',
+    'position',
+  ]) {
     input(id).value = state[id];
   }
 
   element('accuracy').value = state.accuracy.toFixed(1);
   applyCourtSettings(state.court);
   saveCourtSettings();
-}
-
-function clearAccuracyPreference() {
-  try {
-    localStorage.removeItem('shotLab.accuracy');
-  } catch {
-    /* The simulator also works when browser storage is unavailable. */
-  }
 }
 
 function saveAccuracyPreference(value) {
@@ -271,7 +289,11 @@ const aimDistance = () => {
 
 const courtDeceleration = () => physics.deceleration(value('slick'));
 
-const createDisc = (x, y, c = color) => ({
+const createDisc = (
+  x,
+  y,
+  c = color,
+) => ({
   color: c,
   id: Math.random().toString(36).slice(2),
   out: false,
@@ -283,7 +305,12 @@ const createDisc = (x, y, c = color) => ({
 
 const drift = () => value('drift') * 0.00055;
 
-const launch = () => physics.startingPoint(color, value('position'), launchY);
+const launch = () =>
+  physics.startingPoint(
+    color,
+    value('position'),
+    launchY,
+  );
 
 const moving = (d) => !d.out && Math.hypot(d.vx, d.vy) > 0.00001;
 
@@ -292,10 +319,22 @@ const shot = (randomize = false) => {
     distance = aimDistance(),
     speed = randomize ? physics.applyAccuracy(value('speed'), accuracy()) : value('speed');
 
-  const stats = physics.aimStats(accuracy(), speed, distance, fastShotOptions());
+  const stats = physics.aimStats(
+    accuracy(),
+    speed,
+    distance,
+    fastShotOptions(),
+  );
 
   const angle = randomize
-    ? physics.sampleAim(value('angle'), accuracy(), speed, distance, Math.random, fastShotOptions())
+    ? physics.sampleAim(
+        value('angle'),
+        accuracy(),
+        speed,
+        distance,
+        Math.random,
+        fastShotOptions(),
+      )
     : value('angle');
 
   const r = (angle * Math.PI) / 180,

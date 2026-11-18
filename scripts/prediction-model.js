@@ -4,6 +4,13 @@
   const physics = typeof module === 'undefined' ? root.Physics : require('./physics.js');
   const legacyRoutes = new WeakMap();
 
+  function baseShotName(name) {
+    return name
+      .trim()
+      .replace(/\s*\[\d+(?:\.\d+)?%\]\s*$/, '')
+      .trim();
+  }
+
   function deterministic(state) {
     return state.accuracy === 100 && (!state.court.enabled || state.speed <= state.court.threshold);
   }
@@ -25,7 +32,9 @@
       rows.get(key).count++;
     }
 
-    return [...rows.values()].sort((a, b) => b.count - a.count || a.score[0] - b.score[0] || a.score[1] - b.score[1]);
+    return [...rows.values()].sort(
+      (a, b) => b.count - a.count || a.score[0] - b.score[0] || a.score[1] - b.score[1],
+    );
   }
 
   function intended(record) {
@@ -45,6 +54,29 @@
 
   function matches(key, filter) {
     return filter === '*' || filter.split(';').includes(key);
+  }
+
+  function namedWithAccuracy(name, accuracy) {
+    const base = baseShotName(name);
+
+    return `${base} [${Number(accuracy).toFixed(1)}%]`;
+  }
+
+  function normalizeState(snapshot) {
+    const state = structuredClone(snapshot);
+    const currentDeceleration = physics.deceleration(state.court.slick);
+
+    const savedDeceleration = Number.isFinite(state.court.deceleration)
+      ? state.court.deceleration
+      : 0.12 + 1.35 * (1 - state.court.slick / 100);
+
+    if (savedDeceleration !== currentDeceleration) {
+      state.speed *= Math.sqrt(currentDeceleration / savedDeceleration);
+    }
+
+    state.court.deceleration = currentDeceleration;
+
+    return state;
   }
 
   function physical(point, end) {
@@ -94,34 +126,19 @@
       });
   }
 
-  function normalizeState(snapshot) {
-    const state = structuredClone(snapshot);
-
-    const currentDeceleration = physics.deceleration(state.court.slick);
-
-    const savedDeceleration = Number.isFinite(state.court.deceleration)
-      ? state.court.deceleration
-      : 0.12 + 1.35 * (1 - state.court.slick / 100);
-
-    if (savedDeceleration !== currentDeceleration) {
-      state.speed *= Math.sqrt(currentDeceleration / savedDeceleration);
-    }
-
-    state.court.deceleration = currentDeceleration;
-
-    return state;
-  }
-
   function prepare(snapshot) {
     const state = normalizeState(snapshot);
 
     state.paths = [];
-
     if (physics.remainingBiscuits(state.discs, state.color) === 0) {
       throw new Error('All four biscuits of this color are already used.');
     }
 
-    const start = physics.startingPoint(state.color, state.position, state.launchY);
+    const start = physics.startingPoint(
+      state.color,
+      state.position,
+      state.launchY,
+    );
 
     const counts = { black: 0, yellow: 0 };
 
@@ -166,7 +183,19 @@
     return record;
   }
 
-  function scenario(record, group, name) {
+  function renamedWithAccuracy(name, accuracy) {
+    const base = baseShotName(name);
+    const match = base.match(/^(.*)\s+\((\d+)\)$/);
+    const renamed = match ? `${match[1].trim()} (${Number(match[2]) + 1})` : `${base} (2)`;
+
+    return namedWithAccuracy(renamed, accuracy);
+  }
+
+  function scenario(
+    record,
+    group,
+    name,
+  ) {
     if (name === 'self-kitchen') {
       return group.key.endsWith('|1');
     }
@@ -240,7 +269,9 @@
     for (let index = 1; index < path.length - 1; index++) {
       const p = path[index];
 
-      const t = length ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length)) : 0;
+      const t = length
+        ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length))
+        : 0;
 
       const error = Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
 
@@ -252,29 +283,10 @@
 
     return split < 0
       ? [a, b]
-      : [...simplifyPath(path.slice(0, split + 1)).slice(0, -1), ...simplifyPath(path.slice(split))];
-  }
-
-  function baseShotName(name) {
-    return name
-      .trim()
-      .replace(/\s*\[\d+(?:\.\d+)?%\]\s*$/, '')
-      .trim();
-  }
-
-  function namedWithAccuracy(name, accuracy) {
-    const base = baseShotName(name);
-
-    return `${base} [${Number(accuracy).toFixed(1)}%]`;
-  }
-
-  function renamedWithAccuracy(name, accuracy) {
-    const base = baseShotName(name);
-    const match = base.match(/^(.*)\s+\((\d+)\)$/);
-
-    const renamed = match ? `${match[1].trim()} (${Number(match[2]) + 1})` : `${base} (2)`;
-
-    return namedWithAccuracy(renamed, accuracy);
+      : [
+          ...simplifyPath(path.slice(0, split + 1)).slice(0, -1),
+          ...simplifyPath(path.slice(split)),
+        ];
   }
 
   function suggestedName(record) {
@@ -304,7 +316,9 @@
 
     const friendly = changes.filter((change) => change.disc.color === state.color);
 
-    const opponents = changes.filter((change) => change.disc.color !== state.color && !change.disc.out);
+    const opponents = changes.filter(
+      (change) => change.disc.color !== state.color && !change.disc.out,
+    );
 
     const label = (change) => {
       const color = change.disc.color === 'yellow' ? 'Yellow' : 'Black';
@@ -325,7 +339,9 @@
             Math.hypot(change.after.x - target.before.x, change.after.y - target.before.y) < 0.75),
       );
 
-    const kitchened = opponents.find((change) => change.startScore !== -10 && change.endScore === -10);
+    const kitchened = opponents.find(
+      (change) => change.startScore !== -10 && change.endScore === -10,
+    );
 
     if (kitchened) {
       const replaced = replacement(kitchened);
@@ -334,29 +350,46 @@
       return prefix + (replaced ? 'replace & kitchen ' : 'kitchen ') + label(kitchened) + via;
     }
 
-    const removed = opponents.find((change) => change.moved && change.startScore > 0 && change.endScore <= 0);
+    const removed = opponents.find(
+      (change) => change.moved && change.startScore > 0 && change.endScore <= 0,
+    );
 
     if (removed) {
       const replaced = replacement(removed);
       const via = replaced && !replaced.disc.shooter ? ` via ${replaced.disc.label}` : '';
 
-      return prefix + (replaced ? 'replace ' : removed.out ? 'clear ' : 'dislodge ') + label(removed) + via;
+      return (
+        prefix +
+        (replaced ? 'replace ' : removed.out ? 'clear ' : 'dislodge ') +
+        label(removed) +
+        via
+      );
     }
 
     const rescued = friendly.find(
-      (change) => !change.disc.shooter && change.startScore === -10 && change.endScore !== -10 && change.moved,
+      (change) =>
+        !change.disc.shooter &&
+        change.startScore === -10 &&
+        change.endScore !== -10 &&
+        change.moved,
     );
 
     if (rescued) {
       return (
-        prefix + `rescue ${rescued.disc.label} from kitchen` + (rescued.endScore > 0 ? ` to ${rescued.endScore}` : '')
+        prefix +
+        `rescue ${rescued.disc.label} from kitchen` +
+        (rescued.endScore > 0 ? ` to ${rescued.endScore}` : '')
       );
     }
 
     const cue = changes.find((change) => change.disc.shooter);
 
     const bumped = friendly.find(
-      (change) => !change.disc.shooter && change.moved && change.endScore > 0 && change.endScore > change.startScore,
+      (change) =>
+        !change.disc.shooter &&
+        change.moved &&
+        change.endScore > 0 &&
+        change.endScore > change.startScore,
     );
 
     if (bumped) {
@@ -382,7 +415,9 @@
       return prefix + 'finish in kitchen';
     }
 
-    const shifted = changes.find((change) => !change.disc.shooter && !change.disc.out && change.moved);
+    const shifted = changes.find(
+      (change) => !change.disc.shooter && !change.disc.out && change.moved,
+    );
 
     return (
       prefix +
@@ -406,13 +441,23 @@
     const bins = new Map();
 
     for (const point of points(record)) {
-      const position = point.position.map((value, index) => (index < 2 ? Math.round(value * 10) / 10 : value));
+      const position = point.position.map((value, index) =>
+        index < 2 ? Math.round(value * 10) / 10 : value,
+      );
 
-      const end = point.end ? point.end.map((value, index) => (index < 2 ? Math.round(value * 10) / 10 : value)) : null;
+      const end = point.end
+        ? point.end.map((value, index) => (index < 2 ? Math.round(value * 10) / 10 : value))
+        : null;
 
       const path = point.path?.map((p) => p.map((v) => Math.round(v * 100) / 100)) || null;
 
-      const key = JSON.stringify([point.selectionKey, point.biscuit, position, end, path]);
+      const key = JSON.stringify([
+        point.selectionKey,
+        point.biscuit,
+        position,
+        end,
+        path,
+      ]);
 
       if (!bins.has(key)) {
         bins.set(key, {
@@ -442,23 +487,44 @@
 
   function totals(discs) {
     return ['yellow', 'black'].map((color) =>
-      discs.filter((disc) => disc.color === color).reduce((sum, disc) => sum + physics.score(disc), 0),
+      discs
+        .filter((disc) => disc.color === color)
+        .reduce((sum, disc) => sum + physics.score(disc), 0),
     );
   }
 
-  function trial(record, random = Math.random, capture = null) {
+  function trial(
+    record,
+    random = Math.random,
+    capture = null,
+  ) {
     const state = record.state;
 
-    const start = physics.startingPoint(state.color, state.position, state.launchY);
+    const start = physics.startingPoint(
+      state.color,
+      state.position,
+      state.launchY,
+    );
 
     const distance = state.aimPoint
       ? Math.hypot(state.aimPoint.x - start.x, state.aimPoint.y - start.y)
       : (33.1 - start.y) / Math.cos((state.angle * Math.PI) / 180);
 
     // Match a real shot: sample speed first, then use that speed for angular variance.
-    const speed = physics.applyAccuracy(state.speed, state.accuracy, random);
+    const speed = physics.applyAccuracy(
+      state.speed,
+      state.accuracy,
+      random,
+    );
 
-    const angle = physics.sampleAim(state.angle, state.accuracy, speed, distance, random, state.court);
+    const angle = physics.sampleAim(
+      state.angle,
+      state.accuracy,
+      speed,
+      distance,
+      random,
+      state.court,
+    );
 
     const radians = (angle * Math.PI) / 180;
     const discs = structuredClone(state.discs);
@@ -473,10 +539,20 @@
 
     let elapsed = 0;
 
-    const paths = discs.map((disc) => [[disc.x, disc.y, 0]]);
+    const paths = discs.map((disc) => [
+      [
+        disc.x,
+        disc.y,
+        0,
+      ],
+    ]);
 
     const contact = (index, disc) => {
-      paths[index].push([disc.x, disc.y, elapsed]);
+      paths[index].push([
+        disc.x,
+        disc.y,
+        elapsed,
+      ]);
     };
 
     let settled = false;
@@ -525,7 +601,11 @@
     const ends = discs.map((disc) => {
       const point = physical(disc, state.shootingEnd);
 
-      return [point.x, point.y, disc.out ? 1 : 0];
+      return [
+        point.x,
+        point.y,
+        disc.out ? 1 : 0,
+      ];
     });
 
     physics.collectOffCourt(discs);
@@ -534,16 +614,30 @@
       ends,
       launch: [angle, speed],
       paths: paths.map((path) =>
-        simplifyPath(path).map(([x, y, time]) => {
-          const point = physical({ x, y }, state.shootingEnd);
+        simplifyPath(path).map(
+          ([
+            x,
+            y,
+            time,
+          ]) => {
+            const point = physical({ x, y }, state.shootingEnd);
 
-          return [Number(point.x.toFixed(4)), Number(point.y.toFixed(4)), Number(time.toFixed(4))];
-        }),
+            return [
+              Number(point.x.toFixed(4)),
+              Number(point.y.toFixed(4)),
+              Number(time.toFixed(4)),
+            ];
+          },
+        ),
       ),
       positions: discs.map((disc) => {
         const point = physical(disc, state.shootingEnd);
 
-        return [point.x, point.y, disc.out ? 1 : 0];
+        return [
+          point.x,
+          point.y,
+          disc.out ? 1 : 0,
+        ];
       }),
       score: totals(discs),
       selfKitchen: physics.score(discs[discs.length - 1]) === -10,

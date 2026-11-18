@@ -26,7 +26,7 @@ dialog#predictionDialog {
   align-items: end;
   display: grid;
   gap: 8px;
-  grid-template-columns: auto max-content minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   margin: 8px 0;
 }
 
@@ -41,12 +41,6 @@ dialog#predictionDialog {
   gap: 4px;
 }
 
-.prediction-accuracy {
-  grid-column: 2;
-  grid-row: 1;
-  min-width: 0;
-}
-
 .prediction-toolbar input,
 .saved-prediction input {
   border: 1px solid var(--line);
@@ -58,7 +52,7 @@ dialog#predictionDialog {
 }
 
 .prediction-name {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
   min-width: 0;
 }
@@ -227,7 +221,7 @@ dialog#predictionDialog {
   grid-row: 1;
 }
 #savePrediction {
-  grid-column: 4;
+  grid-column: 3;
   grid-row: 1;
 }
 #regeneratePrediction.prediction-out-of-sync {
@@ -249,7 +243,7 @@ dialog#predictionDialog {
 .prediction-animation-controls {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap-reverse;
   gap: 6px;
   margin-top: 8px;
 }
@@ -258,6 +252,8 @@ dialog#predictionDialog {
   padding: 6px 10px;
 }
 #predictionAnimationStatus {
+  /* Keep status below both groups when flex lines wrap upward. */
+  order: -1;
   flex-basis: 100%;
   font-size: 11px;
 }
@@ -291,7 +287,7 @@ dialog#predictionDialog {
   }
 
   .prediction-toolbar {
-    grid-template-columns: auto max-content auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
   .prediction-name {
     grid-column: 1 / -1;
@@ -528,15 +524,6 @@ dialog#savedPredictions[open] {
   }
 }
 
-.prediction-accuracy input {
-  appearance: textfield;
-  padding: 2px;
-  width: 6.5ch;
-}
-.prediction-accuracy input::-webkit-inner-spin-button {
-  appearance: none;
-}
-
 .prediction-toolbar button {
   border: 2px solid var(--green);
 }
@@ -733,4 +720,121 @@ dialog#savedPredictions[open] {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.prediction-settings-block {
+  align-items: center;
+  display: flex;
+  flex: 1 1 270px;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+.prediction-settings-values {
+  display: grid;
+  flex: 1 1 150px;
+  font-size: 12px;
+  gap: 2px 8px;
+  grid-template-columns: max-content auto;
+  margin: 0;
+}
+.prediction-settings-values[hidden] {
+  display: none;
+}
+.prediction-settings-values dd {
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  text-align: right;
+}
+.prediction-controls-editor {
+  background: var(--paper);
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px #162b2533;
+  left: var(--controls-left);
+  max-height: calc(100dvh - 12px);
+  overflow: auto;
+  padding: 8px;
+  position: fixed;
+  top: var(--controls-top);
+  width: var(--controls-width);
+  z-index: 2;
+}
+.prediction-controls-editor[hidden] {
+  display: none;
+}
+.prediction-controls-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.prediction-controls-heading h3 {
+  font-size: 16px;
+  margin: 0;
+}
+.prediction-controls-heading button {
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+}
+.prediction-controls-editor .icon-button {
+  height: 34px;
+  padding: 4px;
+  width: 38px;
+}
+.prediction-controls-editor img {
+  height: 23px;
+  width: 23px;
+}
+.prediction-setting-value {
+  grid-column: 4;
+  min-width: 0;
+}
+.prediction-setting-value input {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  height: 34px;
+  min-width: 0;
+  padding: 2px;
+  text-align: right;
+  width: 100%;
+}
+.prediction-controls-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.prediction-controls-actions button {
+  flex: 1;
+  min-height: 32px;
+}
+#predictionControlsError {
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+#predictionControlsError:empty {
+  display: none;
+}
+@media (max-width: 700px) {
+  .prediction-controls-editor {
+    bottom: 6px;
+    top: auto;
+  }
+  .prediction-controls-open #predictionCourt {
+    max-height: calc(100dvh - var(--prediction-controls-space, 350px));
+  }
+}
+
+.prediction-table th button {
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: inherit;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.prediction-controls-editor .accuracy-value {
+  height: 34px;
 }

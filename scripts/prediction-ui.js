@@ -8,6 +8,9 @@ let predictionResult = null;
 let predictionFilter = '*';
 let predictionCourtView = 'receiving';
 let predictionScoreMode = 'delta';
+let predictionSortColumn = 'likelihood';
+let predictionSortDirection = -1;
+let predictionSortedFilter = '';
 let predictionShowIntention = true;
 let predictionShowStarts = true;
 
@@ -28,14 +31,12 @@ let savedPredictionFocusId = '';
 function bindClickTooltip(element, text) {
   element.classList.add('click-tooltip');
   element.dataset.tooltip = text;
-
   if (element.tagName !== 'BUTTON') {
     element.tabIndex = 0;
   }
 
   const toggle = (event) => {
     event.preventDefault();
-
     const open = element.dataset.tooltipOpen === 'true';
 
     queryElements('[data-tooltip-open="true"]').forEach((node) => {
@@ -68,13 +69,24 @@ function changePredictionAccuracy(normalize = true, persist = false) {
   }
 
   renderPredictionSync();
+  renderPredictionSettings();
 }
 
 function drawPrediction() {
   const record = predictionResult;
 
-  if (!record || !element('predictionDialog').open) {
+  if (!record || !element('predictionDialog').open || element('predictionResults').hidden) {
     return;
+  }
+
+  const bounds = element('predictionCourt').getBoundingClientRect();
+
+  if (bounds.width < 1 || bounds.height < 1) {
+    return;
+  }
+
+  if (predictionSortColumn === 'view' && predictionSortedFilter !== predictionFilter) {
+    renderPredictionTable();
   }
 
   const framing = PredictionAnimation.framing(record, predictionFilter);
@@ -94,7 +106,12 @@ function drawPrediction() {
   updatePredictionZoomControls(viewport);
   element('predictionCourt').dataset.view = zoom ? 'receiving' : 'full';
 
-  render('predictionCourt', zoom, record, viewport);
+  render(
+    'predictionCourt',
+    zoom,
+    record,
+    viewport,
+  );
 
   const ctx = element('predictionCourt').getContext('2d');
   const { map, scale } = viewMaps.predictionCourt;
@@ -119,7 +136,11 @@ function drawPrediction() {
 
   const collected = record.biscuits.map(() => 0);
 
-  const biscuit = (position, ink, intended = false) => {
+  const biscuit = (
+    position,
+    ink,
+    intended = false,
+  ) => {
     if (position[2]) {
       return;
     }
@@ -128,7 +149,13 @@ function drawPrediction() {
 
     ctx.beginPath();
 
-    ctx.arc(q[0], q[1], physics.R * scale, 0, Math.PI * 2);
+    ctx.arc(
+      q[0],
+      q[1],
+      physics.R * scale,
+      0,
+      Math.PI * 2,
+    );
 
     ctx.fillStyle = ink;
     ctx.fill();
@@ -141,7 +168,11 @@ function drawPrediction() {
     }
   };
 
-  const route = (path, ink, intended = false) => {
+  const route = (
+    path,
+    ink,
+    intended = false,
+  ) => {
     if (!path || path.length < 2) {
       return;
     }
@@ -166,7 +197,10 @@ function drawPrediction() {
       continue;
     }
 
-    ctx.globalAlpha = Math.min(1, 2 * Math.max(1 / 255, 1 - Math.exp((-12 * point.count) / Math.max(1, count))));
+    ctx.globalAlpha = Math.min(
+      1,
+      2 * Math.max(1 / 255, 1 - Math.exp((-12 * point.count) / Math.max(1, count))),
+    );
 
     const disc = record.biscuits[point.biscuit];
     const ink = disc.color === 'yellow' ? '#ffe06a' : '#101b27';
@@ -190,7 +224,13 @@ function drawPrediction() {
 
       ctx.beginPath();
 
-      ctx.arc(q[0], q[1], physics.R * scale, 0, Math.PI * 2);
+      ctx.arc(
+        q[0],
+        q[1],
+        physics.R * scale,
+        0,
+        Math.PI * 2,
+      );
 
       ctx.strokeStyle = disc.color === 'yellow' ? '#fff2a6' : '#c4d9f0';
       ctx.lineWidth = 1.5;
@@ -201,7 +241,11 @@ function drawPrediction() {
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
 
-      ctx.fillText(disc.label, q[0], q[1] - physics.R * scale - 5);
+      ctx.fillText(
+        disc.label,
+        q[0],
+        q[1] - physics.R * scale - 5,
+      );
     }
   }
 
@@ -216,11 +260,23 @@ function drawPrediction() {
 
       const ink = disc.color === 'yellow' ? '#ffe06a' : '#101b27';
 
-      route(intention.paths[index], ink, true);
+      route(
+        intention.paths[index],
+        ink,
+        true,
+      );
 
       const intendedPosition = intention.positions[index];
 
-      biscuit([intendedPosition[0], intendedPosition[1], 0], ink, true);
+      biscuit(
+        [
+          intendedPosition[0],
+          intendedPosition[1],
+          0,
+        ],
+        ink,
+        true,
+      );
     });
   }
 
@@ -230,12 +286,18 @@ function drawPrediction() {
 
   element('predictionSelectedChance').textContent = chance.toFixed(1) + '%';
 
-  bindClickTooltip(element('predictionSelectedChance'), 'Selected Outcome %: ' + chance.toFixed(1) + '%');
+  bindClickTooltip(
+    element('predictionSelectedChance'),
+    'Selected Outcome %: ' + chance.toFixed(1) + '%',
+  );
 
   const summaries = collected
     .map((amount, index) =>
       predictionVisible.has(index)
-        ? record.biscuits[index].label + ': ' + ((100 * amount) / Math.max(1, count)).toFixed(1) + '%'
+        ? record.biscuits[index].label +
+          ': ' +
+          ((100 * amount) / Math.max(1, count)).toFixed(1) +
+          '%'
         : '',
     )
     .filter(Boolean);
@@ -261,6 +323,152 @@ function drawPrediction() {
   );
 }
 
+function drawSavedPredictionPreview(canvas, record) {
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    return;
+  }
+
+  const w = 168,
+    h = 76;
+
+  canvas.width = w * 2;
+  canvas.height = h * 2;
+
+  ctx.setTransform(
+    2,
+    0,
+    0,
+    2,
+    0,
+    0,
+  );
+
+  ctx.clearRect(
+    0,
+    0,
+    w,
+    h,
+  );
+
+  const scale = Math.min((w - 12) / 14.25, (h - 12) / 6);
+
+  const centerX = w / 2,
+    centerY = h / 2;
+
+  const headEnd = record.state.shootingEnd === 'head';
+
+  const map = (x, y) => {
+    const along = headEnd ? y - 31.875 : 7.125 - y;
+
+    return [centerX + along * scale, centerY + (3 - x) * scale];
+  };
+
+  ctx.save();
+  ctx.beginPath();
+
+  ctx.rect(
+    0,
+    0,
+    w,
+    h,
+  );
+
+  ctx.clip();
+
+  physics.diagramLines.forEach((points) => {
+    ctx.beginPath();
+
+    points.forEach(([x, y], index) => {
+      const outside = headEnd ? y < 24.75 || y > 39 : y < 0 || y > 14.25;
+
+      if (outside) {
+        ctx.moveTo(-100, -100);
+
+        return;
+      }
+
+      const q = map(x, y);
+
+      index ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
+    });
+
+    ctx.strokeStyle = '#476d56';
+    ctx.lineWidth = Math.max(1, physics.LINE * scale);
+    ctx.stroke();
+  });
+
+  const intended = PredictionModel.intended(record);
+
+  record.biscuits.forEach((disc, index) => {
+    const ink = disc.color === 'yellow' ? '#ffe06a' : '#101b27';
+    const start = disc.out ? null : map(disc.x, disc.y);
+
+    if (start) {
+      ctx.beginPath();
+
+      ctx.arc(
+        start[0],
+        start[1],
+        physics.R * scale,
+        0,
+        Math.PI * 2,
+      );
+
+      ctx.strokeStyle = disc.color === 'yellow' ? '#fff2a6' : '#c4d9f0';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const path = intended.paths[index];
+
+    if (path?.length > 1) {
+      ctx.beginPath();
+
+      path.forEach(([x, y], pathIndex) => {
+        const q = map(x, y);
+
+        pathIndex ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
+      });
+
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([1, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const position = intended.positions[index];
+
+    if (position?.[2] !== 1) {
+      const q = map(position[0], position[1]);
+
+      ctx.beginPath();
+
+      ctx.arc(
+        q[0],
+        q[1],
+        physics.R * scale,
+        0,
+        Math.PI * 2,
+      );
+
+      ctx.fillStyle = ink;
+      ctx.fill();
+      ctx.strokeStyle = '#f5fff4';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([1, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
+
+  ctx.restore();
+}
+
 function exportPredictionRecords(records, filename) {
   const json = PredictionStorage.exportRecords(records);
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
@@ -276,12 +484,16 @@ function exportPredictionRecords(records, filename) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  predictionMessage('Exported ' + records.length + ' saved shot' + (records.length === 1 ? '.' : 's.'));
+  predictionMessage(
+    'Exported ' + records.length + ' saved shot' + (records.length === 1 ? '.' : 's.'),
+  );
 }
 
 async function generatePrediction() {
   if (running || dragging || physics.remainingBiscuits(discs, color) === 0) {
-    predictionMessage('No queued biscuit is available to predict. Load a saved shot or return to the court.');
+    predictionMessage(
+      'No queued biscuit is available to predict. Load a saved shot or return to the court.',
+    );
 
     return;
   }
@@ -297,11 +509,11 @@ async function generatePrediction() {
   field.value = next.toFixed(1);
   PredictionAnimation.stop();
   const generation = ++predictionGeneration;
-  const state = snapshot();
+  const liveSignature = predictionFingerprint({ ...snapshot(), accuracy: next });
+  const state = predictionPendingState();
 
   state.paths = [];
   state.accuracy = next;
-  const signature = predictionFingerprint(state);
   const record = PredictionModel.prepare(state);
   const exact = PredictionModel.deterministic(state);
   const start = performance.now();
@@ -316,7 +528,7 @@ async function generatePrediction() {
     while (record.outcomes.length < target) {
       if (
         generation !== predictionGeneration ||
-        signature !== predictionFingerprint({ ...snapshot(), accuracy: state.accuracy })
+        liveSignature !== predictionFingerprint({ ...snapshot(), accuracy: state.accuracy })
       ) {
         return;
       }
@@ -329,7 +541,7 @@ async function generatePrediction() {
       if (
         generation !== predictionGeneration ||
         !element('predictionDialog').open ||
-        signature !== predictionFingerprint({ ...snapshot(), accuracy: state.accuracy })
+        liveSignature !== predictionFingerprint({ ...snapshot(), accuracy: state.accuracy })
       ) {
         return;
       }
@@ -353,11 +565,10 @@ async function generatePrediction() {
     record.count = record.outcomes.length;
     record.elapsedMs = Math.round(performance.now() - start);
     input('accuracy').value = state.accuracy.toFixed(1);
-
     const firstResult = !predictionResult;
 
     predictionResult = record;
-    predictionSignature = signature;
+    predictionSignature = liveSignature;
     predictionFilter = '*';
     predictionVisible = new Set(record.biscuits.map((_, index) => index));
 
@@ -410,7 +621,9 @@ function initializePredictionTransfer() {
 
       renderSavedPredictions();
 
-      predictionMessage('Imported ' + result.imported + ' shots; skipped ' + result.skipped + ' duplicates.');
+      predictionMessage(
+        'Imported ' + result.imported + ' shots; skipped ' + result.skipped + ' duplicates.',
+      );
 
       element('savedPredictionCount').focus();
     } catch (error) {
@@ -434,7 +647,9 @@ function initializePredictionZoom() {
     setPredictionZoom(predictionViewport.zoom - 0.25);
   };
 
-  element('predictionZoom').addEventListener('input', () => setPredictionZoom(Number(input('predictionZoom').value)));
+  element('predictionZoom').addEventListener('input', () =>
+    setPredictionZoom(Number(input('predictionZoom').value)),
+  );
 
   element('predictionZoomReset').onclick = () => {
     Object.assign(predictionViewport, {
@@ -474,7 +689,11 @@ function initializePredictionZoom() {
     drawPrediction();
   });
 
-  for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  for (const name of [
+    'pointerup',
+    'pointercancel',
+    'lostpointercapture',
+  ]) {
     canvas.addEventListener(name, (event) => {
       const pointer = /** @type {PointerEvent} */ (event);
 
@@ -499,11 +718,17 @@ function initializePredictionZoom() {
 
     if (
       Number(input('predictionZoom').value) > 1 &&
-      ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)
+      [
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown',
+      ].includes(event.key)
     ) {
       event.preventDefault();
 
-      predictionViewport.panX += event.key === 'ArrowLeft' ? 24 : event.key === 'ArrowRight' ? -24 : 0;
+      predictionViewport.panX +=
+        event.key === 'ArrowLeft' ? 24 : event.key === 'ArrowRight' ? -24 : 0;
 
       predictionViewport.panY += event.key === 'ArrowUp' ? 24 : event.key === 'ArrowDown' ? -24 : 0;
       drawPrediction();
@@ -517,13 +742,19 @@ function initializePredictions() {
   PredictionAnimation.initialize(drawPrediction);
   initializePredictionZoom();
   initializePredictionTransfer();
+  initializePredictionControls();
 
   const renderLayers = () => {
-    element('predictionToggleIntention').textContent = (predictionShowIntention ? 'Hide' : 'Show') + ' Shot Intention';
+    element('predictionToggleIntention').textContent =
+      (predictionShowIntention ? 'Hide' : 'Show') + ' Shot Intention';
 
-    element('predictionToggleIntention').setAttribute('aria-pressed', String(predictionShowIntention));
+    element('predictionToggleIntention').setAttribute(
+      'aria-pressed',
+      String(predictionShowIntention),
+    );
 
-    element('predictionToggleStarts').textContent = (predictionShowStarts ? 'Hide' : 'Show') + ' Starting Biscuits';
+    element('predictionToggleStarts').textContent =
+      (predictionShowStarts ? 'Hide' : 'Show') + ' Starting Biscuits';
 
     element('predictionToggleStarts').setAttribute('aria-pressed', String(predictionShowStarts));
   };
@@ -573,14 +804,19 @@ function initializePredictions() {
   element('sortSavedPredictions').onclick = () => {
     savedPredictionSort = savedPredictionSort === 'desc' ? 'asc' : 'desc';
 
-    element('sortSavedPredictions').textContent = savedPredictionSort === 'desc' ? 'Sort ↓' : 'Sort ↑';
+    element('sortSavedPredictions').textContent =
+      savedPredictionSort === 'desc' ? 'Sort ↓' : 'Sort ↑';
 
     renderSavedPredictions(savedPredictionFocusId);
   };
 
-  element('predictionAccuracy').addEventListener('input', () => changePredictionAccuracy(false, true));
+  element('predictionAccuracy').addEventListener('input', () =>
+    changePredictionAccuracy(false, true),
+  );
 
-  element('predictionAccuracy').addEventListener('change', () => changePredictionAccuracy(true, true));
+  element('predictionAccuracy').addEventListener('change', () =>
+    changePredictionAccuracy(true, true),
+  );
 
   element('savePrediction').onclick = () => {
     if (!predictionResult || predictionBusy || predictionAccuracyOutOfSync()) {
@@ -588,13 +824,19 @@ function initializePredictions() {
     }
 
     try {
-      const entry = PredictionStorage.save(localStorage, predictionResult, input('predictionName').value);
+      const entry = PredictionStorage.save(
+        localStorage,
+        predictionResult,
+        input('predictionName').value,
+      );
 
       openSavedPredictions(entry.id);
 
       predictionMessage(
         `Saved “${entry.name}” · ${(entry.bytes / 1024).toFixed(1)} KB · ` +
-          (entry.record.storage === 'summary' ? 'compact results (0.1-foot grid).' : 'all trial outcomes retained.'),
+          (entry.record.storage === 'summary'
+            ? 'compact results (0.1-foot grid).'
+            : 'all trial outcomes retained.'),
       );
     } catch (error) {
       predictionMessage(error.message || 'Could not save this shot. Existing saves are unchanged.');
@@ -642,6 +884,7 @@ function initializePredictions() {
       element('savedPredictions').close();
     }
 
+    closePredictionControls();
     PredictionAnimation.stop();
     predictionPanDrag = null;
     predictionGeneration++;
@@ -662,7 +905,9 @@ function loadPrediction(record, name = '') {
   }
 
   if (!PredictionStorage.validRecord(record)) {
-    predictionMessage('This saved shot is damaged or uses an unsupported format. The board has not changed.');
+    predictionMessage(
+      'This saved shot is damaged or uses an unsupported format. The board has not changed.',
+    );
 
     return;
   }
@@ -711,7 +956,7 @@ function loadPrediction(record, name = '') {
     record.state.accuracy,
   );
 
-  input('predictionAccuracy').value = accuracy().toFixed(1);
+  resetPredictionSettings(predictionResult.state);
   update();
   renderPrediction();
 
@@ -725,130 +970,6 @@ function loadPrediction(record, name = '') {
   element('predictionBody').scrollTop = 0;
 }
 
-function savedPredictionTime(value) {
-  const date = new Date(value);
-
-  if (!Number.isFinite(date.getTime())) {
-    return 'unknown';
-  }
-
-  return date.toLocaleString([], {
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    month: 'short',
-  });
-}
-
-function drawSavedPredictionPreview(canvas, record) {
-  const ctx = canvas.getContext('2d');
-
-  if (!ctx) {
-    return;
-  }
-
-  const w = 168,
-    h = 76;
-
-  canvas.width = w * 2;
-  canvas.height = h * 2;
-  ctx.setTransform(2, 0, 0, 2, 0, 0);
-  ctx.clearRect(0, 0, w, h);
-
-  const scale = Math.min((w - 12) / 14.25, (h - 12) / 6);
-
-  const centerX = w / 2,
-    centerY = h / 2;
-
-  const headEnd = record.state.shootingEnd === 'head';
-
-  const map = (x, y) => {
-    const along = headEnd ? y - 31.875 : 7.125 - y;
-
-    return [centerX + along * scale, centerY + (3 - x) * scale];
-  };
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, 0, w, h);
-  ctx.clip();
-
-  physics.diagramLines.forEach((points) => {
-    ctx.beginPath();
-
-    points.forEach(([x, y], index) => {
-      const outside = headEnd ? y < 24.75 || y > 39 : y < 0 || y > 14.25;
-
-      if (outside) {
-        ctx.moveTo(-100, -100);
-
-        return;
-      }
-
-      const q = map(x, y);
-
-      index ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
-    });
-
-    ctx.strokeStyle = '#476d56';
-    ctx.lineWidth = Math.max(1, physics.LINE * scale);
-    ctx.stroke();
-  });
-
-  const intended = PredictionModel.intended(record);
-
-  record.biscuits.forEach((disc, index) => {
-    const ink = disc.color === 'yellow' ? '#ffe06a' : '#101b27';
-    const start = disc.out ? null : map(disc.x, disc.y);
-
-    if (start) {
-      ctx.beginPath();
-      ctx.arc(start[0], start[1], physics.R * scale, 0, Math.PI * 2);
-      ctx.strokeStyle = disc.color === 'yellow' ? '#fff2a6' : '#c4d9f0';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 2]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    const path = intended.paths[index];
-
-    if (path?.length > 1) {
-      ctx.beginPath();
-
-      path.forEach(([x, y], pathIndex) => {
-        const q = map(x, y);
-
-        pathIndex ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
-      });
-
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([1, 2]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    const position = intended.positions[index];
-
-    if (position?.[2] !== 1) {
-      const q = map(position[0], position[1]);
-
-      ctx.beginPath();
-      ctx.arc(q[0], q[1], physics.R * scale, 0, Math.PI * 2);
-      ctx.fillStyle = ink;
-      ctx.fill();
-      ctx.strokeStyle = '#f5fff4';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([1, 2]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-  });
-
-  ctx.restore();
-}
-
 function openSavedPredictions(focusId = '') {
   savedPredictionFocusId = focusId;
   PredictionAnimation.stop();
@@ -859,16 +980,30 @@ function openSavedPredictions(focusId = '') {
   }
 
   renderSavedPredictions(focusId);
+  if (!focusId) {
+    element('savedPredictionList').scrollTop = 0;
+    element('savedPredictions').scrollTop = 0;
+    element('savedPredictionCount').focus({ preventScroll: true });
+  }
 }
 
 function predictionAccuracyOutOfSync() {
+  if (!predictionResult) {
+    return false;
+  }
+
+  const pending = predictionPendingState();
+  const previous = predictionResult.state;
   const field = input('predictionAccuracy');
 
   return (
-    !!predictionResult &&
-    (!field.value.trim() ||
-      !Number.isFinite(Number(field.value)) ||
-      Number(field.value) !== predictionResult.state.accuracy)
+    !field.value.trim() ||
+    !Number.isFinite(Number(field.value)) ||
+    pending.accuracy !== previous.accuracy ||
+    pending.speed !== previous.speed ||
+    pending.angle !== previous.angle ||
+    pending.court.slick !== previous.court.slick ||
+    pending.court.drift !== previous.court.drift
   );
 }
 
@@ -886,7 +1021,9 @@ function predictionBytes(size) {
     return size + ' B';
   }
 
-  return size >= 1024 * 1024 ? (size / (1024 * 1024)).toFixed(1) + ' MB' : Math.max(1, Math.round(size / 1024)) + ' KB';
+  return size >= 1024 * 1024
+    ? (size / (1024 * 1024)).toFixed(1) + ' MB'
+    : Math.max(1, Math.round(size / 1024)) + ' KB';
 }
 
 function predictionFingerprint(state) {
@@ -907,7 +1044,11 @@ function predictionMessage(message) {
  * @param {string} [className]
  * @returns {HTMLElementTagNameMap[K]}
  */
-function predictionNode(tag, text = '', className = '') {
+function predictionNode(
+  tag,
+  text = '',
+  className = '',
+) {
   const node = document.createElement(tag);
 
   node.textContent = text;
@@ -932,8 +1073,39 @@ function predictionSelectionGroups() {
   return groups;
 }
 
+function predictionSortValue(group, record) {
+  if (predictionSortColumn === 'likelihood') {
+    return group.count;
+  }
+
+  if (predictionSortColumn === 'view') {
+    const groups = predictionSelectionGroups().filter(
+      (part) => part.score.join(',') === group.score.join(','),
+    );
+
+    return (
+      groups.filter((part) => PredictionModel.matches(part.key, predictionFilter)).length /
+      Math.max(1, groups.length)
+    );
+  }
+
+  const deltas = group.score.map((score, index) => score - record.beforeScore[index]);
+
+  if (predictionSortColumn === 'delta') {
+    return Math.abs(deltas[0] - deltas[1]);
+  }
+
+  const index = predictionSortColumn === 'yellow' ? 0 : 1;
+
+  return predictionScoreMode === 'delta' ? deltas[index] : group.score[index];
+}
+
 function predictionToggle(label, indices) {
-  const wrapper = predictionNode('label', '', 'prediction-toggle');
+  const wrapper = predictionNode(
+    'label',
+    '',
+    'prediction-toggle',
+  );
 
   const checkbox = document.createElement('input');
 
@@ -944,7 +1116,9 @@ function predictionToggle(label, indices) {
   checkbox.indeterminate = count > 0 && count < indices.length;
 
   checkbox.onchange = () => {
-    indices.forEach((index) => (checkbox.checked ? predictionVisible.add(index) : predictionVisible.delete(index)));
+    indices.forEach((index) =>
+      checkbox.checked ? predictionVisible.add(index) : predictionVisible.delete(index),
+    );
 
     // Keep the focused checkbox in place, including mixed color/all toggles.
     refreshPredictionToggles();
@@ -964,7 +1138,9 @@ function refreshPredictionSelection() {
     const checkbox = /** @type {HTMLInputElement} */ (node);
     const matching = groups.filter((group) => group.score.join(',') === checkbox.dataset.filter);
 
-    const checked = matching.filter((group) => PredictionModel.matches(group.key, predictionFilter)).length;
+    const checked = matching.filter((group) =>
+      PredictionModel.matches(group.key, predictionFilter),
+    ).length;
 
     checkbox.checked = checked === matching.length;
     checkbox.indeterminate = checked > 0 && checked < matching.length;
@@ -972,7 +1148,15 @@ function refreshPredictionSelection() {
 
   queryElements('#predictionScenarios button').forEach((node) => {
     const keys = groups
-      .filter((group) => group.count && PredictionModel.scenario(predictionResult, group, node.dataset.scenario))
+      .filter(
+        (group) =>
+          group.count &&
+          PredictionModel.scenario(
+            predictionResult,
+            group,
+            node.dataset.scenario,
+          ),
+      )
       .map((group) => group.key);
 
     const chosen = groups
@@ -981,7 +1165,11 @@ function refreshPredictionSelection() {
 
     node.setAttribute(
       'aria-pressed',
-      String(keys.length > 0 && keys.length === chosen.length && keys.every((key) => chosen.includes(key))),
+      String(
+        keys.length > 0 &&
+          keys.length === chosen.length &&
+          keys.every((key) => chosen.includes(key)),
+      ),
     );
   });
 
@@ -1013,6 +1201,8 @@ function renderPrediction() {
   PredictionAnimation.configure(predictionResult, predictionBusy);
   element('predictionResults').hidden = !ready;
   renderPredictionSync();
+  renderPredictionSettings();
+  element('openPredictionControls').disabled = predictionBusy;
   input('predictionAccuracy').disabled = predictionBusy;
 
   element('regeneratePrediction').disabled =
@@ -1065,7 +1255,11 @@ function renderPredictionScenarios() {
 
   container.replaceChildren();
 
-  const scoreFilters = predictionNode('div', '', 'prediction-score-filters');
+  const scoreFilters = predictionNode(
+    'div',
+    '',
+    'prediction-score-filters',
+  );
 
   scoreFilters.setAttribute('aria-label', 'Score change filters');
   scoreFilters.setAttribute('role', 'group');
@@ -1078,7 +1272,13 @@ function renderPredictionScenarios() {
   ]) {
     const button = predictionAction(label, () => {
       predictionFilter = predictionSelectionGroups()
-        .filter((group) => PredictionModel.scenario(predictionResult, group, name))
+        .filter((group) =>
+          PredictionModel.scenario(
+            predictionResult,
+            group,
+            name,
+          ),
+        )
         .map((group) => group.key)
         .join(';');
 
@@ -1099,7 +1299,8 @@ function renderPredictionScenarios() {
         ? 'Select outcomes where the delivered biscuit finishes in its kitchen'
         : 'Select outcomes where ' + name.replace('-', ' score ');
 
-    button.disabled = name === 'self-kitchen' && !!predictionResult.bins && !predictionResult.selectionGroups;
+    button.disabled =
+      name === 'self-kitchen' && !!predictionResult.bins && !predictionResult.selectionGroups;
 
     if (name === 'self-kitchen') {
       container.append(button);
@@ -1189,21 +1390,68 @@ function renderPredictionTable() {
     score: intention.score,
   };
 
-  const rows = [intendedGroup, ...groups.filter((group) => group !== intendedGroup).sort((a, b) => b.count - a.count)];
+  const rows = [
+    intendedGroup,
+    ...groups
+      .filter((group) => group !== intendedGroup)
+      .sort((a, b) => {
+        const difference = predictionSortValue(a, record) - predictionSortValue(b, record);
+
+        return (
+          difference * predictionSortDirection ||
+          b.count - a.count ||
+          a.score.join(',').localeCompare(b.score.join(','))
+        );
+      }),
+  ];
 
   head.replaceChildren();
   body.replaceChildren();
   const heading = predictionNode('tr');
 
-  for (const title of [delta ? 'Yellow Δ' : 'Yellow', delta ? 'Black Δ' : 'Black', 'Delta', 'Likelihood', 'View']) {
-    const cell = predictionNode('th', title);
+  predictionSortedFilter = predictionFilter;
+  for (const [column, title] of [
+    ['yellow', delta ? 'Yellow Δ' : 'Yellow'],
+    ['black', delta ? 'Black Δ' : 'Black'],
+    ['delta', 'Delta'],
+    ['likelihood', 'Likelihood'],
+    ['view', 'View'],
+  ]) {
+    const cell = predictionNode('th');
+    const active = column === predictionSortColumn;
+    const label = title + (active ? (predictionSortDirection > 0 ? ' ↑' : ' ↓') : '');
 
+    const sort = predictionAction(label, () => {
+      predictionSortDirection = column === predictionSortColumn ? -predictionSortDirection : -1;
+      predictionSortColumn = column;
+      renderPredictionTable();
+      drawPrediction();
+
+      queryElements('#predictionTableHead button').forEach((button) => {
+        if (button.dataset.sort === column) {
+          button.focus({ preventScroll: true });
+        }
+      });
+    });
+
+    sort.dataset.sort = column;
+    sort.title = 'Sort by ' + title + '; click again to reverse';
+
+    cell.setAttribute(
+      'aria-sort',
+      active ? (predictionSortDirection > 0 ? 'ascending' : 'descending') : 'none',
+    );
+
+    cell.append(sort);
     cell.scope = 'col';
     if (title.toLowerCase().startsWith(record.state.color)) {
       cell.dataset.shooter = record.state.color;
       cell.setAttribute('aria-label', title + ' (Shooting)');
 
-      bindClickTooltip(cell, (record.state.color === 'yellow' ? 'Yellow' : 'Black') + ' is shooting');
+      bindClickTooltip(
+        cell,
+        (record.state.color === 'yellow' ? 'Yellow' : 'Black') + ' is shooting',
+      );
     }
 
     heading.append(cell);
@@ -1214,11 +1462,19 @@ function renderPredictionTable() {
     const key = group.score.join(',');
     const intended = key === intendedKey;
 
-    const tr = predictionNode('tr', '', intended ? 'prediction-intended' : '');
+    const tr = predictionNode(
+      'tr',
+      '',
+      intended ? 'prediction-intended' : '',
+    );
 
-    const numbers = group.score.map((score, index) => (delta ? score - record.beforeScore[index] : score));
+    const numbers = group.score.map((score, index) =>
+      delta ? score - record.beforeScore[index] : score,
+    );
 
-    const scores = numbers.map((score) => (score === 0 ? '—' : delta && score > 0 ? '+' + score : String(score)));
+    const scores = numbers.map((score) =>
+      score === 0 ? '—' : delta && score > 0 ? '+' + score : String(score),
+    );
 
     tr.dataset.score = key;
     tr.dataset.intended = String(intended);
@@ -1239,7 +1495,8 @@ function renderPredictionTable() {
       tr.append(cell);
     });
 
-    const balance = group.score[0] - record.beforeScore[0] - (group.score[1] - record.beforeScore[1]);
+    const balance =
+      group.score[0] - record.beforeScore[0] - (group.score[1] - record.beforeScore[1]);
 
     tr.append(
       predictionNode(
@@ -1254,7 +1511,11 @@ function renderPredictionTable() {
     tr.append(predictionNode('td', probability));
     const cell = predictionNode('td');
 
-    const label = predictionNode('label', '', 'prediction-outcome-choice');
+    const label = predictionNode(
+      'label',
+      '',
+      'prediction-outcome-choice',
+    );
 
     const checkbox = document.createElement('input');
 
@@ -1272,7 +1533,9 @@ function renderPredictionTable() {
       const groups = predictionSelectionGroups();
 
       const keys = new Set(
-        groups.filter((group) => PredictionModel.matches(group.key, predictionFilter)).map((group) => group.key),
+        groups
+          .filter((group) => PredictionModel.matches(group.key, predictionFilter))
+          .map((group) => group.key),
       );
 
       groups
@@ -1286,7 +1549,6 @@ function renderPredictionTable() {
     label.append(checkbox);
     if (intended) {
       label.append(predictionNode('span', '*'));
-
       bindClickTooltip(label, 'Intended result with perfect accuracy and no fast-shot handicap');
     }
 
@@ -1301,7 +1563,10 @@ function renderPredictionTable() {
 
     only.className = 'prediction-outcome-only';
 
-    only.setAttribute('aria-label', 'Show only this outcome: Yellow ' + numbers[0] + ', Black ' + numbers[1]);
+    only.setAttribute(
+      'aria-label',
+      'Show only this outcome: Yellow ' + numbers[0] + ', Black ' + numbers[1],
+    );
 
     only.title = 'Select only this row’s outcomes';
     cell.append(label, only);
@@ -1315,8 +1580,11 @@ function renderPredictionTable() {
     (record.state.color === 'yellow' ? 'Yellow' : 'Black') + ' (Shooting)';
 
   element('predictionBaseline').textContent =
-    (delta ? 'Δ shows the change for each player. ' : 'Final scores include every biscuit already on the board. ') +
-    ('Intended is the perfect shot without the fast-shot handicap. Other rows des' + 'cend by likelihood. ') +
+    (delta
+      ? 'Δ shows the change for each player. '
+      : 'Final scores include every biscuit already on the board. ') +
+    ('Intended is the perfect shot without the fast-shot handicap and stays first' +
+      '. Click column headings to sort; click again to reverse. ') +
     ('All outcomes start checked. Check multiple outcomes to combine their trials' +
       '. No checks means no sampled outcomes. ') +
     ('The after scoreboard shows the most likely checked outcome. Delta is the sc' +
@@ -1334,9 +1602,11 @@ function renderSavedPredictions(focusId = '') {
   try {
     const records = PredictionStorage.read(localStorage);
 
-    element('savedPredictionCount').textContent = `Saved shots (${records.length}/${PredictionStorage.limit})`;
+    element('savedPredictionCount').textContent =
+      `Saved shots (${records.length}/${PredictionStorage.limit})`;
 
-    element('savedPredictionSize').textContent = predictionBytes(PredictionStorage.bytes(records)) + ' JSON';
+    element('savedPredictionSize').textContent =
+      predictionBytes(PredictionStorage.bytes(records)) + ' JSON';
 
     element('exportPredictions').disabled = records.length === 0;
     if (!records.length) {
@@ -1351,11 +1621,19 @@ function renderSavedPredictions(focusId = '') {
     });
 
     for (const entry of sorted) {
-      const row = predictionNode('li', '', 'saved-prediction');
+      const row = predictionNode(
+        'li',
+        '',
+        'saved-prediction',
+      );
 
       row.dataset.savedPredictionId = entry.id;
 
-      const label = predictionNode('div', '', 'saved-prediction-name');
+      const label = predictionNode(
+        'div',
+        '',
+        'saved-prediction-name',
+      );
 
       const name = document.createElement('input');
 
@@ -1382,12 +1660,18 @@ function renderSavedPredictions(focusId = '') {
 
         try {
           if (name.value.trim() !== entry.name) {
-            PredictionStorage.rename(localStorage, entry.id, name.value);
+            PredictionStorage.rename(
+              localStorage,
+              entry.id,
+              name.value,
+            );
 
-            entry.name = name.value.trim().slice(0, 120) || PredictionModel.suggestedName(entry.record);
+            entry.name =
+              name.value.trim().slice(0, 120) || PredictionModel.suggestedName(entry.record);
 
             element('savedPredictionSize').textContent =
-              predictionBytes(PredictionStorage.bytes(PredictionStorage.read(localStorage))) + ' JSON';
+              predictionBytes(PredictionStorage.bytes(PredictionStorage.read(localStorage))) +
+              ' JSON';
 
             predictionMessage('Saved shot renamed.');
           }
@@ -1416,16 +1700,22 @@ function renderSavedPredictions(focusId = '') {
       };
 
       label.append(name, edit);
-
       row.append(label);
 
-      const actions = predictionNode('div', '', 'prediction-actions');
+      const actions = predictionNode(
+        'div',
+        '',
+        'prediction-actions',
+      );
 
       actions.append(
         predictionAction('🔮', () => loadPrediction(entry.record, entry.name)),
         predictionAction('Export', () => {
           try {
-            exportPredictionRecords([entry], 'shuffleboard-shot-' + entry.id.replace(/[^a-z0-9-]/gi, '-') + '.json');
+            exportPredictionRecords(
+              [entry],
+              'shuffleboard-shot-' + entry.id.replace(/[^a-z0-9-]/gi, '-') + '.json',
+            );
           } catch (error) {
             predictionMessage(error.message || 'Could not export this saved shot.');
           }
@@ -1453,12 +1743,20 @@ function renderSavedPredictions(focusId = '') {
       remove.title = 'Delete shot';
       remove.setAttribute('aria-label', 'Delete shot');
 
-      const preview = predictionNode('canvas', '', 'saved-prediction-preview');
+      const preview = predictionNode(
+        'canvas',
+        '',
+        'saved-prediction-preview',
+      );
 
       preview.setAttribute('aria-label', 'Intended shot preview');
       drawSavedPredictionPreview(preview, entry.record);
 
-      const left = predictionNode('div', '', 'saved-prediction-left');
+      const left = predictionNode(
+        'div',
+        '',
+        'saved-prediction-left',
+      );
 
       left.append(
         predictionNode(
@@ -1468,7 +1766,11 @@ function renderSavedPredictions(focusId = '') {
         actions,
       );
 
-      const body = predictionNode('div', '', 'saved-prediction-body');
+      const body = predictionNode(
+        'div',
+        '',
+        'saved-prediction-body',
+      );
 
       body.append(left, preview);
       row.append(body);
@@ -1480,8 +1782,28 @@ function renderSavedPredictions(focusId = '') {
       }
     }
   } catch {
-    list.append(predictionNode('p', 'Saved shots could not be read. Existing storage has been left untouched.'));
+    list.append(
+      predictionNode(
+        'p',
+        'Saved shots could not be read. Existing storage has been left untouched.',
+      ),
+    );
   }
+}
+
+function savedPredictionTime(value) {
+  const date = new Date(value);
+
+  if (!Number.isFinite(date.getTime())) {
+    return 'unknown';
+  }
+
+  return date.toLocaleString([], {
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    month: 'short',
+  });
 }
 
 function setPredictionZoom(value) {
@@ -1502,15 +1824,18 @@ function setPredictionZoom(value) {
 }
 
 function syncPrediction() {
-  element('predictOutcomes').disabled = running || !!dragging || physics.remainingBiscuits(discs, color) === 0;
+  element('predictOutcomes').disabled =
+    running || !!dragging || physics.remainingBiscuits(discs, color) === 0;
 
   const current = snapshot();
 
   if (
     predictionResult &&
-    predictionSignature !== predictionFingerprint({ ...current, accuracy: predictionResult.state.accuracy })
+    predictionSignature !==
+      predictionFingerprint({ ...current, accuracy: predictionResult.state.accuracy })
   ) {
     predictionResult = null;
+    resetPredictionSettings();
     PredictionAnimation.configure(null);
     predictionGeneration++;
     predictionBusy = false;

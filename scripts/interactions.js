@@ -12,8 +12,17 @@
 */
 'use strict';
 
-function endDrag(e, id, cancel = false) {
-  if (!dragging || dragging.id !== id || dragging.pointerId !== e.pointerId || (!cancel && isSecondaryPointer(e))) {
+function endDrag(
+  e,
+  id,
+  cancel = false,
+) {
+  if (
+    !dragging ||
+    dragging.id !== id ||
+    dragging.pointerId !== e.pointerId ||
+    (!cancel && isSecondaryPointer(e))
+  ) {
     return;
   }
 
@@ -38,8 +47,12 @@ function endDrag(e, id, cancel = false) {
     } else {
       const point = courtPoint(e, id);
 
-      if (point.x >= 0 && point.x <= 6 && point.y >= 0 && point.y <= 39) {
-        aimAt(point.x, point.y, true);
+      if (point.x >= 0 && point.x <= 6 && point.y >= 0 && Number.isFinite(point.y)) {
+        aimAt(
+          point.x,
+          point.y,
+          true,
+        );
       }
     }
 
@@ -97,7 +110,10 @@ function isQueueDrop(event) {
   const box = element('supplyColumn').getBoundingClientRect();
 
   return (
-    event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom
+    event.clientX >= box.left &&
+    event.clientX <= box.right &&
+    event.clientY >= box.top &&
+    event.clientY <= box.bottom
   );
 }
 
@@ -119,8 +135,12 @@ function moveBiscuit(e, id) {
   }
 
   if (dragging.kind === 'aim') {
-    if (p.x >= 0 && p.x <= 6 && p.y >= 0 && p.y <= 39) {
-      aimAt(p.x, p.y, true);
+    if (p.x >= 0 && p.x <= 6 && p.y >= 0 && Number.isFinite(p.y)) {
+      aimAt(
+        p.x,
+        p.y,
+        true,
+      );
 
       update();
     }
@@ -192,12 +212,22 @@ function pointerDown(e, id) {
   }
 
   if (pendingSupplyColor) {
-    placeSupply(pendingSupplyColor, p, id);
+    placeSupply(
+      pendingSupplyColor,
+      p,
+      id,
+    );
 
     return;
   }
 
-  if ((id === 'shooting' || (id === 'target' && !biscuitsLocked)) && p.x >= 0 && p.x <= 6 && p.y >= 0 && p.y <= 1.5) {
+  if (
+    (id === 'shooting' || (id === 'target' && !biscuitsLocked)) &&
+    p.x >= 0 &&
+    p.x <= 6 &&
+    p.y >= 0 &&
+    p.y <= 1.5
+  ) {
     const side = p.x < 3 ? 'black' : 'yellow';
 
     if (side !== color) {
@@ -229,7 +259,9 @@ function pointerDown(e, id) {
   }
 
   const hit = discs.findLast(
-    (d) => (!d.out || d.parked) && Math.hypot(d.x - p.x, d.y - p.y) <= Math.max(physics.R, 12 / viewMaps[id].scale),
+    (d) =>
+      (!d.out || d.parked) &&
+      Math.hypot(d.x - p.x, d.y - p.y) <= Math.max(physics.R, 12 / viewMaps[id].scale),
   );
 
   if (hit && !(id === 'target' && biscuitsLocked)) {
@@ -262,19 +294,31 @@ function pointerDown(e, id) {
 
     element(id).setPointerCapture(e.pointerId);
 
-    aimAt(p.x, p.y, true);
+    aimAt(
+      p.x,
+      p.y,
+      true,
+    );
 
     update();
   }
 }
 
 function positionShooter(x, y) {
-  const next = physics.startingPosition(color, x, y);
+  const next = physics.startingPosition(
+    color,
+    x,
+    y,
+  );
 
   launchY = next.y;
   element('position').value = String(next.position);
   if (aimPoint) {
-    aimAt(aimPoint.x, aimPoint.y, true);
+    aimAt(
+      aimPoint.x,
+      aimPoint.y,
+      true,
+    );
   }
 
   update();
@@ -334,19 +378,33 @@ function switchShooter(next) {
 
   color = next;
   if (aimPoint) {
-    aimAt(aimPoint.x, aimPoint.y, true);
+    aimAt(
+      aimPoint.x,
+      aimPoint.y,
+      true,
+    );
   }
 
   update();
 }
 
-for (const id of ['overview', 'shooting', 'target']) {
+for (const id of [
+  'overview',
+  'shooting',
+  'target',
+]) {
   const canvas = element(id);
 
   canvas.addEventListener('pointerdown', (e) => pointerDown(e, id));
   canvas.addEventListener('pointermove', (e) => moveBiscuit(e, id));
   canvas.addEventListener('pointerup', (e) => endDrag(e, id));
   for (const event of ['pointercancel', 'lostpointercapture']) {
-    canvas.addEventListener(event, (e) => endDrag(e, id, true));
+    canvas.addEventListener(event, (e) =>
+      endDrag(
+        e,
+        id,
+        true,
+      ),
+    );
   }
 }

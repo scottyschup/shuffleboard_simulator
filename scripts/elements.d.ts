@@ -33,7 +33,7 @@ interface LabElements {
   importPredictionFile: HTMLInputElement;
   importPredictions: HTMLButtonElement;
   left: HTMLButtonElement;
-  openSettings: HTMLButtonElement;
+  openPredictionControls: HTMLButtonElement;
   overview: HTMLCanvasElement;
   placeBlackPigeon: HTMLButtonElement;
   placeBlock: HTMLButtonElement;
@@ -65,7 +65,6 @@ interface LabElements {
   rotateFocus: HTMLButtonElement;
   savePrediction: HTMLButtonElement;
   savedPredictions: HTMLDialogElement;
-  sortSavedPredictions: HTMLButtonElement;
   scoringHeading: HTMLElement;
   settingsDialog: HTMLDialogElement;
   settingsHeading: HTMLElement;
@@ -78,6 +77,7 @@ interface LabElements {
   slickSettings: HTMLElement;
   slickUp: HTMLButtonElement;
   slickVal: HTMLOutputElement;
+  sortSavedPredictions: HTMLButtonElement;
   sourceList: HTMLElement;
   speed: HTMLInputElement;
   speedDown: HTMLButtonElement;
